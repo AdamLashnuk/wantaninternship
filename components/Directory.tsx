@@ -165,9 +165,7 @@ export default function Directory() {
         searchableText.includes(normalizedQuery);
 
       const matchesMajor =
-        major === "All majors" ||
-        resource.majors.includes(major) ||
-        resource.majors.includes("All Majors");
+        major === "All majors" || resource.majors.includes(major);
 
       const matchesSection =
         sectionFilter === "All" || resource.section === sectionFilter;
