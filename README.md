@@ -1,4 +1,4 @@
-# InternDock
+# WantanInternship
 
 A polished, searchable directory of internship job boards, GitHub repositories, startup platforms, government portals, and research programs.
 
