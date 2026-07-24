@@ -135,12 +135,7 @@ export default function Directory() {
   const [recentOnly, setRecentOnly] = useState(false);
 
   const selectableMajors = useMemo(
-    () =>
-      majors.filter(
-        (majorName) =>
-          majorName.toLowerCase() !== "all majors" &&
-          majorName.toLowerCase() !== "all majors",
-      ),
+    () => majors.filter((majorName) => majorName !== "All Majors"),
     [],
   );
 

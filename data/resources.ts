@@ -1,4 +1,5 @@
 export const majors = [
+    "All Majors",
   "Computer Science",
   "Data Science",
   "Cybersecurity",
@@ -96,7 +97,6 @@ export const resources: Resource[] = [
     type: "Internship platform",
     section: "Website",
     majors: [
-      "All Majors",
       "Computer Science",
       "Data Science",
       "Cybersecurity",
