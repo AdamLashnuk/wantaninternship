@@ -57,14 +57,14 @@ export default function Home() {
 
             <a
               className="email-button"
-              href="mailto:hello@wantaninternship.com?subject=Resource%20submission%20for%20WantanInternship"
+              href="mailto:wantaninternship@gmail.com?subject=Resource%20submission%20for%20WantanInternship"
             >
               Submit a resource
             </a>
           </div>
 
           <div className="submission-details">
-            <span>hello@wantaninternship.com</span>
+            <span>wantaninternship@gmail.com</span>
 
             <span>
               Include the resource name, link, description and supported majors.
