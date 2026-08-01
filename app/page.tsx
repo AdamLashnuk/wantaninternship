@@ -77,13 +77,6 @@ export default function Home() {
           </div>
         </section>
       </div>
-
-      <footer className="site-footer">
-        <div className="container footer-inner">
-          <span>WantanInternship</span>
-          <span>Built and maintained by Adam Lashnuk</span>
-        </div>
-      </footer>
     </main>
   );
 }
