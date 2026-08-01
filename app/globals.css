@@ -12,7 +12,44 @@
   --green-background: #dafbe1;
   --purple: #8250df;
   --purple-background: #fbefff;
+  --green-border: #aceebb;
+  --purple-border: #d8b9ff;
+  --header-background: rgba(255, 255, 255, 0.96);
+  --row-hover: #f8fafc;
+  --placeholder: #8c959f;
+  --focus-ring: rgba(9, 105, 218, 0.15);
+  --major-text: #57606a;
+  --major-border: #afb8c1;
+  --major-background: #ffffff;
   --shadow: 0 1px 0 rgba(31, 35, 40, 0.04);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --background: #0d1117;
+  --surface: #161b22;
+  --surface-hover: #1c2128;
+  --border: #30363d;
+  --border-muted: #21262d;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --blue: #58a6ff;
+  --blue-hover: #79c0ff;
+  --green: #3fb950;
+  --green-background: rgba(46, 160, 67, 0.15);
+  --purple: #d2a8ff;
+  --purple-background: rgba(163, 113, 247, 0.15);
+  --green-border: rgba(63, 185, 80, 0.4);
+  --purple-border: rgba(210, 168, 255, 0.4);
+  --header-background: rgba(13, 17, 23, 0.94);
+  --row-hover: #161b22;
+  --placeholder: #6e7681;
+  --focus-ring: rgba(88, 166, 255, 0.25);
+  --major-text: #b1bac4;
+  --major-border: #484f58;
+  --major-background: #0d1117;
+  --shadow: 0 1px 0 rgba(1, 4, 9, 0.4);
+  color-scheme: dark;
 }
 
 * {
@@ -38,6 +75,9 @@ body {
     "Segoe UI Emoji";
   font-size: 14px;
   line-height: 1.5;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
 }
 
 button,
@@ -70,7 +110,7 @@ a:hover {
   top: 0;
   z-index: 20;
   border-bottom: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--header-background);
   backdrop-filter: blur(12px);
 }
 
@@ -109,6 +149,45 @@ a:hover {
 .main-nav a:hover {
   color: var(--text);
   text-decoration: none;
+}
+
+.theme-toggle {
+  min-width: 108px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex-shrink: 0;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  background: var(--background);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.theme-toggle:focus-visible {
+  border-color: var(--blue);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.theme-toggle svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .community-status {
@@ -197,7 +276,7 @@ a:hover {
 
 .search-input:focus-within {
   border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .search-input > span {
@@ -215,7 +294,7 @@ a:hover {
 }
 
 .search-input input::placeholder {
-  color: #8c959f;
+  color: var(--placeholder);
 }
 
 .search-row select {
@@ -231,7 +310,7 @@ a:hover {
 .search-row select:focus {
   border-color: var(--blue);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .filter-row {
@@ -370,7 +449,7 @@ a:hover {
 }
 
 .resource-row:hover {
-  background: #f8fafc;
+  background: var(--row-hover);
 }
 
 .resource-main {
@@ -411,13 +490,13 @@ a:hover {
 
 .updated-badge {
   color: var(--green);
-  border-color: #aceebb;
+  border-color: var(--green-border);
   background: var(--green-background);
 }
 
 .recommended-badge {
   color: var(--purple);
-  border-color: #d8b9ff;
+  border-color: var(--purple-border);
   background: var(--purple-background);
 }
 
@@ -440,9 +519,9 @@ a:hover {
 }
 
 .major-tag {
-  color: #57606a;
-  border-color: #afb8c1;
-  background: #ffffff;
+  color: var(--major-text);
+  border-color: var(--major-border);
+  background: var(--major-background);
 }
 
 .resource-details {
@@ -617,6 +696,21 @@ a:hover {
     min-height: 58px;
   }
 
+  .theme-toggle {
+    min-width: 36px;
+    width: 36px;
+    padding: 0;
+  }
+
+  .theme-toggle-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   .community-status {
     padding: 30px 0 26px;
   }
@@ -668,5 +762,15 @@ a:hover {
     justify-content: center;
     flex-direction: column;
     gap: 5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  body {
+    transition: none;
   }
 }

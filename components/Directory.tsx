@@ -86,7 +86,7 @@ function ResourceRow({ resource }: { resource: Resource }) {
         <span>Updated {formatUpdatedDate(resource.updatedAt)}</span>
 
         <a href={resource.url} target="_blank" rel="noreferrer">
-          Visit ↗
+          Visit
         </a>
       </div>
     </article>
@@ -160,7 +160,9 @@ export default function Directory() {
         searchableText.includes(normalizedQuery);
 
       const matchesMajor =
-        major === "All majors" || resource.majors.includes(major);
+        major === "All majors" ||
+        resource.majors.includes("All Majors") ||
+        resource.majors.includes(major);
 
       const matchesSection =
         sectionFilter === "All" || resource.section === sectionFilter;
@@ -206,8 +208,6 @@ export default function Directory() {
       <section className="filter-panel" aria-label="Resource filters">
         <div className="search-row">
           <label className="search-input">
-            <span aria-hidden="true">⌕</span>
-
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}

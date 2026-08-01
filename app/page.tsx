@@ -1,4 +1,5 @@
 import Directory from "../components/Directory";
+import ThemeToggle from "../components/ThemeToggle";
 
 export default function Home() {
   return (
@@ -16,6 +17,8 @@ export default function Home() {
             <a href="#research">Research</a>
             <a href="#submit">Submit</a>
           </nav>
+
+          <ThemeToggle />
         </div>
       </header>
 
@@ -57,7 +60,9 @@ export default function Home() {
 
             <a
               className="email-button"
-              href="mailto:wantaninternship@gmail.com?subject=Resource%20submission%20for%20WantanInternship"
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=wantaninternship@gmail.com&su=Resource%20submission%20for%20WantanInternship"
+              target="_blank"
+              rel="noreferrer"
             >
               Submit a resource
             </a>
