@@ -14,6 +14,7 @@ const sectionFilters = [
   "All",
   "Website",
   "GitHub Repository",
+  "Tool",
   "Startup",
   "Research",
   "Government",
@@ -211,7 +212,7 @@ export default function Directory() {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search websites, repositories or keywords..."
+              placeholder="Search websites, tools, repositories or keywords..."
               aria-label="Search internship resources"
             />
           </label>

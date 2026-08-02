@@ -21,11 +21,16 @@ export type ResourceType =
   | "GitHub list"
   | "Startup job board"
   | "Research directory"
-  | "Government portal";
+  | "Government portal"
+  | "Coding practice"
+  | "Interview preparation"
+  | "AI mock interview"
+  | "Resume tool";
 
 export type SectionType =
   | "Website"
   | "GitHub Repository"
+  | "Tool"
   | "Startup"
   | "Research"
   | "Government";
@@ -64,6 +69,13 @@ export const resourceSections: ResourceSection[] = [
       "Community-maintained repositories containing internship and new graduate listings.",
     type: "GitHub Repository",
     anchor: "repositories",
+  },
+  {
+    title: "Career & Interview Tools",
+    description:
+      "Coding practice, mock interviews, resume feedback and technical interview preparation resources.",
+    type: "Tool",
+    anchor: "tools",
   },
   {
     title: "Startup Opportunities",
@@ -159,6 +171,53 @@ export const resources: Resource[] = [
     keywords: ["salary", "company reviews", "interviews"],
     updatedAt: "2026-06-20",
   },
+  {
+    name: "Intern Dock",
+    url: "https://www.interndock.com/",
+    description:
+      "Student-focused internship platform with a searchable job board, application tracker and AI-powered career tools.",
+    type: "Internship platform",
+    section: "Website",
+    majors: ["All Majors"],
+    regions: ["United States", "Remote"],
+    keywords: [
+      "internship tracker",
+      "job board",
+      "application tracking",
+      "AI career tools",
+    ],
+    updatedAt: "2026-08-02",
+    featured: true,
+  },
+  {
+  name: "Telos",
+  url: "https://find-telos.com",
+  description:
+    "Free internship search platform that scans over 5,000 job boards every hour to surface internship opportunities across software engineering, data science, cybersecurity, business and more. Designed to make internship searching simple without a paywall.",
+  type: "Internship platform",
+  section: "Website",
+  majors: [
+    "Computer Science",
+    "Data Science",
+    "Cybersecurity",
+    "Engineering",
+    "Business",
+    "Finance",
+    "Marketing",
+    "Design",
+  ],
+  regions: ["United States", "Remote"],
+  keywords: [
+    "internships",
+    "job search",
+    "student",
+    "hourly updates",
+    "5,000 job boards",
+    "free",
+  ],
+  updatedAt: "2026-08-02",
+  featured: true,
+},
   {
     name: "RippleMatch",
     url: "https://ripplematch.com/",
@@ -315,6 +374,160 @@ export const resources: Resource[] = [
     regions: ["Canada"],
     keywords: ["Canada", "technology", "software internship"],
     updatedAt: "2026-07-05",
+  },
+
+  {
+    name: "2027 Software Engineering Internship & New Grad Positions",
+    url: "https://github.com/speedyapply/2027-SWE-College-Jobs",
+    description:
+      "Daily-updated collection of 2027 software engineering internships and new graduate roles for college students.",
+    type: "GitHub list",
+    section: "GitHub Repository",
+    majors: [
+      "Computer Science",
+      "Data Science",
+      "Cybersecurity",
+      "Engineering",
+    ],
+    regions: ["United States", "Canada"],
+    keywords: ["2027", "software engineering", "internship", "new grad"],
+    updatedAt: "2026-08-02",
+    featured: true,
+  },
+  {
+    name: "Summer 2027 and Off-Season Tech Internships",
+    url: "https://github.com/sndsh404/summer-2027-internships",
+    description:
+      "Regularly updated list of Summer 2027 and off-season software, data, machine learning, hardware and product internships.",
+    type: "GitHub list",
+    section: "GitHub Repository",
+    majors: [
+      "Computer Science",
+      "Data Science",
+      "Cybersecurity",
+      "Engineering",
+    ],
+    regions: ["United States"],
+    keywords: ["2027", "off-season", "AI", "machine learning", "SWE"],
+    updatedAt: "2026-08-02",
+  },
+
+  {
+    name: "LeetCode",
+    url: "https://leetcode.com/",
+    description:
+      "Large coding-practice platform with algorithm problems, company-tagged questions, contests and interview study plans.",
+    type: "Coding practice",
+    section: "Tool",
+    majors: ["Computer Science", "Data Science", "Engineering"],
+    regions: ["Global", "Online"],
+    keywords: ["algorithms", "data structures", "coding interview", "DSA"],
+    updatedAt: "2026-08-02",
+    featured: true,
+  },
+  {
+    name: "NeetCode",
+    url: "https://neetcode.io/",
+    description:
+      "Structured coding-interview roadmaps, video explanations, courses, practice problems and AI-driven interview practice.",
+    type: "Interview preparation",
+    section: "Tool",
+    majors: ["Computer Science", "Data Science", "Engineering"],
+    regions: ["Global", "Online"],
+    keywords: ["NeetCode 150", "roadmap", "coding interview", "algorithms"],
+    updatedAt: "2026-08-02",
+    featured: true,
+  },
+  {
+    name: "HackerRank",
+    url: "https://www.hackerrank.com/",
+    description:
+      "Coding challenges and skill certifications covering algorithms, SQL, programming languages and interview preparation.",
+    type: "Coding practice",
+    section: "Tool",
+    majors: ["Computer Science", "Data Science", "Engineering"],
+    regions: ["Global", "Online"],
+    keywords: ["coding challenges", "SQL", "certification", "assessment"],
+    updatedAt: "2026-08-02",
+  },
+  {
+    name: "CodeSignal",
+    url: "https://codesignal.com/",
+    description:
+      "Technical assessment and coding-practice platform commonly used for internship and early-career hiring screens.",
+    type: "Coding practice",
+    section: "Tool",
+    majors: ["Computer Science", "Data Science", "Engineering"],
+    regions: ["Global", "Online"],
+    keywords: ["technical assessment", "coding screen", "GCA", "practice"],
+    updatedAt: "2026-08-02",
+  },
+  {
+    name: "interviewing.io",
+    url: "https://interviewing.io/",
+    description:
+      "Anonymous technical mock interviews with engineers plus an AI interviewer for coding and system-design practice.",
+    type: "AI mock interview",
+    section: "Tool",
+    majors: ["Computer Science", "Data Science", "Engineering"],
+    regions: ["Global", "Online"],
+    keywords: ["mock interview", "AI interviewer", "system design", "FAANG"],
+    updatedAt: "2026-08-02",
+    featured: true,
+  },
+  {
+    name: "Exponent Practice",
+    url: "https://www.tryexponent.com/practice",
+    description:
+      "Peer-to-peer mock interview practice for software engineering, product, system design and other technology roles.",
+    type: "Interview preparation",
+    section: "Tool",
+    majors: [
+      "Computer Science",
+      "Data Science",
+      "Engineering",
+      "Business",
+      "Design",
+    ],
+    regions: ["Global", "Online"],
+    keywords: ["peer mock interview", "system design", "product interview"],
+    updatedAt: "2026-08-02",
+  },
+  {
+    name: "Yoodli",
+    url: "https://yoodli.ai/",
+    description:
+      "AI communication coach for practicing behavioral interviews, presentations and spoken answers with feedback.",
+    type: "AI mock interview",
+    section: "Tool",
+    majors: ["All Majors"],
+    regions: ["Global", "Online"],
+    keywords: ["behavioral interview", "communication", "speech", "AI feedback"],
+    updatedAt: "2026-08-02",
+  },
+  {
+    name: "Big Interview",
+    url: "https://biginterview.com/",
+    description:
+      "Interview-learning platform with practice questions, video mock interviews and structured preparation lessons.",
+    type: "Interview preparation",
+    section: "Tool",
+    majors: ["All Majors"],
+    regions: ["Global", "Online"],
+    keywords: ["behavioral interview", "video interview", "practice questions"],
+    updatedAt: "2026-08-02",
+  },
+  {
+    name: "Resume Worded",
+    url: "https://resumeworded.com/",
+    description:
+      "Resume and LinkedIn feedback tool that scores documents and suggests targeted improvements for job applications.",
+    type: "Resume tool",
+    section: "Tool",
+    majors: ["All Majors"],
+    regions: ["Global", "Online"],
+    keywords: ["resume review", "ATS", "LinkedIn", "resume score"],
+    updatedAt: "2026-08-02",
   },
 
   {

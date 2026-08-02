@@ -44,6 +44,24 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="tools-callout" aria-labelledby="tools-callout-title">
+          <div className="tools-callout-content">
+            <span className="tools-callout-eyebrow">Career toolkit</span>
+
+            <h2 id="tools-callout-title">Prepare for the application process</h2>
+
+            <p>
+              Explore coding-practice platforms, AI mock interviewers, resume
+              builders, application trackers and interview-preparation resources.
+            </p>
+          </div>
+
+          <a className="tools-callout-link" href="/tools">
+            Explore tools
+            <span aria-hidden="true">→</span>
+          </a>
+        </section>
+
         <Directory />
 
         <section className="contribute-section" id="submit">
