@@ -1,4 +1,3 @@
-import CareerPathfinder from "../components/CareerPathfinder";
 import Directory from "../components/Directory";
 import ThemeToggle from "../components/ThemeToggle";
 
@@ -12,7 +11,6 @@ export default function Home() {
           </a>
 
           <nav className="main-nav" aria-label="Main navigation">
-            <a href="#start-here">Start here</a>
             <a href="#directory">Directory</a>
             <a href="/tools">Career toolkit</a>
             <a href="#research">Research</a>
@@ -25,8 +23,6 @@ export default function Home() {
       </header>
 
       <div className="container" id="top">
-        <CareerPathfinder />
-
         <section className="community-status">
           <p className="community-description">
             A curated collection of internship websites, GitHub repositories,
