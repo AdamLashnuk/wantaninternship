@@ -10,6 +10,7 @@ import {
   type Resource,
   type ResourceSection,
 } from "../data/resources";
+import { trackContent, type CareerTrack } from "../data/tracks";
 
 const sectionFilters = [
   "All",
@@ -96,10 +97,12 @@ function resourceOpportunityTypes(resource: Resource) {
 function ResourceRow({
   resource,
   isSaved,
+  isRecommended,
   onToggleSaved,
 }: {
   resource: Resource;
   isSaved: boolean;
+  isRecommended: boolean;
   onToggleSaved: (resource: Resource) => void;
 }) {
   const recentlyVerified = isRecentlyVerified(resource.updatedAt);
@@ -121,7 +124,7 @@ function ResourceRow({
             <span className="updated-badge">Verified recently</span>
           )}
 
-          {resource.featured && (
+          {isRecommended && (
             <span className="recommended-badge">Recommended</span>
           )}
         </div>
@@ -169,6 +172,7 @@ function DirectorySection({
   section,
   resources: sectionResources,
   savedUrls,
+  recommendedNames,
   onToggleSaved,
   collapsed,
   onShowAll,
@@ -176,6 +180,7 @@ function DirectorySection({
   section: ResourceSection;
   resources: Resource[];
   savedUrls: Set<string>;
+  recommendedNames: Set<string>;
   onToggleSaved: (resource: Resource) => void;
   collapsed: boolean;
   onShowAll: () => void;
@@ -208,6 +213,7 @@ function DirectorySection({
             key={`${section.type}-${resource.name}`}
             resource={resource}
             isSaved={savedUrls.has(resource.url)}
+            isRecommended={recommendedNames.has(resource.name)}
             onToggleSaved={onToggleSaved}
           />
         ))}
@@ -222,7 +228,7 @@ function DirectorySection({
   );
 }
 
-export default function Directory() {
+export default function Directory({ track }: { track: CareerTrack }) {
   const [query, setQuery] = useState("");
   const [major, setMajor] = useState<Major | "All majors">("All majors");
   const [region, setRegion] = useState("All regions");
@@ -233,6 +239,22 @@ export default function Directory() {
   const [savedOnly, setSavedOnly] = useState(false);
   const [savedUrls, setSavedUrls] = useState<Set<string>>(new Set());
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const trackSettings = trackContent[track];
+  const recommendedNames = useMemo(
+    () => new Set(trackSettings.recommendations),
+    [trackSettings.recommendations],
+  );
+
+  useEffect(() => {
+    setQuery("");
+    setMajor("All majors");
+    setRegion("All regions");
+    setOpportunity("All opportunities");
+    setSectionFilter("All");
+    setRecentOnly(false);
+    setSavedOnly(false);
+    setExpandedSections(new Set());
+  }, [track]);
 
   useEffect(() => {
     try {
@@ -246,16 +268,37 @@ export default function Directory() {
   }, []);
 
   const selectableMajors = useMemo(
-    () => majors.filter((majorName) => majorName !== "All Majors"),
-    [],
+    () =>
+      majors.filter(
+        (majorName) =>
+          majorName !== "All Majors" && trackSettings.majors.includes(majorName),
+      ),
+    [trackSettings.majors],
+  );
+
+  const trackResources = useMemo(
+    () =>
+      resources.filter((resource) => {
+        if (resource.section === "Tool") {
+          return track === "software";
+        }
+
+        return (
+          resource.majors.includes("All Majors") ||
+          resource.majors.some((majorName) =>
+            trackSettings.majors.includes(majorName),
+          )
+        );
+      }),
+    [track, trackSettings.majors],
   );
 
   const selectableRegions = useMemo(
     () =>
-      Array.from(new Set(resources.flatMap((resource) => resource.regions))).sort(
-        (a, b) => a.localeCompare(b),
-      ),
-    [],
+      Array.from(
+        new Set(trackResources.flatMap((resource) => resource.regions)),
+      ).sort((a, b) => a.localeCompare(b)),
+    [trackResources],
   );
 
   const toggleSaved = (resource: Resource) => {
@@ -280,7 +323,7 @@ export default function Directory() {
   const filteredResources = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return resources
+    return trackResources
       .filter((resource) => {
         const searchableText = [
           resource.name,
@@ -329,6 +372,8 @@ export default function Directory() {
       })
       .sort(
         (a, b) =>
+          Number(recommendedNames.has(b.name)) -
+            Number(recommendedNames.has(a.name)) ||
           Number(Boolean(b.featured)) - Number(Boolean(a.featured)) ||
           b.updatedAt.localeCompare(a.updatedAt) ||
           a.name.localeCompare(b.name),
@@ -342,19 +387,26 @@ export default function Directory() {
     recentOnly,
     savedOnly,
     savedUrls,
+    trackResources,
+    recommendedNames,
   ]);
 
   const groupedResources = useMemo(
     () =>
       resourceSections
-        .filter((section) => section.type !== "Tool" || sectionFilter === "Tool")
+        .filter(
+          (section) =>
+            (section.type !== "Tool" ||
+              (track === "software" && sectionFilter === "Tool")) &&
+            (track !== "finance" || section.type !== "Research"),
+        )
         .map((section) => ({
           section,
           resources: filteredResources.filter(
             (resource) => resource.section === section.type,
           ),
         })),
-    [filteredResources, sectionFilter],
+    [filteredResources, sectionFilter, track],
   );
 
   const hasActiveFilters =
@@ -385,7 +437,7 @@ export default function Directory() {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search websites, tools, repositories or keywords..."
+              placeholder={trackSettings.searchPlaceholder}
               aria-label="Search internship resources"
             />
           </label>
@@ -435,7 +487,9 @@ export default function Directory() {
 
         <div className="filter-row">
           <div className="filter-buttons">
-            {sectionFilters.map((filter) => (
+            {sectionFilters
+              .filter((filter) => track === "software" || filter !== "Tool")
+              .map((filter) => (
               <button
                 className={sectionFilter === filter ? "active" : ""}
                 key={filter}
@@ -444,7 +498,7 @@ export default function Directory() {
               >
                 {filter === "Tool" ? "Career tools" : filter}
               </button>
-            ))}
+              ))}
           </div>
 
           <div className={styles.toggleGroup}>
@@ -491,6 +545,7 @@ export default function Directory() {
             section={section}
             resources={sectionResources}
             savedUrls={savedUrls}
+            recommendedNames={recommendedNames}
             onToggleSaved={toggleSaved}
             collapsed={
               !hasActiveFilters &&
