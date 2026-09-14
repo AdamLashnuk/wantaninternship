@@ -32,8 +32,10 @@ owners.
 
 | Company | Source |
 | --- | --- |
+| Microsoft | https://www.microsoft.com/favicon.ico |
+| Capital One | https://www.capitalone.com/favicon.ico |
 | Ramp | https://ramp.com/favicon.ico |
 
-Ramp's favicon is loaded from its official website. If a future feed source has
-no configured logo, the interface displays the company's initials instead of a
-broken image.
+These favicons are loaded from each company's official website. If a future
+feed source has no configured logo, the interface displays the company's
+initials instead of a broken image.

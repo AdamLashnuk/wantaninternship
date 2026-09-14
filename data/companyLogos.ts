@@ -5,6 +5,16 @@ export type CompanyLogoInfo = {
 };
 
 export const companyLogos: Record<string, CompanyLogoInfo> = {
+  Microsoft: {
+    src: "https://www.microsoft.com/favicon.ico",
+    sourceName: "Microsoft official website",
+    sourceUrl: "https://www.microsoft.com/favicon.ico",
+  },
+  "Capital One": {
+    src: "https://www.capitalone.com/favicon.ico",
+    sourceName: "Capital One official website",
+    sourceUrl: "https://www.capitalone.com/favicon.ico",
+  },
   Datadog: {
     src: "/company-logos/datadog.svg",
     sourceName: "Simple Icons",
