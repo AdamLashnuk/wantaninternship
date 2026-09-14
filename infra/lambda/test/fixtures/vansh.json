@@ -1,0 +1,4 @@
+[
+  {"company_name":"Example Co","company_url":"https://example.com","title":"Backend Software Engineer Intern","locations":["Pittsburgh, PA","New York, NY"],"url":"https://jobs.example.com/123?source=github","active":true,"date_posted":1789000000},
+  {"company_name":"Hardware Co","title":"Embedded Hardware Intern","locations":["Austin, TX"],"url":"https://hardware.example/jobs/1","active":true}
+]

@@ -2,292 +2,343 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
+  BatchWriteCommand,
   DynamoDBDocumentClient,
   GetCommand,
   PutCommand,
   ScanCommand,
-  UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
+import {
+  canonicalizeApplicationUrl,
+  deduplicateJobs,
+  inferOpportunityType,
+  inferSoftwareCategory,
+  isRelevantSoftware,
+  parseListingsJson,
+  parseSpeedyMarkdown,
+} from "./normalize.mjs";
 
-const sources = JSON.parse(
-  readFileSync(new URL("./sources.json", import.meta.url), "utf8"),
-);
+const atsSources = JSON.parse(readFileSync(new URL("./sources.json", import.meta.url), "utf8"));
+const githubSources = JSON.parse(readFileSync(new URL("./github-sources.json", import.meta.url), "utf8"));
 const documentClient = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
   marshallOptions: { removeUndefinedValues: true },
 });
 const tableName = process.env.TABLE_NAME;
-
-const internshipPattern = /\b(intern|internship|co-op|co op)\b/i;
-const softwarePattern =
-  /\b(software|developer|engineering|engineer|data|machine learning|artificial intelligence|ai|cloud|security|cyber|devops|site reliability|sre|product|technology|technical|it)\b/i;
-
-function stripHtml(value = "") {
-  return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-}
+const userAgent = "WantAnInternship/2.0 (https://wantaninternship.com)";
 
 function sourceKey(source) {
   return `${source.provider}:${source.board}`;
 }
 
-function normalize(value) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+function stripHtml(value = "") {
+  return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-function listingKey(job) {
-  return `${normalize(job.company)}:${normalize(job.title)}`;
-}
-
-function stableId(job) {
-  return createHash("sha256")
-    .update(`${job.sourceKey}:${listingKey(job)}`)
-    .digest("hex");
-}
-
-function mergeDuplicateLocations(jobs) {
-  const grouped = new Map();
-
-  for (const job of jobs) {
-    const key = listingKey(job);
-    const existing = grouped.get(key);
-
-    if (!existing) {
-      grouped.set(key, {
-        job,
-        locations: new Set(job.locations ?? [job.location]),
-      });
-      continue;
-    }
-
-    for (const location of job.locations ?? [job.location]) {
-      existing.locations.add(location);
-    }
-    if (
-      new Date(job.postedAt ?? 0).getTime() >
-      new Date(existing.job.postedAt ?? 0).getTime()
-    ) {
-      existing.job = job;
-    }
-  }
-
-  return [...grouped.values()].map(({ job, locations }) => {
-    const allLocations = [...locations];
-    return {
-      ...job,
-      location: allLocations.length > 1 ? "Multiple locations" : job.location,
-      locations: allLocations,
-    };
-  });
-}
-
-function isSoftwareInternship(job) {
-  const searchable = [
-    job.title,
-    job.department,
-    job.team,
-    job.description,
-  ].join(" ");
-
-  return internshipPattern.test(job.title) && softwarePattern.test(searchable);
+function directJob(source, raw) {
+  const locations = raw.locations?.length ? raw.locations : [raw.location ?? "Location not listed"];
+  const applicationUrl = canonicalizeApplicationUrl(raw.applicationUrl);
+  return {
+    company: source.company,
+    companyWebsite: source.website,
+    title: raw.title ?? "Untitled opportunity",
+    opportunityType: inferOpportunityType(raw.title, "internship"),
+    softwareCategory: inferSoftwareCategory(raw.title),
+    location: locations.length > 1 ? "Multiple locations" : locations[0],
+    locations,
+    applicationUrl,
+    applyUrl: applicationUrl,
+    postedAt: raw.postedAt,
+    source: source.provider,
+    sourceKey: sourceKey(source),
+    sourceUrl: raw.sourceUrl,
+    sourceJobId: String(raw.sourceJobId ?? applicationUrl),
+    active: true,
+    sourcePriority: 100,
+  };
 }
 
 async function getJson(url) {
   const response = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-      "User-Agent": "WantAnInternship/1.0 (wantaninternship@gmail.com)",
-    },
+    headers: { Accept: "application/json", "User-Agent": userAgent },
     signal: AbortSignal.timeout(20_000),
   });
-
   if (!response.ok) throw new Error(`${url} returned ${response.status}`);
   return response.json();
 }
 
 async function fetchGreenhouse(source) {
-  const payload = await getJson(
-    `https://boards-api.greenhouse.io/v1/boards/${source.board}/jobs?content=true`,
-  );
-
-  return (payload.jobs ?? []).map((job) => ({
-    source: "greenhouse",
-    sourceKey: sourceKey(source),
-    sourceJobId: String(job.id),
-    company: source.company,
-    companyWebsite: source.website,
-    title: job.title ?? "Untitled internship",
-    location: job.location?.name ?? "Location not listed",
+  const payload = await getJson(`https://boards-api.greenhouse.io/v1/boards/${source.board}/jobs?content=true`);
+  return (payload.jobs ?? []).map((job) => directJob(source, {
+    sourceJobId: job.id,
+    title: job.title,
     locations: [job.location?.name ?? "Location not listed"],
-    applyUrl: job.absolute_url,
-    department: (job.departments ?? []).map((item) => item.name).join(" "),
-    team: "",
-    description: stripHtml(job.content),
+    applicationUrl: job.absolute_url,
     postedAt: job.updated_at,
-  }));
+    sourceUrl: `https://boards.greenhouse.io/${source.board}`,
+    searchable: [job.title, ...(job.departments ?? []).map((item) => item.name), stripHtml(job.content)].join(" "),
+  })).filter(isRelevantSoftware);
 }
 
 async function fetchLever(source) {
-  const payload = await getJson(
-    `https://api.lever.co/v0/postings/${source.board}?mode=json`,
-  );
-
-  return (Array.isArray(payload) ? payload : []).map((job) => ({
-    source: "lever",
-    sourceKey: sourceKey(source),
-    sourceJobId: String(job.id),
-    company: source.company,
-    companyWebsite: source.website,
-    title: job.text ?? "Untitled internship",
-    location: job.categories?.location ?? "Location not listed",
+  const payload = await getJson(`https://api.lever.co/v0/postings/${source.board}?mode=json`);
+  return (Array.isArray(payload) ? payload : []).map((job) => directJob(source, {
+    sourceJobId: job.id,
+    title: job.text,
     locations: [job.categories?.location ?? "Location not listed"],
-    applyUrl: job.applyUrl ?? job.hostedUrl,
-    department: job.categories?.department ?? "",
-    team: job.categories?.team ?? "",
-    description: job.descriptionPlain ?? "",
+    applicationUrl: job.applyUrl ?? job.hostedUrl,
     postedAt: job.createdAt ? new Date(job.createdAt).toISOString() : undefined,
-  }));
+    sourceUrl: `https://jobs.lever.co/${source.board}`,
+  })).filter(isRelevantSoftware);
 }
 
 async function fetchAshby(source) {
-  const payload = await getJson(
-    `https://api.ashbyhq.com/posting-api/job-board/${source.board}`,
-  );
-
-  return (payload.jobs ?? []).map((job) => ({
-    source: "ashby",
-    sourceKey: sourceKey(source),
+  const payload = await getJson(`https://api.ashbyhq.com/posting-api/job-board/${source.board}`);
+  return (payload.jobs ?? []).map((job) => directJob(source, {
     sourceJobId: job.jobUrl ?? job.applyUrl,
-    company: source.company,
-    companyWebsite: source.website,
-    title: job.title ?? "Untitled internship",
-    location: job.location ?? "Location not listed",
+    title: job.title,
     locations: [job.location ?? "Location not listed"],
-    applyUrl: job.applyUrl ?? job.jobUrl,
-    department: job.department ?? "",
-    team: job.team ?? "",
-    description: job.descriptionPlain ?? "",
+    applicationUrl: job.applyUrl ?? job.jobUrl,
     postedAt: job.publishedAt,
-  }));
+    sourceUrl: `https://jobs.ashbyhq.com/${source.board}`,
+  })).filter(isRelevantSoftware);
 }
 
-async function fetchSource(source) {
+async function fetchAtsSource(source) {
   if (source.provider === "greenhouse") return fetchGreenhouse(source);
   if (source.provider === "lever") return fetchLever(source);
   if (source.provider === "ashby") return fetchAshby(source);
-  throw new Error(`Unsupported provider: ${source.provider}`);
+  throw new Error(`Unsupported ATS provider: ${source.provider}`);
 }
 
-async function saveJob(job, now) {
-  const id = stableId(job);
-  const existing = await documentClient.send(
-    new GetCommand({ TableName: tableName, Key: { id } }),
-  );
-
-  await documentClient.send(
-    new PutCommand({
-      TableName: tableName,
-      Item: {
-        id,
-        company: job.company,
-        companyWebsite: job.companyWebsite,
-        title: job.title,
-        location: job.location,
-        locations: job.locations,
-        applyUrl: job.applyUrl,
-        source: job.source,
-        sourceKey: job.sourceKey,
-        sourceJobId: job.sourceJobId,
-        postedAt: job.postedAt,
-        firstSeenAt: existing.Item?.firstSeenAt ?? now,
-        discoverySort: existing.Item?.discoverySort ?? `${now}#${id}`,
-        lastSeenAt: now,
-        active: true,
-        missingRuns: 0,
-        categoryStatus: "software#active",
-      },
-    }),
-  );
-
-  return id;
+function cacheId(key) {
+  return `meta#github#${createHash("sha1").update(key).digest("hex")}`;
 }
 
-async function activeJobs() {
+async function updateGithubCache(source, values) {
+  await documentClient.send(new PutCommand({
+    TableName: tableName,
+    Item: { id: cacheId(source.key), kind: "github-cache", sourceKey: source.key, ...values },
+  }));
+}
+
+function retryDelay(response, attempt) {
+  const retryAfter = Number(response.headers.get("retry-after"));
+  if (Number.isFinite(retryAfter) && retryAfter > 0) return Math.min(retryAfter * 1000, 60_000);
+  const reset = Number(response.headers.get("x-ratelimit-reset"));
+  if (Number.isFinite(reset) && reset > 0) return Math.max(1_000, Math.min(reset * 1000 - Date.now(), 60_000));
+  return Math.min(1000 * 2 ** attempt + Math.floor(Math.random() * 500), 10_000);
+}
+
+async function fetchGithubText(source) {
+  const cached = await documentClient.send(new GetCommand({ TableName: tableName, Key: { id: cacheId(source.key) } }));
+  const backoffUntil = cached.Item?.backoffUntil ? new Date(cached.Item.backoffUntil).getTime() : 0;
+  if (backoffUntil > Date.now()) return { status: "backoff", jobs: [] };
+
+  const headers = {
+    Accept: "application/vnd.github.raw+json",
+    "User-Agent": userAgent,
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  if (cached.Item?.etag) headers["If-None-Match"] = cached.Item.etag;
+  if (cached.Item?.lastModified) headers["If-Modified-Since"] = cached.Item.lastModified;
+
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const response = await fetch(source.apiUrl, {
+      headers,
+      signal: AbortSignal.timeout(45_000),
+    });
+
+    if (response.status === 304) {
+      await updateGithubCache(source, {
+        etag: cached.Item?.etag,
+        lastModified: cached.Item?.lastModified,
+        checkedAt: new Date().toISOString(),
+      });
+      return { status: "not-modified", jobs: [] };
+    }
+
+    if (response.ok) {
+      const text = await response.text();
+      const collectedAt = new Date().toISOString();
+      await updateGithubCache(source, {
+        etag: response.headers.get("etag") ?? undefined,
+        lastModified: response.headers.get("last-modified") ?? undefined,
+        checkedAt: collectedAt,
+      });
+      const config = { ...source, collectedAt };
+      const jobs = source.format === "json"
+        ? parseListingsJson(text, config)
+        : parseSpeedyMarkdown(text, config);
+      return { status: "changed", jobs };
+    }
+
+    if (response.status === 403 || response.status === 429 || response.status >= 500) {
+      const delay = retryDelay(response, attempt);
+      lastError = new Error(`${source.key} returned ${response.status}`);
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+      await updateGithubCache(source, {
+        etag: cached.Item?.etag,
+        lastModified: cached.Item?.lastModified,
+        checkedAt: new Date().toISOString(),
+        backoffUntil: new Date(Date.now() + Math.max(delay, 60_000)).toISOString(),
+        lastError: String(lastError),
+      });
+      throw lastError;
+    }
+
+    throw new Error(`${source.key} returned ${response.status}`);
+  }
+  throw lastError;
+}
+
+async function allStoredJobs() {
   const jobs = [];
   let exclusiveStartKey;
-
   do {
-    const page = await documentClient.send(
-      new ScanCommand({
-        TableName: tableName,
-        FilterExpression: "active = :active",
-        ExpressionAttributeValues: { ":active": true },
-        ExclusiveStartKey: exclusiveStartKey,
-      }),
-    );
+    const page = await documentClient.send(new ScanCommand({
+      TableName: tableName,
+      FilterExpression: "attribute_exists(active)",
+      ExclusiveStartKey: exclusiveStartKey,
+    }));
     jobs.push(...(page.Items ?? []));
     exclusiveStartKey = page.LastEvaluatedKey;
   } while (exclusiveStartKey);
-
   return jobs;
 }
 
-async function markMissingJobs(seenIds, successfulSources) {
-  const existingJobs = await activeJobs();
+async function batchWrite(items) {
+  for (let offset = 0; offset < items.length; offset += 25) {
+    let requestItems = { [tableName]: items.slice(offset, offset + 25).map((Item) => ({ PutRequest: { Item } })) };
+    for (let attempt = 0; attempt < 5 && requestItems[tableName]?.length; attempt += 1) {
+      const result = await documentClient.send(new BatchWriteCommand({ RequestItems: requestItems }));
+      requestItems = result.UnprocessedItems ?? {};
+      if (requestItems[tableName]?.length) {
+        await new Promise((resolve) => setTimeout(resolve, 100 * 2 ** attempt));
+      }
+    }
+    if (requestItems[tableName]?.length) throw new Error("DynamoDB left unprocessed internship writes");
+  }
+}
 
-  await Promise.all(
-    existingJobs.map(async (job) => {
-      if (seenIds.has(job.id) || !successfulSources.has(job.sourceKey)) return;
-
-      const missingRuns = Number(job.missingRuns ?? 0) + 1;
-      const active = missingRuns < 3;
-      await documentClient.send(
-        new UpdateCommand({
-          TableName: tableName,
-          Key: { id: job.id },
-          UpdateExpression:
-            "SET missingRuns = :missingRuns, active = :active, categoryStatus = :categoryStatus",
-          ExpressionAttributeValues: {
-            ":missingRuns": missingRuns,
-            ":active": active,
-            ":categoryStatus": active ? "software#active" : "software#inactive",
-          },
-        }),
-      );
-    }),
-  );
+function sourceKeysOf(job) {
+  return job.sourceKeys?.length ? job.sourceKeys : [job.sourceKey].filter(Boolean);
 }
 
 export async function handler() {
   if (!tableName) throw new Error("TABLE_NAME is required");
 
-  const results = await Promise.allSettled(sources.map(fetchSource));
+  const atsResults = await Promise.allSettled(atsSources.map(fetchAtsSource));
+  const githubResults = await Promise.allSettled(githubSources.map(fetchGithubText));
   const now = new Date().toISOString();
-  const successfulSources = new Set();
-  const collectedJobs = [];
+  const successfulKeys = new Set();
+  const collected = [];
   const failures = [];
 
-  results.forEach((result, index) => {
-    const source = sources[index];
+  atsResults.forEach((result, index) => {
+    const source = atsSources[index];
     if (result.status === "fulfilled") {
-      successfulSources.add(sourceKey(source));
-      collectedJobs.push(...result.value.filter(isSoftwareInternship));
+      successfulKeys.add(sourceKey(source));
+      collected.push(...result.value);
     } else {
       failures.push({ source: sourceKey(source), error: String(result.reason) });
     }
   });
 
-  const uniqueJobs = mergeDuplicateLocations(collectedJobs);
-  const seenIds = new Set();
-  for (const job of uniqueJobs) {
-    if (!job.applyUrl) continue;
-    seenIds.add(await saveJob(job, now));
+  githubResults.forEach((result, index) => {
+    const source = githubSources[index];
+    if (result.status === "fulfilled") {
+      if (result.value.status === "changed") {
+        successfulKeys.add(source.key);
+        collected.push(...result.value.jobs);
+      }
+    } else {
+      failures.push({ source: source.key, error: String(result.reason) });
+    }
+  });
+
+  const existing = await allStoredJobs();
+  const existingById = new Map(existing.map((job) => [job.id, job]));
+  const uniqueJobs = deduplicateJobs(collected);
+  const seenIds = new Set(uniqueJobs.map((job) => job.id));
+
+  const saved = uniqueJobs.map((job) => {
+    const prior = existingById.get(job.id);
+    return {
+      id: job.id,
+      company: job.company,
+      companyWebsite: job.companyWebsite,
+      title: job.title,
+      opportunityType: job.opportunityType,
+      softwareCategory: job.softwareCategory,
+      location: job.location,
+      locations: job.locations,
+      applicationUrl: job.applicationUrl,
+      applyUrl: job.applicationUrl,
+      postedAt: job.postedAt,
+      firstSeenAt: prior?.firstSeenAt ?? now,
+      discoverySort: prior?.discoverySort ?? `${now}#${job.id}`,
+      source: job.source,
+      sources: job.sources,
+      sourceKey: job.sourceKey,
+      sourceKeys: job.sourceKeys,
+      sourceUrl: job.sourceUrl,
+      lastSeenAt: now,
+      active: true,
+      missingRuns: 0,
+      categoryStatus: "software#active",
+    };
+  });
+
+  const missingUpdates = existing.flatMap((job) => {
+    if (seenIds.has(job.id) || !sourceKeysOf(job).some((key) => successfulKeys.has(key))) return [];
+    const missingRuns = Number(job.missingRuns ?? 0) + 1;
+    const active = missingRuns < 3;
+    return [{
+      ...job,
+      missingRuns,
+      active,
+      categoryStatus: active ? "software#active" : "software#inactive",
+    }];
+  });
+
+  await batchWrite([...saved, ...missingUpdates]);
+
+  const activeById = new Map(existing.filter((job) => job.active).map((job) => [job.id, job]));
+  for (const job of [...saved, ...missingUpdates]) {
+    if (job.active) activeById.set(job.id, job);
+    else activeById.delete(job.id);
+  }
+  const sourceCounts = {};
+  for (const job of activeById.values()) {
+    sourceCounts[job.source] = (sourceCounts[job.source] ?? 0) + 1;
   }
 
-  await markMissingJobs(seenIds, successfulSources);
+  const updatedAt = new Date().toISOString();
+  await documentClient.send(new PutCommand({
+    TableName: tableName,
+    Item: {
+      id: "meta#collector",
+      kind: "collector-meta",
+      updatedAt,
+      nextRefreshAt: new Date(new Date(updatedAt).getTime() + 3_600_000).toISOString(),
+      sourceCounts,
+      checkedSources: atsSources.length + githubSources.length,
+      successfulSources: successfulKeys.size,
+      failures,
+    },
+  }));
 
   const summary = {
-    checkedSources: sources.length,
-    successfulSources: successfulSources.size,
-    savedJobs: seenIds.size,
+    checkedSources: atsSources.length + githubSources.length,
+    successfulSources: successfulKeys.size,
+    savedJobs: saved.length,
+    activeJobs: activeById.size,
+    sourceCounts,
     failures,
   };
   console.log(JSON.stringify(summary));

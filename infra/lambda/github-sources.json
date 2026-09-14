@@ -1,0 +1,50 @@
+[
+  {
+    "key": "github:speedyapply:intern-usa",
+    "label": "github:speedyapply",
+    "repository": "https://github.com/speedyapply/2027-SWE-College-Jobs",
+    "apiUrl": "https://api.github.com/repos/speedyapply/2027-SWE-College-Jobs/contents/README.md?ref=main",
+    "format": "speedy-markdown",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:speedyapply:new-grad-usa",
+    "label": "github:speedyapply",
+    "repository": "https://github.com/speedyapply/2027-SWE-College-Jobs",
+    "apiUrl": "https://api.github.com/repos/speedyapply/2027-SWE-College-Jobs/contents/NEW_GRAD_USA.md?ref=main",
+    "format": "speedy-markdown",
+    "opportunityType": "new-grad"
+  },
+  {
+    "key": "github:speedyapply:intern-global",
+    "label": "github:speedyapply",
+    "repository": "https://github.com/speedyapply/2027-SWE-College-Jobs",
+    "apiUrl": "https://api.github.com/repos/speedyapply/2027-SWE-College-Jobs/contents/INTERN_INTL.md?ref=main",
+    "format": "speedy-markdown",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:speedyapply:new-grad-global",
+    "label": "github:speedyapply",
+    "repository": "https://github.com/speedyapply/2027-SWE-College-Jobs",
+    "apiUrl": "https://api.github.com/repos/speedyapply/2027-SWE-College-Jobs/contents/NEW_GRAD_INTL.md?ref=main",
+    "format": "speedy-markdown",
+    "opportunityType": "new-grad"
+  },
+  {
+    "key": "github:vanshb03",
+    "label": "github:vanshb03",
+    "repository": "https://github.com/vanshb03/Summer2027-Internships",
+    "apiUrl": "https://api.github.com/repos/vanshb03/Summer2027-Internships/contents/.github/scripts/listings.json?ref=dev",
+    "format": "json",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:simplify",
+    "label": "github:simplify",
+    "repository": "https://github.com/SimplifyJobs/Summer2027-Internships",
+    "apiUrl": "https://api.github.com/repos/SimplifyJobs/Summer2027-Internships/contents/.github/scripts/listings.json?ref=dev",
+    "format": "json",
+    "opportunityType": "internship"
+  }
+]

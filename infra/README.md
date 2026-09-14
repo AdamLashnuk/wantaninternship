@@ -1,13 +1,16 @@
-# Software internship feed
+# Software Latest Drops feed
 
-This AWS SAM stack powers the Software-only Latest Drops experience.
+This AWS SAM stack powers the software-only Latest Drops experience.
 
 It creates:
 
-- a DynamoDB table for normalized internships;
-- a Lambda collector that reads public Greenhouse and Ashby job feeds;
-- an EventBridge schedule that refreshes the table every two hours; and
-- a public read-only HTTP API used by the Next.js site.
+- a DynamoDB table for normalized internships and new-grad roles;
+- a Lambda collector for direct employer ATS feeds and three GitHub discovery sources;
+- an EventBridge schedule that refreshes once per hour; and
+- a paginated public HTTP API used by the Next.js site.
+
+GitHub collection happens only in the scheduled Lambda. Website visitors read
+DynamoDB-backed API results and cannot trigger GitHub scraping.
 
 ## Deploy
 
@@ -19,24 +22,24 @@ sam build
 sam deploy --guided
 ```
 
-Use `WantAnInternshipInternships` as the stack name when prompted. Set
-`AllowedOrigin` to the production site origin.
+Use `WantAnInternshipInternships` as the stack name and set `AllowedOrigin`
+to `https://wantaninternship.com`. The public GitHub sources work without a
+token. An optional `GITHUB_TOKEN` may be set directly on the collector Lambda
+later for a larger GitHub API quota; never commit it to this repository.
 
-After deployment, copy the `InternshipApiUrl` output into the Vercel project as:
+After deployment, copy the `InternshipApiUrl` output into the Vercel project:
 
 ```text
 INTERNSHIPS_API_URL=https://YOUR_API_ID.execute-api.YOUR_REGION.amazonaws.com/internships
 ```
 
-Redeploy the Vercel project after adding the variable.
-
-To populate the table immediately instead of waiting for the first scheduled run,
-invoke the collector name printed in the stack outputs:
+Redeploy Vercel after adding the variable. Populate immediately with the
+`CollectorFunctionName` stack output:
 
 ```bash
-aws lambda invoke --function-name YOUR_COLLECTOR_FUNCTION_NAME /tmp/wantaninternship-response.json
+aws lambda invoke --function-name YOUR_COLLECTOR_FUNCTION_NAME wantaninternship-response.json
 ```
 
-Edit `lambda/sources.json` to add or remove software employers. Only public ATS
-feeds should be added; the collector intentionally does not scrape LinkedIn or
-Indeed pages.
+The API supports `limit` (1–100) and an opaque `cursor` returned as
+`nextCursor`. Edit `lambda/sources.json` for direct ATS employers and
+`lambda/github-sources.json` for scheduled GitHub discovery inputs.

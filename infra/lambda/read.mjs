@@ -1,77 +1,62 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 
 const documentClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const tableName = process.env.TABLE_NAME;
 
-function listingKey(job) {
-  const normalize = (value) =>
-    value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-  return `${normalize(job.company)}:${normalize(job.title)}`;
+function decodeCursor(value) {
+  if (!value) return undefined;
+  try {
+    const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8"));
+    return parsed && typeof parsed === "object" ? parsed : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
-function mergeDuplicateLocations(jobs) {
-  const grouped = new Map();
-
-  for (const job of jobs) {
-    const key = listingKey(job);
-    const existing = grouped.get(key);
-
-    if (!existing) {
-      grouped.set(key, {
-        job,
-        locations: new Set(job.locations ?? [job.location]),
-      });
-      continue;
-    }
-
-    for (const location of job.locations ?? [job.location]) {
-      existing.locations.add(location);
-    }
-  }
-
-  return [...grouped.values()].map(({ job, locations }) => {
-    const allLocations = [...locations];
-    return {
-      ...job,
-      location: allLocations.length > 1 ? "Multiple locations" : job.location,
-      locations: allLocations,
-    };
-  });
+function encodeCursor(value) {
+  return value ? Buffer.from(JSON.stringify(value), "utf8").toString("base64url") : undefined;
 }
 
 export async function handler(event = {}) {
-  const rawLimit = Number(event.queryStringParameters?.limit ?? 25);
+  const rawLimit = Number(event.queryStringParameters?.limit ?? 50);
   const limit = Number.isFinite(rawLimit)
     ? Math.min(Math.max(Math.floor(rawLimit), 1), 100)
-    : 25;
+    : 50;
+  const cursor = decodeCursor(event.queryStringParameters?.cursor);
 
-  const result = await documentClient.send(
-    new QueryCommand({
+  const [result, metadata] = await Promise.all([
+    documentClient.send(new QueryCommand({
       TableName: tableName,
       IndexName: "category-discovery-index",
       KeyConditionExpression: "categoryStatus = :categoryStatus",
       ExpressionAttributeValues: { ":categoryStatus": "software#active" },
       ScanIndexForward: false,
-      Limit: Math.min(limit * 5, 500),
-      ProjectionExpression:
-        "id, company, companyWebsite, title, #location, locations, applyUrl, #source, firstSeenAt, postedAt",
-      ExpressionAttributeNames: {
-        "#location": "location",
-        "#source": "source",
-      },
-    }),
-  );
+      Limit: limit,
+      ExclusiveStartKey: cursor,
+      ProjectionExpression: "id, company, companyWebsite, title, opportunityType, softwareCategory, #location, locations, applicationUrl, applyUrl, #source, sources, sourceUrl, firstSeenAt, postedAt, active",
+      ExpressionAttributeNames: { "#location": "location", "#source": "source" },
+    })),
+    documentClient.send(new GetCommand({
+      TableName: tableName,
+      Key: { id: "meta#collector" },
+    })),
+  ]);
 
+  const meta = metadata.Item;
   return {
     statusCode: 200,
     headers: {
       "Content-Type": "application/json",
-      "Cache-Control": "public, max-age=300",
+      "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
     },
     body: JSON.stringify({
-      jobs: mergeDuplicateLocations(result.Items ?? []).slice(0, limit),
-      updatedAt: new Date().toISOString(),
+      jobs: result.Items ?? [],
+      nextCursor: encodeCursor(result.LastEvaluatedKey),
+      updatedAt: meta?.updatedAt,
+      nextRefreshAt: meta?.nextRefreshAt,
+      sourceCounts: meta?.sourceCounts ?? {},
+      partial: Boolean(meta?.failures?.length),
     }),
   };
 }

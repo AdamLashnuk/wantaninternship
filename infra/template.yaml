@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: Software internship collector and public API for WantAnInternship
+Description: Software opportunity collector and public API for WantAnInternship
 
 Parameters:
   AllowedOrigin:
@@ -61,15 +61,17 @@ Resources:
     Properties:
       CodeUri: lambda/
       Handler: collect.handler
-      Description: Collects software internships from public ATS job feeds
+      Description: Collects software internships and new-grad roles from ATS and GitHub discovery sources
+      MemorySize: 768
+      Timeout: 180
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref InternshipsTable
       Events:
-        EveryTwoHours:
+        EveryHour:
           Type: Schedule
           Properties:
-            Schedule: rate(2 hours)
+            Schedule: rate(1 hour)
             Enabled: true
 
   ReadInternshipsFunction:
@@ -77,7 +79,7 @@ Resources:
     Properties:
       CodeUri: lambda/
       Handler: read.handler
-      Description: Returns active software internships newest first
+      Description: Returns active software opportunities newest first
       Timeout: 15
       Policies:
         - DynamoDBReadPolicy:
