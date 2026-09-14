@@ -25,5 +25,7 @@ Import the repository into Vercel. The directory works without environment varia
 ## Latest Software Drops
 
 The `/latest-drops` page and homepage Software sidebar request `/api/internships`.
-When AWS has not been configured or is temporarily unavailable, both surfaces
-fall back to the curated Software employer links in `data/tracks.ts`.
+Without AWS, this route reads the public employer feeds directly with a five-minute
+server cache. With AWS configured, DynamoDB adds durable discovery history and
+closed-job tracking. If every live source is unavailable, the UI falls back to the
+curated Software employer links in `data/tracks.ts`.

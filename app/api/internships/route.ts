@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { InternshipJob, InternshipResponse } from "../../../lib/internships";
+import { getDirectSoftwareJobs } from "../../../lib/direct-software-feed";
 
 export const revalidate = 300;
 
@@ -35,7 +36,12 @@ export async function GET(request: NextRequest) {
   const apiUrl = process.env.INTERNSHIPS_API_URL;
 
   if (!apiUrl) {
-    return NextResponse.json<InternshipResponse>({ jobs: [], live: false });
+    const jobs = await getDirectSoftwareJobs(limit);
+    return NextResponse.json<InternshipResponse>({
+      jobs,
+      live: jobs.length > 0,
+      updatedAt: new Date().toISOString(),
+    });
   }
 
   try {
@@ -64,6 +70,11 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Unable to load live internships", error);
-    return NextResponse.json<InternshipResponse>({ jobs: [], live: false });
+    const jobs = await getDirectSoftwareJobs(limit);
+    return NextResponse.json<InternshipResponse>({
+      jobs,
+      live: jobs.length > 0,
+      updatedAt: new Date().toISOString(),
+    });
   }
 }
