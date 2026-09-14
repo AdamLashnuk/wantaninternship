@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { canonicalizeApplicationUrl, deduplicateJobs, hasOpportunitySignal, inferSoftwareCategory, isRelevantSoftware, parseListingsJson, parseSpeedyMarkdown } from "./normalize.mjs";
+import { canonicalizeApplicationUrl, deduplicateJobs, hasOpportunitySignal, inferSoftwareCategory, isRelevantSoftware, parseListingsJson, parseSpeedyMarkdown, resolveCompanyWebsite } from "./normalize.mjs";
 
 const fixture = (name) => readFileSync(new URL(`./test/fixtures/${name}`, import.meta.url), "utf8");
 const config = (key) => ({ key, label: key, repository: `https://github.com/${key}`, opportunityType: "internship", collectedAt: "2026-09-14T12:00:00.000Z" });
@@ -37,6 +37,21 @@ test("keeps technical security roles and rejects non-software business roles", (
   assert.equal(hasOpportunitySignal("Early Career Software Engineer"), true);
   assert.equal(hasOpportunitySignal("Sr. Software Engineer"), false);
   assert.equal(inferSoftwareCategory("Application Security Engineer Intern"), "cybersecurity");
+});
+
+test("resolves employer websites without using aggregator branding", () => {
+  assert.equal(
+    resolveCompanyWebsite("Waymo", "https://simplify.jobs/c/Waymo", "https://careers.withwaymo.com/jobs/123"),
+    "https://careers.withwaymo.com",
+  );
+  assert.equal(
+    resolveCompanyWebsite("Robinhood", "https://simplify.jobs/c/Robinhood", "https://boards.greenhouse.io/robinhood/jobs/123"),
+    "https://robinhood.com",
+  );
+  assert.equal(
+    resolveCompanyWebsite("Scale AI", "https://simplify.jobs/c/Scale-AI", "https://job-boards.greenhouse.io/scaleai/jobs/123"),
+    "https://scaleai.com",
+  );
 });
 
 test("deduplicates by canonical URL, prefers ATS and merges locations", () => {

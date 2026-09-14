@@ -83,6 +83,7 @@ export default function LatestDrops() {
               <CompanyLogo
                 company={job.company}
                 website={job.companyWebsite}
+                applicationUrl={job.applicationUrl}
               />
               <span className="latest-drop-company">{job.company}</span>
             </span>

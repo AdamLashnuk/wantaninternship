@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 const BLOCKED_HOSTS = /(^|\.)(github\.com|simplify\.jobs|speedyapply\.com|careerpuck\.com)$/i;
+const WEBSITE_BLOCKED_HOSTS = /(^|\.)(github\.com|simplify\.jobs|speedyapply\.com|careerpuck\.com|greenhouse\.io|lever\.co|ashbyhq\.com|myworkdayjobs\.com|myworkdaysite\.com|ats\.rippling\.com|smartrecruiters\.com|workable\.com|icims\.com)$/i;
 const TRACKING_KEYS = /^(utm_.+|ref|source|src|gh_src|gh_source|lever-source|campaign|campaignid|trk|trackingid|fbclid|gclid|ittk|tags)$/i;
 const OPPORTUNITY = /\b(intern(ship)?|co[ -]?op|new grad(uate)?|recent grad(uate)?|entry[ -]?level|early[ -]?career|university grad(uate)?)\b/i;
 const EXCLUDED = /\b(quant(itative)?|trader|trading|finance|investment banking|brokerage|risk analyst|crypto(?:currency)? operations?|business operations|financial operations|compliance|accounting|hardware|firmware|embedded|electrical|mechanical|manufacturing|silicon|asic|fpga|product manager|product management|program manager)\b/i;
@@ -94,7 +95,7 @@ function baseJob({ company, companyWebsite, title, opportunityType, locations, a
   const allLocations = locationsOf(locations);
   return {
     company: cleanText(company),
-    companyWebsite: canonicalizeWebsite(companyWebsite),
+    companyWebsite: resolveCompanyWebsite(company, companyWebsite, cleanUrl),
     title: cleanText(title),
     opportunityType: inferOpportunityType(title, opportunityType),
     softwareCategory: inferSoftwareCategory(title),
@@ -114,13 +115,61 @@ function baseJob({ company, companyWebsite, title, opportunityType, locations, a
 function canonicalizeWebsite(raw = "") {
   try {
     const url = new URL(String(raw).trim());
-    if (!/^https?:$/.test(url.protocol)) return undefined;
-    url.hash = "";
-    url.search = "";
+    if (!/^https?:$/.test(url.protocol) || WEBSITE_BLOCKED_HOSTS.test(url.hostname)) return undefined;
     return url.origin;
   } catch {
     return undefined;
   }
+}
+
+function brandToken(value = "") {
+  return normalizeText(value)
+    .replace(/\b(inc|incorporated|llc|ltd|limited|corp|corporation|company|co|group|holdings|technologies|technology)\b/g, "")
+    .replace(/\s+/g, "");
+}
+
+function atsCompanySlug(url) {
+  const host = url.hostname.toLowerCase();
+  const parts = url.pathname.split("/").filter(Boolean);
+  if (/greenhouse\.io$/.test(host) || /lever\.co$/.test(host) || /ashbyhq\.com$/.test(host) || /smartrecruiters\.com$/.test(host) || /workable\.com$/.test(host)) {
+    return parts[0];
+  }
+  if (/myworkdayjobs\.com$/.test(host)) return host.split(".")[0];
+  if (/myworkdaysite\.com$/.test(host)) {
+    const recruiting = parts.findIndex((part) => part.toLowerCase() === "recruiting");
+    return recruiting >= 0 ? parts[recruiting + 1] : undefined;
+  }
+  if (/ats\.rippling\.com$/.test(host)) {
+    return parts.find((part) => !/^[a-z]{2}-[a-z]{2}$/i.test(part) && part.toLowerCase() !== "jobs");
+  }
+  if (/icims\.com$/.test(host)) return host.split(".")[0].replace(/^careers?-?/, "");
+  return undefined;
+}
+
+function inferredWebsite(company, applicationUrl) {
+  try {
+    const url = new URL(String(applicationUrl).trim());
+    if (!/^https?:$/.test(url.protocol)) return undefined;
+    if (!WEBSITE_BLOCKED_HOSTS.test(url.hostname)) return url.origin;
+
+    const slug = atsCompanySlug(url);
+    if (slug?.includes(".")) return canonicalizeWebsite(`https://${slug}`);
+    const companyKey = brandToken(company);
+    const slugKey = brandToken(slug);
+    if (slug && slugKey.length >= 3 && (companyKey.includes(slugKey) || slugKey.includes(companyKey))) {
+      return canonicalizeWebsite(`https://${slug.toLowerCase()}.com`);
+    }
+    if (companyKey.length >= 3 && companyKey.length <= 40) {
+      return canonicalizeWebsite(`https://${companyKey}.com`);
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function resolveCompanyWebsite(company, website, applicationUrl) {
+  return canonicalizeWebsite(website) ?? inferredWebsite(company, applicationUrl);
 }
 
 export function parseListingsJson(text, config) {

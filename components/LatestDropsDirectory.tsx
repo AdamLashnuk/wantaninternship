@@ -15,7 +15,7 @@ import type { InternshipJob, InternshipResponse } from "../lib/internships";
 import CompanyLogo from "./CompanyLogo";
 import styles from "./LatestDropsControls.module.css";
 
-const CACHE_KEY = "wantaninternship:latest-drops:v5";
+const CACHE_KEY = "wantaninternship:latest-drops:v6";
 const CACHE_TTL = 5 * 60 * 1000;
 const PAGE_SIZE = 100;
 
@@ -237,7 +237,7 @@ export default function LatestDropsDirectory() {
           const locations = job.locations?.length ? job.locations : [job.location];
           return (
             <article className="drops-result-card" key={job.id}>
-              <CompanyLogo company={job.company} website={job.companyWebsite} className="drops-result-logo" />
+              <CompanyLogo company={job.company} website={job.companyWebsite} applicationUrl={job.applicationUrl} className="drops-result-logo" />
 
               <div className="drops-result-content">
                 <span>{job.company}</span>
