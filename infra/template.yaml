@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Software internship collector and public API for WantAnInternship
+
+Parameters:
+  AllowedOrigin:
+    Type: String
+    Default: "https://wantaninternship.com"
+    Description: Website origin allowed to call the public internship API
+
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Architectures:
+      - arm64
+    MemorySize: 256
+    Timeout: 60
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref InternshipsTable
+
+Resources:
+  InternshipsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: categoryStatus
+          AttributeType: S
+        - AttributeName: discoverySort
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: category-discovery-index
+          KeySchema:
+            - AttributeName: categoryStatus
+              KeyType: HASH
+            - AttributeName: discoverySort
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  InternshipApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowHeaders:
+          - Content-Type
+        AllowMethods:
+          - GET
+        AllowOrigins:
+          - !Ref AllowedOrigin
+        MaxAge: 600
+
+  CollectorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: collect.handler
+      Description: Collects software internships from public ATS job feeds
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref InternshipsTable
+      Events:
+        EveryTwoHours:
+          Type: Schedule
+          Properties:
+            Schedule: rate(2 hours)
+            Enabled: true
+
+  ReadInternshipsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: read.handler
+      Description: Returns active software internships newest first
+      Timeout: 15
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref InternshipsTable
+      Events:
+        GetInternships:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref InternshipApi
+            Path: /internships
+            Method: GET
+
+Outputs:
+  InternshipApiUrl:
+    Description: Set INTERNSHIPS_API_URL in Vercel to this URL
+    Value: !Sub "https://${InternshipApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/internships"
+  CollectorFunctionName:
+    Description: Invoke this once after deployment to populate the table immediately
+    Value: !Ref CollectorFunction
