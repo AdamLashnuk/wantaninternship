@@ -11,11 +11,12 @@ import {
   type OpportunityFilter,
 } from "../lib/internship-filters";
 import { formatOfficialPostDate } from "../lib/internship-dates";
+import { sortInternshipsNewestFirst } from "../lib/internship-sorting";
 import type { InternshipJob, InternshipResponse } from "../lib/internships";
 import CompanyLogo from "./CompanyLogo";
 import styles from "./LatestDropsControls.module.css";
 
-const CACHE_KEY = "wantaninternship:latest-drops:v6";
+const CACHE_KEY = "wantaninternship:latest-drops:v7";
 const CACHE_TTL = 5 * 60 * 1000;
 const PAGE_SIZE = 100;
 
@@ -56,7 +57,7 @@ export default function LatestDropsDirectory() {
   const fallback = useMemo(getFallbackJobs, []);
   const [jobs, setJobs] = useState<InternshipJob[]>(fallback);
   const [keyword, setKeyword] = useState("");
-  const [opportunity, setOpportunity] = useState<OpportunityFilter>("all");
+  const [opportunity, setOpportunity] = useState<OpportunityFilter>("internship");
   const [area, setArea] = useState<AreaFilter>("usa");
   const [category, setCategory] = useState<CategoryFilter>("all");
   const [loading, setLoading] = useState(true);
@@ -152,7 +153,9 @@ export default function LatestDropsDirectory() {
   }
 
   const filteredJobs = useMemo(
-    () => filterInternships(jobs, { keyword, opportunity, area, category }),
+    () => sortInternshipsNewestFirst(
+      filterInternships(jobs, { keyword, opportunity, area, category }),
+    ),
     [jobs, keyword, opportunity, area, category],
   );
   const remainingJobs = typeof totalJobs === "number" ? Math.max(totalJobs - jobs.length, 0) : undefined;
@@ -194,9 +197,9 @@ export default function LatestDropsDirectory() {
         </label>
 
         <select className={styles.select} value={opportunity} onChange={(event) => setOpportunity(event.target.value as OpportunityFilter)} aria-label="Opportunity type">
-          <option value="all">All opportunities</option>
           <option value="internship">Internship</option>
           <option value="new-grad">New Grad</option>
+          <option value="all">All opportunities</option>
         </select>
 
         <select className={styles.select} value={area} onChange={(event) => setArea(event.target.value as AreaFilter)} aria-label="Area">
@@ -218,7 +221,7 @@ export default function LatestDropsDirectory() {
         <span>
           {loading
             ? "Checking for new opportunities…"
-            : `Showing ${filteredJobs.length} matching role${filteredJobs.length === 1 ? "" : "s"} from ${jobs.length} loaded`}
+            : `Showing ${filteredJobs.length} matching role${filteredJobs.length === 1 ? "" : "s"} from ${jobs.length} loaded · newest postings first`}
         </span>
         {isLive && typeof totalJobs === "number"
           ? <span>{totalJobs.toLocaleString()} active roles in the database</span>

@@ -8,6 +8,7 @@ import {
   PutCommand,
   ScanCommand,
 } from "@aws-sdk/lib-dynamodb";
+import { discoverySortKey } from "./discovery-sort.mjs";
 import {
   canonicalizeApplicationUrl,
   deduplicateJobs,
@@ -276,6 +277,7 @@ export async function handler() {
 
   const saved = uniqueJobs.map((job) => {
     const prior = existingById.get(job.id);
+    const firstSeenAt = prior?.firstSeenAt ?? now;
     return {
       id: job.id,
       company: job.company,
@@ -288,8 +290,8 @@ export async function handler() {
       applicationUrl: job.applicationUrl,
       applyUrl: job.applicationUrl,
       postedAt: job.postedAt,
-      firstSeenAt: prior?.firstSeenAt ?? now,
-      discoverySort: prior?.discoverySort ?? `${now}#${job.id}`,
+      firstSeenAt,
+      discoverySort: discoverySortKey(job, firstSeenAt, now),
       source: job.source,
       sources: job.sources,
       sourceKey: job.sourceKey,
@@ -304,19 +306,30 @@ export async function handler() {
 
   const missingUpdates = existing.flatMap((job) => {
     if (seenIds.has(job.id)) return [];
+
+    // Re-key existing rows too. GitHub can return 304, so unchanged source files
+    // still need their first-import discovery keys migrated to official post dates.
+    const discoverySort = discoverySortKey(job, job.firstSeenAt ?? now, now);
+    const needsSortMigration = job.active && job.discoverySort !== discoverySort;
+    const migratedJob = needsSortMigration ? { ...job, discoverySort } : job;
+
     if (isOutOfScopeStoredJob(job)) {
       return [{
-        ...job,
+        ...migratedJob,
         missingRuns: Math.max(3, Number(job.missingRuns ?? 0)),
         active: false,
         categoryStatus: "software#inactive",
       }];
     }
-    if (!sourceKeysOf(job).some((key) => successfulKeys.has(key))) return [];
+
+    if (!sourceKeysOf(job).some((key) => successfulKeys.has(key))) {
+      return needsSortMigration ? [migratedJob] : [];
+    }
+
     const missingRuns = Number(job.missingRuns ?? 0) + 1;
     const active = missingRuns < 3;
     return [{
-      ...job,
+      ...migratedJob,
       missingRuns,
       active,
       categoryStatus: active ? "software#active" : "software#inactive",
