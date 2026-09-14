@@ -119,7 +119,7 @@ export function parseListingsJson(text, config) {
   const parsed = JSON.parse(text);
   const listings = Array.isArray(parsed) ? parsed : (parsed.listings ?? parsed.jobs ?? []);
   return listings
-    .filter((item) => item && item.active !== false && item.is_visible !== false)
+    .filter((item) => item && item.active !== false && item.is_visible !== false && !/\\b(quant|hardware|product|security|finance)\\b/i.test(String(item.category ?? "")))
     .map((item) => baseJob({
       company: item.company_name ?? item.company ?? item.companyName,
       companyWebsite: item.company_url ?? item.companyWebsite ?? item.company_website,
