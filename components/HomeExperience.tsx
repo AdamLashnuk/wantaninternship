@@ -76,8 +76,6 @@ export default function HomeExperience() {
               </a>
             )}
             {track === "software" && <a href="/tools">Career toolkit</a>}
-            {track !== "finance" && <a href="#research">Research</a>}
-            <a href="#government">Government</a>
             <a href="#submit">Submit</a>
           </nav>
 

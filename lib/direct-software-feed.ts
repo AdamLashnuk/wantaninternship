@@ -34,6 +34,36 @@ function idFor(source: InternshipSource, sourceId: string) {
   return createHash("sha256").update(`${source}:${sourceId}`).digest("hex");
 }
 
+function listingKey(job: Pick<InternshipJob, "company" | "title">) {
+  const normalize = (value: string) =>
+    value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  return `${normalize(job.company)}:${normalize(job.title)}`;
+}
+
+function mergeDuplicateLocations(jobs: RawJob[]) {
+  const grouped = new Map<
+    string,
+    { job: RawJob; locations: Set<string> }
+  >();
+
+  for (const job of jobs) {
+    const key = listingKey(job);
+    const existing = grouped.get(key);
+
+    if (!existing) {
+      grouped.set(key, { job, locations: new Set([job.location]) });
+      continue;
+    }
+
+    existing.locations.add(job.location);
+  }
+
+  return [...grouped.values()].map(({ job, locations }) => ({
+    ...job,
+    location: locations.size > 1 ? "Multiple locations" : job.location,
+  }));
+}
+
 async function getJson(url: string) {
   const response = await fetch(url, {
     headers: {
@@ -125,7 +155,7 @@ export async function getDirectSoftwareJobs(limit: number): Promise<InternshipJo
     result.status === "fulfilled" ? result.value : [],
   );
 
-  return jobs
+  const matchingJobs = jobs
     .filter(
       (job) =>
         Boolean(job.applyUrl) &&
@@ -135,7 +165,9 @@ export async function getDirectSoftwareJobs(limit: number): Promise<InternshipJo
     .sort(
       (left, right) =>
         new Date(right.firstSeenAt).getTime() - new Date(left.firstSeenAt).getTime(),
-    )
+    );
+
+  return mergeDuplicateLocations(matchingJobs)
     .slice(0, limit)
     .map(({ searchable: _searchable, ...job }) => job);
 }

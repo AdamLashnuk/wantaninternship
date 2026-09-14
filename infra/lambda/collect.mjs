@@ -29,10 +29,45 @@ function sourceKey(source) {
   return `${source.provider}:${source.board}`;
 }
 
+function normalize(value) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function listingKey(job) {
+  return `${normalize(job.company)}:${normalize(job.title)}`;
+}
+
 function stableId(job) {
   return createHash("sha256")
-    .update(`${job.source}:${job.sourceJobId || job.applyUrl}`)
+    .update(`${job.sourceKey}:${listingKey(job)}`)
     .digest("hex");
+}
+
+function mergeDuplicateLocations(jobs) {
+  const grouped = new Map();
+
+  for (const job of jobs) {
+    const key = listingKey(job);
+    const existing = grouped.get(key);
+
+    if (!existing) {
+      grouped.set(key, { job, locations: new Set([job.location]) });
+      continue;
+    }
+
+    existing.locations.add(job.location);
+    if (
+      new Date(job.postedAt ?? 0).getTime() >
+      new Date(existing.job.postedAt ?? 0).getTime()
+    ) {
+      existing.job = job;
+    }
+  }
+
+  return [...grouped.values()].map(({ job, locations }) => ({
+    ...job,
+    location: locations.size > 1 ? "Multiple locations" : job.location,
+  }));
 }
 
 function isSoftwareInternship(job) {
@@ -223,8 +258,9 @@ export async function handler() {
     }
   });
 
+  const uniqueJobs = mergeDuplicateLocations(collectedJobs);
   const seenIds = new Set();
-  for (const job of collectedJobs) {
+  for (const job of uniqueJobs) {
     if (!job.applyUrl) continue;
     seenIds.add(await saveJob(job, now));
   }
