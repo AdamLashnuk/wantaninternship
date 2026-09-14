@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { trackContent } from "../data/tracks";
 import { formatOfficialPostDate } from "../lib/internship-dates";
 import { isUsInternship } from "../lib/internship-location";
+import { sortInternshipsNewestFirst } from "../lib/internship-sorting";
 import type { InternshipJob, InternshipResponse } from "../lib/internships";
 import CompanyLogo from "./CompanyLogo";
 
@@ -44,7 +45,7 @@ export default function LatestDrops() {
         if (!response.ok) return;
 
         const payload = (await response.json()) as InternshipResponse;
-        const usaJobs = payload.jobs.filter(isUsInternship).slice(0, 3);
+        const usaJobs = sortInternshipsNewestFirst(payload.jobs.filter(isUsInternship)).slice(0, 3);
         if (payload.live && usaJobs.length > 0) {
           setJobs(usaJobs);
           setIsLive(true);
