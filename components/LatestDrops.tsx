@@ -12,11 +12,15 @@ function fallbackJobs(): InternshipJob[] {
     company: drop.company,
     companyWebsite: drop.website,
     title: drop.role,
+    opportunityType: "internship",
+    softwareCategory: "swe",
     location: drop.location,
     locations: [drop.location],
+    applicationUrl: drop.url,
     applyUrl: drop.url,
     source: "curated",
     firstSeenAt: "",
+    active: true,
   }));
 }
 
@@ -80,7 +84,7 @@ export default function LatestDrops() {
         {jobs.map((job) => (
           <a
             className="latest-drop"
-            href={job.applyUrl}
+            href={job.applicationUrl || job.applyUrl}
             key={job.id}
             target="_blank"
             rel="noreferrer"
