@@ -3,10 +3,11 @@ import { createHash } from "node:crypto";
 const BLOCKED_HOSTS = /(^|\.)(github\.com|simplify\.jobs|speedyapply\.com|careerpuck\.com)$/i;
 const TRACKING_KEYS = /^(utm_.+|ref|source|src|gh_src|gh_source|lever-source|campaign|campaignid|trk|trackingid|fbclid|gclid|ittk|tags)$/i;
 const OPPORTUNITY = /\b(intern(ship)?|co[ -]?op|new grad(uate)?|recent grad(uate)?|entry[ -]?level|university grad(uate)?)\b/i;
-const EXCLUDED = /\b(quant(itative)?|trader|trading|finance|investment banking|cyber(?:security)?|security engineer|infosec|hardware|firmware|embedded|electrical|mechanical|manufacturing|silicon|asic|fpga|product manager|product management|program manager)\b/i;
-const SOFTWARE = /\b(software|developer|frontend|front-end|backend|back-end|full[ -]?stack|mobile|ios|android|web engineer|data engineer|data science|machine learning|artificial intelligence|ai engineer|ml engineer|cloud|devops|site reliability|sre|platform engineer|infrastructure engineer|systems software|computer science)\b/i;
-const DATA = /\b(data engineer|data science|machine learning|artificial intelligence|ai engineer|ml engineer|deep learning|nlp)\b/i;
+const EXCLUDED = /\b(quant(itative)?|trader|trading|finance|investment banking|brokerage|risk analyst|crypto(?:currency)? operations?|business operations|financial operations|compliance|accounting|hardware|firmware|embedded|electrical|mechanical|manufacturing|silicon|asic|fpga|product manager|product management|program manager)\b/i;
+const SOFTWARE = /\b(software(?: engineer(?:ing)?| developer| development| intern(?:ship)?| co[ -]?op)|swe|developer|frontend|front-end|backend|back-end|full[ -]?stack|mobile|ios|android|web (?:engineer|developer)|data (?:engineer(?:ing)?|scientist|science|analyst|analytics)|analytics engineer|machine learning|artificial intelligence|ai|ml|cloud|devops|site reliability|sre|platform engineer|infrastructure engineer|systems software|computer science|cyber(?:security)?|cyber security|information security|application security|cloud security|product security|security (?:engineer(?:ing)?|analyst|operations|research|intern(?:ship)?)|infosec|secops)\b/i;
+const DATA = /\b(data (?:engineer(?:ing)?|scientist|science|analyst|analytics)|analytics engineer|machine learning|artificial intelligence|ai|ml|deep learning|nlp)\b/i;
 const CLOUD = /\b(cloud|devops|site reliability|sre|platform engineer|infrastructure engineer)\b/i;
+const SECURITY = /\b(cyber(?:security)?|cyber security|information security|application security|cloud security|product security|security (?:engineer(?:ing)?|analyst|operations|research|intern(?:ship)?)|infosec|secops)\b/i;
 
 export function normalizeText(value = "") {
   return String(value).toLowerCase().replace(/&amp;/g, "and").replace(/[^a-z0-9]+/g, " ").trim();
@@ -37,6 +38,7 @@ export function inferOpportunityType(title = "", fallback = "internship") {
 }
 
 export function inferSoftwareCategory(title = "") {
+  if (SECURITY.test(title)) return "cybersecurity";
   if (DATA.test(title)) return "data-ai-ml";
   if (CLOUD.test(title)) return "cloud-devops";
   return "swe";
@@ -119,7 +121,7 @@ export function parseListingsJson(text, config) {
   const parsed = JSON.parse(text);
   const listings = Array.isArray(parsed) ? parsed : (parsed.listings ?? parsed.jobs ?? []);
   return listings
-    .filter((item) => item && item.active !== false && item.is_visible !== false && !/\b(quant|hardware|product|security|finance)\b/i.test(String(item.category ?? "")))
+    .filter((item) => item && item.active !== false && item.is_visible !== false && !/\b(quant|hardware|product management|finance|operations|risk)\b/i.test(String(item.category ?? "")))
     .map((item) => baseJob({
       company: item.company_name ?? item.company ?? item.companyName,
       companyWebsite: item.company_url ?? item.companyWebsite ?? item.company_website,

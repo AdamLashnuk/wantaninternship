@@ -23,6 +23,29 @@ test("keyword and dropdown filters combine", () => {
   assert.deepEqual(result.map((job) => job.id), ["2"]);
 });
 
+test("cybersecurity is a distinct software category", () => {
+  const securityJob: InternshipJob = {
+    id: "4",
+    company: "Delta",
+    title: "Application Security Engineer Intern",
+    opportunityType: "internship",
+    softwareCategory: "cybersecurity",
+    location: "Austin, TX",
+    locations: ["Austin, TX"],
+    applicationUrl: "https://delta.example/4",
+    source: "test",
+    firstSeenAt: "",
+    active: true,
+  };
+  const result = filterInternships([...jobs, securityJob], {
+    keyword: "",
+    opportunity: "internship",
+    area: "usa",
+    category: "cybersecurity",
+  });
+  assert.deepEqual(result.map((job) => job.id), ["4"]);
+});
+
 test("timer counts down, then reports soon and delayed states", () => {
   const updatedAt = "2026-09-14T12:00:00.000Z";
   assert.equal(getRefreshStatus(updatedAt, Date.parse("2026-09-14T12:17:42.000Z")).label, "Next refresh in 42:18");

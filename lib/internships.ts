@@ -1,5 +1,5 @@
 export type OpportunityType = "internship" | "new-grad";
-export type SoftwareCategory = "swe" | "data-ai-ml" | "cloud-devops";
+export type SoftwareCategory = "swe" | "data-ai-ml" | "cloud-devops" | "cybersecurity";
 
 export type InternshipJob = {
   id: string;

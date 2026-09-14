@@ -24,8 +24,9 @@ const sources: Source[] = [
 ];
 
 const internshipPattern = /\b(intern|internship|co-op|co op)\b/i;
-const softwarePattern = /\b(software|developer|frontend|backend|full[ -]?stack|mobile|ios|android|data engineer|data science|machine learning|artificial intelligence|ai engineer|ml engineer|cloud|devops|site reliability|sre|platform engineer|infrastructure engineer|systems software)\b/i;
-const excludedPattern = /\b(quant|trading|finance|cyber|security engineer|hardware|firmware|embedded|electrical|mechanical|product manager|product management)\b/i;
+const softwarePattern = /\b(software(?: engineer(?:ing)?| developer| development| intern(?:ship)?| co[ -]?op)|swe|developer|frontend|front-end|backend|back-end|full[ -]?stack|mobile|ios|android|web (?:engineer|developer)|data (?:engineer(?:ing)?|scientist|science|analyst|analytics)|analytics engineer|machine learning|artificial intelligence|ai|ml|cloud|devops|site reliability|sre|platform engineer|infrastructure engineer|systems software|computer science|cyber(?:security)?|cyber security|information security|application security|cloud security|product security|security (?:engineer(?:ing)?|analyst|operations|research|intern(?:ship)?)|infosec|secops)\b/i;
+const excludedPattern = /\b(quant|trading|finance|investment banking|brokerage|risk analyst|crypto(?:currency)? operations?|business operations|financial operations|compliance|accounting|hardware|firmware|embedded|electrical|mechanical|product manager|product management)\b/i;
+const securityPattern = /\b(cyber(?:security)?|cyber security|information security|application security|cloud security|product security|security (?:engineer(?:ing)?|analyst|operations|research|intern(?:ship)?)|infosec|secops)\b/i;
 
 type RawJob = InternshipJob & { searchable: string };
 
@@ -34,9 +35,14 @@ function idFor(source: string, sourceId: string) {
 }
 
 function categoryFor(title: string): SoftwareCategory {
-  if (/\b(data engineer|data science|machine learning|artificial intelligence|ai engineer|ml engineer)\b/i.test(title)) return "data-ai-ml";
+  if (securityPattern.test(title)) return "cybersecurity";
+  if (/\b(data (?:engineer(?:ing)?|scientist|science|analyst|analytics)|analytics engineer|machine learning|artificial intelligence|ai|ml)\b/i.test(title)) return "data-ai-ml";
   if (/\b(cloud|devops|site reliability|sre|platform engineer|infrastructure engineer)\b/i.test(title)) return "cloud-devops";
   return "swe";
+}
+
+export function isRelevantDirectSoftwareTitle(title: string) {
+  return internshipPattern.test(title) && softwarePattern.test(title) && !excludedPattern.test(title);
 }
 
 function listingKey(job: Pick<InternshipJob, "company" | "title">) {
@@ -141,7 +147,7 @@ export async function getDirectSoftwareJobs(limit: number): Promise<InternshipJo
   const results = await Promise.allSettled(sources.map(loadSource));
   const jobs = results.flatMap((result) => result.status === "fulfilled" ? result.value : []);
   const matchingJobs = jobs
-    .filter((job) => Boolean(job.applicationUrl) && internshipPattern.test(job.title) && softwarePattern.test(job.searchable) && !excludedPattern.test(job.title))
+    .filter((job) => Boolean(job.applicationUrl) && isRelevantDirectSoftwareTitle(job.title))
     .sort((left, right) => new Date(right.firstSeenAt).getTime() - new Date(left.firstSeenAt).getTime());
   return mergeDuplicateLocations(matchingJobs).slice(0, limit).map(({ searchable: _searchable, ...job }) => job);
 }

@@ -106,14 +106,12 @@ export default function LatestDropsDirectory() {
         if (!response.ok) throw new Error(`Internship endpoint returned ${response.status}`);
 
         const payload = (await response.json()) as InternshipResponse;
-        if (payload.live) {
-          setJobs(payload.jobs);
-          setIsLive(true);
-          setUpdatedAt(payload.updatedAt);
-          setNextCursor(payload.nextCursor);
-          setPartial(Boolean(payload.partial));
-          sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ...payload, cachedAt: Date.now() }));
-        }
+        if (payload.jobs.length > 0) setJobs(payload.jobs);
+        setIsLive(payload.live);
+        setUpdatedAt(payload.updatedAt);
+        setNextCursor(payload.nextCursor);
+        setPartial(Boolean(payload.partial));
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ...payload, cachedAt: Date.now() }));
       } catch (error) {
         if (!(error instanceof DOMException && error.name === "AbortError")) {
           console.error("Unable to load internships", error);
@@ -161,7 +159,13 @@ export default function LatestDropsDirectory() {
     () => filterInternships(jobs, { keyword, opportunity, area, category }),
     [jobs, keyword, opportunity, area, category],
   );
-  const refresh = getRefreshStatus(updatedAt, now);
+  const refresh = loading
+    ? { label: "Checking refresh status…" }
+    : !isLive
+      ? { label: "Hourly refresh not connected" }
+      : !updatedAt
+        ? { label: "Waiting for first AWS refresh" }
+        : getRefreshStatus(updatedAt, now);
 
   return (
     <section className="drops-directory" aria-labelledby="drops-directory-title">
@@ -208,6 +212,7 @@ export default function LatestDropsDirectory() {
           <option value="swe">SWE</option>
           <option value="data-ai-ml">Data / AI / ML</option>
           <option value="cloud-devops">Cloud / DevOps</option>
+          <option value="cybersecurity">Cybersecurity</option>
         </select>
       </div>
 
@@ -222,8 +227,8 @@ export default function LatestDropsDirectory() {
 
       {!isLive && !loading && (
         <div className="drops-setup-note">
-          Live syncing is ready to connect. Showing curated roles until the AWS
-          internship API is deployed.
+          Hourly AWS syncing is not connected. Showing a limited direct-employer
+          fallback until the internship API is connected.
         </div>
       )}
 

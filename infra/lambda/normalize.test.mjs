@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { canonicalizeApplicationUrl, deduplicateJobs, isRelevantSoftware, parseListingsJson, parseSpeedyMarkdown } from "./normalize.mjs";
+import { canonicalizeApplicationUrl, deduplicateJobs, inferSoftwareCategory, isRelevantSoftware, parseListingsJson, parseSpeedyMarkdown } from "./normalize.mjs";
 
 const fixture = (name) => readFileSync(new URL(`./test/fixtures/${name}`, import.meta.url), "utf8");
 const config = (key) => ({ key, label: key, repository: `https://github.com/${key}`, opportunityType: "internship", collectedAt: "2026-09-14T12:00:00.000Z" });
@@ -26,9 +26,13 @@ test("parses Simplify JSON and categorizes cloud roles", () => {
   assert.equal(jobs[0].applicationUrl, "https://boards.greenhouse.io/cloud/jobs/77");
 });
 
-test("rejects affiliate and non-software roles", () => {
+test("keeps technical security roles and rejects non-software business roles", () => {
   assert.equal(canonicalizeApplicationUrl("https://simplify.jobs/p/abc"), "");
-  assert.equal(isRelevantSoftware({ company: "X", title: "Cybersecurity Intern", opportunityType: "internship", applicationUrl: "https://x.example/job/1" }), false);
+  assert.equal(isRelevantSoftware({ company: "X", title: "Cybersecurity Intern", opportunityType: "internship", applicationUrl: "https://x.example/job/1" }), true);
+  assert.equal(isRelevantSoftware({ company: "X", title: "Brokerage Risk Analyst Intern", opportunityType: "internship", applicationUrl: "https://x.example/job/2" }), false);
+  assert.equal(isRelevantSoftware({ company: "X", title: "Crypto Operations Intern", opportunityType: "internship", applicationUrl: "https://x.example/job/3" }), false);
+  assert.equal(isRelevantSoftware({ company: "X", title: "Software Sales Intern", opportunityType: "internship", applicationUrl: "https://x.example/job/4" }), false);
+  assert.equal(inferSoftwareCategory("Application Security Engineer Intern"), "cybersecurity");
 });
 
 test("deduplicates by canonical URL, prefers ATS and merges locations", () => {

@@ -14,7 +14,7 @@ function normalizeJob(value: unknown): InternshipJob | null {
 
   const opportunityType: OpportunityType = job.opportunityType === "new-grad" ? "new-grad" : "internship";
   const softwareCategory: SoftwareCategory =
-    job.softwareCategory === "data-ai-ml" || job.softwareCategory === "cloud-devops"
+    job.softwareCategory === "data-ai-ml" || job.softwareCategory === "cloud-devops" || job.softwareCategory === "cybersecurity"
       ? job.softwareCategory
       : "swe";
 
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
 
   if (!apiUrl) {
     const jobs = await getDirectSoftwareJobs(limit);
-    return NextResponse.json<InternshipResponse>({ jobs, live: jobs.length > 0 });
+    return NextResponse.json<InternshipResponse>({ jobs, live: false });
   }
 
   try {
@@ -83,6 +83,6 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Unable to load live internships", error);
     const jobs = await getDirectSoftwareJobs(limit);
-    return NextResponse.json<InternshipResponse>({ jobs, live: jobs.length > 0 });
+    return NextResponse.json<InternshipResponse>({ jobs, live: false });
   }
 }
