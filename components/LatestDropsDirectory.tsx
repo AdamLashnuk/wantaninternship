@@ -14,7 +14,7 @@ import type { InternshipJob, InternshipResponse } from "../lib/internships";
 import CompanyLogo from "./CompanyLogo";
 import styles from "./LatestDropsControls.module.css";
 
-const CACHE_KEY = "wantaninternship:latest-drops:v3";
+const CACHE_KEY = "wantaninternship:latest-drops:v4";
 const CACHE_TTL = 5 * 60 * 1000;
 
 function getFallbackJobs(): InternshipJob[] {
