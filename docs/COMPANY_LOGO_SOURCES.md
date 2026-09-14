@@ -1,41 +1,41 @@
 # Company logo sources
 
-The Latest Drops interface uses brand marks only to identify the employer tied
-to each listing.
+Latest Drops gets each company image automatically from the employer website
+configured beside its job-board source. The interface passes that website's
+hostname to Google's favicon service:
 
-## Simple Icons
+```text
+https://www.google.com/s2/favicons?domain={company-hostname}&sz=128
+```
 
-The following SVGs were downloaded from the
-[Simple Icons CDN](https://cdn.simpleicons.org/) and are stored in
-`public/company-logos/`:
+Google returns a cached, resized copy of the favicon published by that official
+website. If the site has no usable favicon or the request fails, the interface
+falls back to the company's initials.
 
-| Company | Source |
+## Configured employer websites
+
+| Company | Official website used for its favicon |
 | --- | --- |
-| Datadog | https://cdn.simpleicons.org/datadog |
-| Duolingo | https://cdn.simpleicons.org/duolingo |
-| Cloudflare | https://cdn.simpleicons.org/cloudflare |
-| Databricks | https://cdn.simpleicons.org/databricks |
-| Figma | https://cdn.simpleicons.org/figma |
-| Discord | https://cdn.simpleicons.org/discord |
-| Lyft | https://cdn.simpleicons.org/lyft |
-| Airbnb | https://cdn.simpleicons.org/airbnb |
-| Roblox | https://cdn.simpleicons.org/roblox |
-| SpaceX | https://cdn.simpleicons.org/spacex |
-| Robinhood | https://cdn.simpleicons.org/robinhood |
+| Airbnb | https://www.airbnb.com |
+| Capital One | https://www.capitalone.com |
+| Cloudflare | https://www.cloudflare.com |
+| Databricks | https://www.databricks.com |
+| Datadog | https://www.datadoghq.com |
+| Discord | https://discord.com |
+| Duolingo | https://www.duolingo.com |
+| Figma | https://www.figma.com |
+| Lyft | https://www.lyft.com |
+| Microsoft | https://www.microsoft.com |
+| Ramp | https://ramp.com |
+| Robinhood | https://robinhood.com |
+| Roblox | https://www.roblox.com |
+| SpaceX | https://www.spacex.com |
 
-Simple Icons distributes its icon files under
-[CC0 1.0](https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md).
-Company names and logos may remain protected trademarks of their respective
-owners.
+## Adding a future source
 
-## Official company asset
+Add the employer's official homepage as `website` in both the application feed
+source and `infra/lambda/sources.json`. The collector stores it as
+`companyWebsite`, so the UI can load the correct favicon without adding or
+maintaining a local image file.
 
-| Company | Source |
-| --- | --- |
-| Microsoft | https://www.microsoft.com/favicon.ico |
-| Capital One | https://www.capitalone.com/favicon.ico |
-| Ramp | https://ramp.com/favicon.ico |
-
-These favicons are loaded from each company's official website. If a future
-feed source has no configured logo, the interface displays the company's
-initials instead of a broken image.
+Company names and logos remain trademarks of their respective owners.

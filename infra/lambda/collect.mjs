@@ -51,11 +51,16 @@ function mergeDuplicateLocations(jobs) {
     const existing = grouped.get(key);
 
     if (!existing) {
-      grouped.set(key, { job, locations: new Set([job.location]) });
+      grouped.set(key, {
+        job,
+        locations: new Set(job.locations ?? [job.location]),
+      });
       continue;
     }
 
-    existing.locations.add(job.location);
+    for (const location of job.locations ?? [job.location]) {
+      existing.locations.add(location);
+    }
     if (
       new Date(job.postedAt ?? 0).getTime() >
       new Date(existing.job.postedAt ?? 0).getTime()
@@ -64,10 +69,14 @@ function mergeDuplicateLocations(jobs) {
     }
   }
 
-  return [...grouped.values()].map(({ job, locations }) => ({
-    ...job,
-    location: locations.size > 1 ? "Multiple locations" : job.location,
-  }));
+  return [...grouped.values()].map(({ job, locations }) => {
+    const allLocations = [...locations];
+    return {
+      ...job,
+      location: allLocations.length > 1 ? "Multiple locations" : job.location,
+      locations: allLocations,
+    };
+  });
 }
 
 function isSoftwareInternship(job) {
@@ -104,8 +113,10 @@ async function fetchGreenhouse(source) {
     sourceKey: sourceKey(source),
     sourceJobId: String(job.id),
     company: source.company,
+    companyWebsite: source.website,
     title: job.title ?? "Untitled internship",
     location: job.location?.name ?? "Location not listed",
+    locations: [job.location?.name ?? "Location not listed"],
     applyUrl: job.absolute_url,
     department: (job.departments ?? []).map((item) => item.name).join(" "),
     team: "",
@@ -124,8 +135,10 @@ async function fetchLever(source) {
     sourceKey: sourceKey(source),
     sourceJobId: String(job.id),
     company: source.company,
+    companyWebsite: source.website,
     title: job.text ?? "Untitled internship",
     location: job.categories?.location ?? "Location not listed",
+    locations: [job.categories?.location ?? "Location not listed"],
     applyUrl: job.applyUrl ?? job.hostedUrl,
     department: job.categories?.department ?? "",
     team: job.categories?.team ?? "",
@@ -144,8 +157,10 @@ async function fetchAshby(source) {
     sourceKey: sourceKey(source),
     sourceJobId: job.jobUrl ?? job.applyUrl,
     company: source.company,
+    companyWebsite: source.website,
     title: job.title ?? "Untitled internship",
     location: job.location ?? "Location not listed",
+    locations: [job.location ?? "Location not listed"],
     applyUrl: job.applyUrl ?? job.jobUrl,
     department: job.department ?? "",
     team: job.team ?? "",
@@ -173,8 +188,10 @@ async function saveJob(job, now) {
       Item: {
         id,
         company: job.company,
+        companyWebsite: job.companyWebsite,
         title: job.title,
         location: job.location,
+        locations: job.locations,
         applyUrl: job.applyUrl,
         source: job.source,
         sourceKey: job.sourceKey,

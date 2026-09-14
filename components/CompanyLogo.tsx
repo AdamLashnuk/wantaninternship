@@ -1,16 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getCompanyLogo } from "../data/companyLogos";
+
+function faviconUrl(website?: string) {
+  if (!website) return null;
+
+  try {
+    const hostname = new URL(website).hostname;
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostname)}&sz=128`;
+  } catch {
+    return null;
+  }
+}
 
 export default function CompanyLogo({
   company,
+  website,
   className = "",
 }: {
   company: string;
+  website?: string;
   className?: string;
 }) {
-  const logo = getCompanyLogo(company);
+  const logo = faviconUrl(website);
   const [failed, setFailed] = useState(false);
   const initials = company
     .split(/\s+/)
@@ -19,7 +31,7 @@ export default function CompanyLogo({
     .slice(0, 2)
     .toUpperCase();
 
-  useEffect(() => setFailed(false), [company]);
+  useEffect(() => setFailed(false), [company, website]);
 
   return (
     <span className={`company-logo ${className}`.trim()}>
@@ -28,7 +40,7 @@ export default function CompanyLogo({
       </span>
       {logo && !failed && (
         <img
-          src={logo.src}
+          src={logo}
           alt=""
           loading="lazy"
           referrerPolicy="no-referrer"

@@ -1793,6 +1793,53 @@ a:hover {
   white-space: nowrap;
 }
 
+.drops-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.drops-region-toggle {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.drops-region-toggle button {
+  min-width: 66px;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition:
+    color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.drops-region-toggle button:hover {
+  color: var(--text);
+}
+
+.drops-region-toggle button.active {
+  color: #ffffff;
+  background: var(--track-accent);
+  box-shadow: 0 4px 12px var(--focus-ring);
+}
+
+.drops-region-toggle button:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 .drops-setup-note {
   margin-top: 22px;
   padding: 14px 16px;
@@ -1914,6 +1961,11 @@ a:hover {
     width: 100%;
   }
 
+  .drops-toolbar-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .drops-result-card {
     grid-template-columns: 44px minmax(0, 1fr);
     gap: 14px;
@@ -1938,6 +1990,11 @@ a:hover {
 
   .drops-page-intro p {
     font-size: 14px;
+  }
+
+  .drops-toolbar-right {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .drops-result-meta {

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { trackContent } from "../data/tracks";
+import { isUsInternship } from "../lib/internship-location";
 import type { InternshipJob, InternshipResponse } from "../lib/internships";
 import CompanyLogo from "./CompanyLogo";
 
@@ -9,8 +10,10 @@ function fallbackJobs(): InternshipJob[] {
   return trackContent.software.drops.map((drop, index) => ({
     id: `curated-${index}`,
     company: drop.company,
+    companyWebsite: drop.website,
     title: drop.role,
     location: drop.location,
+    locations: [drop.location],
     applyUrl: drop.url,
     source: "curated",
     firstSeenAt: "",
@@ -29,7 +32,10 @@ function freshnessLabel(firstSeenAt: string) {
 }
 
 export default function LatestDrops() {
-  const curatedJobs = useMemo(fallbackJobs, []);
+  const curatedJobs = useMemo(
+    () => fallbackJobs().filter(isUsInternship).slice(0, 3),
+    [],
+  );
   const [jobs, setJobs] = useState<InternshipJob[]>(curatedJobs);
   const [isLive, setIsLive] = useState(false);
 
@@ -38,14 +44,15 @@ export default function LatestDrops() {
 
     async function loadJobs() {
       try {
-        const response = await fetch("/api/internships?track=software&limit=3", {
+        const response = await fetch("/api/internships?track=software&limit=100", {
           signal: controller.signal,
         });
         if (!response.ok) return;
 
         const payload = (await response.json()) as InternshipResponse;
-        if (payload.live && payload.jobs.length > 0) {
-          setJobs(payload.jobs);
+        const usaJobs = payload.jobs.filter(isUsInternship).slice(0, 3);
+        if (payload.live && usaJobs.length > 0) {
+          setJobs(usaJobs);
           setIsLive(true);
         }
       } catch (error) {
@@ -79,7 +86,10 @@ export default function LatestDrops() {
             rel="noreferrer"
           >
             <span className="latest-drop-brand">
-              <CompanyLogo company={job.company} />
+              <CompanyLogo
+                company={job.company}
+                website={job.companyWebsite}
+              />
               <span className="latest-drop-company">{job.company}</span>
             </span>
             <strong>{job.title}</strong>

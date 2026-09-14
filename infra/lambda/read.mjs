@@ -18,17 +18,26 @@ function mergeDuplicateLocations(jobs) {
     const existing = grouped.get(key);
 
     if (!existing) {
-      grouped.set(key, { job, locations: new Set([job.location]) });
+      grouped.set(key, {
+        job,
+        locations: new Set(job.locations ?? [job.location]),
+      });
       continue;
     }
 
-    existing.locations.add(job.location);
+    for (const location of job.locations ?? [job.location]) {
+      existing.locations.add(location);
+    }
   }
 
-  return [...grouped.values()].map(({ job, locations }) => ({
-    ...job,
-    location: locations.size > 1 ? "Multiple locations" : job.location,
-  }));
+  return [...grouped.values()].map(({ job, locations }) => {
+    const allLocations = [...locations];
+    return {
+      ...job,
+      location: allLocations.length > 1 ? "Multiple locations" : job.location,
+      locations: allLocations,
+    };
+  });
 }
 
 export async function handler(event = {}) {
@@ -46,7 +55,7 @@ export async function handler(event = {}) {
       ScanIndexForward: false,
       Limit: Math.min(limit * 5, 500),
       ProjectionExpression:
-        "id, company, title, #location, applyUrl, #source, firstSeenAt, postedAt",
+        "id, company, companyWebsite, title, #location, locations, applyUrl, #source, firstSeenAt, postedAt",
       ExpressionAttributeNames: {
         "#location": "location",
         "#source": "source",

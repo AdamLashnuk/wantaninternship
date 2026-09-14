@@ -4,6 +4,7 @@ export type CareerTrack = (typeof careerTracks)[number];
 
 export type InternshipDrop = {
   company: string;
+  website: string;
   role: string;
   location: string;
   url: string;
@@ -40,18 +41,21 @@ export const trackContent: Record<CareerTrack, TrackContent> = {
     drops: [
       {
         company: "Microsoft",
+        website: "https://www.microsoft.com",
         role: "Software & engineering internships",
         location: "United States",
         url: "https://careers.microsoft.com/v2/global/en/students",
       },
       {
         company: "Capital One",
+        website: "https://www.capitalone.com",
         role: "Technology internship programs",
-        location: "Multiple locations",
+        location: "United States — multiple locations",
         url: "https://www.capitalonecareers.com/internships",
       },
       {
         company: "Duolingo",
+        website: "https://www.duolingo.com",
         role: "University software roles",
         location: "Pittsburgh & New York",
         url: "https://careers.duolingo.com/",

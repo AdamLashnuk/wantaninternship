@@ -3,23 +3,24 @@ import type { InternshipJob, InternshipSource } from "./internships";
 
 type Source = {
   company: string;
+  website: string;
   provider: Exclude<InternshipSource, "curated" | "lever">;
   board: string;
 };
 
 const sources: Source[] = [
-  { company: "Datadog", provider: "greenhouse", board: "datadog" },
-  { company: "Duolingo", provider: "greenhouse", board: "duolingo" },
-  { company: "Cloudflare", provider: "greenhouse", board: "cloudflare" },
-  { company: "Databricks", provider: "greenhouse", board: "databricks" },
-  { company: "Figma", provider: "greenhouse", board: "figma" },
-  { company: "Discord", provider: "greenhouse", board: "discord" },
-  { company: "Lyft", provider: "greenhouse", board: "lyft" },
-  { company: "Airbnb", provider: "greenhouse", board: "airbnb" },
-  { company: "Roblox", provider: "greenhouse", board: "roblox" },
-  { company: "SpaceX", provider: "greenhouse", board: "spacex" },
-  { company: "Robinhood", provider: "greenhouse", board: "robinhood" },
-  { company: "Ramp", provider: "ashby", board: "ramp" },
+  { company: "Datadog", website: "https://www.datadoghq.com", provider: "greenhouse", board: "datadog" },
+  { company: "Duolingo", website: "https://www.duolingo.com", provider: "greenhouse", board: "duolingo" },
+  { company: "Cloudflare", website: "https://www.cloudflare.com", provider: "greenhouse", board: "cloudflare" },
+  { company: "Databricks", website: "https://www.databricks.com", provider: "greenhouse", board: "databricks" },
+  { company: "Figma", website: "https://www.figma.com", provider: "greenhouse", board: "figma" },
+  { company: "Discord", website: "https://discord.com", provider: "greenhouse", board: "discord" },
+  { company: "Lyft", website: "https://www.lyft.com", provider: "greenhouse", board: "lyft" },
+  { company: "Airbnb", website: "https://www.airbnb.com", provider: "greenhouse", board: "airbnb" },
+  { company: "Roblox", website: "https://www.roblox.com", provider: "greenhouse", board: "roblox" },
+  { company: "SpaceX", website: "https://www.spacex.com", provider: "greenhouse", board: "spacex" },
+  { company: "Robinhood", website: "https://robinhood.com", provider: "greenhouse", board: "robinhood" },
+  { company: "Ramp", website: "https://ramp.com", provider: "ashby", board: "ramp" },
 ];
 
 const internshipPattern = /\b(intern|internship|co-op|co op)\b/i;
@@ -51,17 +52,26 @@ function mergeDuplicateLocations(jobs: RawJob[]) {
     const existing = grouped.get(key);
 
     if (!existing) {
-      grouped.set(key, { job, locations: new Set([job.location]) });
+      grouped.set(key, {
+        job,
+        locations: new Set(job.locations ?? [job.location]),
+      });
       continue;
     }
 
-    existing.locations.add(job.location);
+    for (const location of job.locations ?? [job.location]) {
+      existing.locations.add(location);
+    }
   }
 
-  return [...grouped.values()].map(({ job, locations }) => ({
-    ...job,
-    location: locations.size > 1 ? "Multiple locations" : job.location,
-  }));
+  return [...grouped.values()].map(({ job, locations }) => {
+    const allLocations = [...locations];
+    return {
+      ...job,
+      location: allLocations.length > 1 ? "Multiple locations" : job.location,
+      locations: allLocations,
+    };
+  });
 }
 
 async function getJson(url: string) {
@@ -100,8 +110,10 @@ async function greenhouseJobs(source: Source): Promise<RawJob[]> {
     return {
       id: idFor("greenhouse", String(job.id ?? url)),
       company: source.company,
+      companyWebsite: source.website,
       title,
       location: location?.name ?? "Location not listed",
+      locations: [location?.name ?? "Location not listed"],
       applyUrl: url,
       source: "greenhouse",
       firstSeenAt: updatedAt,
@@ -130,8 +142,12 @@ async function ashbyJobs(source: Source): Promise<RawJob[]> {
     return {
       id: idFor("ashby", jobUrl || applyUrl),
       company: source.company,
+      companyWebsite: source.website,
       title,
       location: typeof job.location === "string" ? job.location : "Location not listed",
+      locations: [
+        typeof job.location === "string" ? job.location : "Location not listed",
+      ],
       applyUrl,
       source: "ashby",
       firstSeenAt: publishedAt,

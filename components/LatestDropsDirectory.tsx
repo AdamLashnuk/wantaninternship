@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { trackContent } from "../data/tracks";
+import { isUsInternship } from "../lib/internship-location";
 import type { InternshipJob, InternshipResponse } from "../lib/internships";
 import CompanyLogo from "./CompanyLogo";
 
@@ -9,8 +10,10 @@ function getFallbackJobs(): InternshipJob[] {
   return trackContent.software.drops.map((drop, index) => ({
     id: `curated-${index}`,
     company: drop.company,
+    companyWebsite: drop.website,
     title: drop.role,
     location: drop.location,
+    locations: [drop.location],
     applyUrl: drop.url,
     source: "curated",
     firstSeenAt: "",
@@ -34,6 +37,7 @@ export default function LatestDropsDirectory() {
   const fallback = useMemo(getFallbackJobs, []);
   const [jobs, setJobs] = useState<InternshipJob[]>(fallback);
   const [query, setQuery] = useState("");
+  const [region, setRegion] = useState<"usa" | "global">("usa");
   const [loading, setLoading] = useState(true);
   const [isLive, setIsLive] = useState(false);
 
@@ -67,15 +71,16 @@ export default function LatestDropsDirectory() {
 
   const filteredJobs = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    if (!normalizedQuery) return jobs;
+    return jobs.filter((job) => {
+      if (region === "usa" && !isUsInternship(job)) return false;
+      if (!normalizedQuery) return true;
 
-    return jobs.filter((job) =>
-      [job.company, job.title, job.location]
+      return [job.company, job.title, ...(job.locations ?? [job.location])]
         .join(" ")
         .toLowerCase()
-        .includes(normalizedQuery),
-    );
-  }, [jobs, query]);
+        .includes(normalizedQuery);
+    });
+  }, [jobs, query, region]);
 
   return (
     <section className="drops-directory" aria-labelledby="drops-directory-title">
@@ -98,11 +103,31 @@ export default function LatestDropsDirectory() {
             placeholder="Search company, role or location..."
           />
         </label>
-        <span className="drops-count">
-          {loading
-            ? "Checking for new internships…"
-            : `Showing ${filteredJobs.length} software internship${filteredJobs.length === 1 ? "" : "s"}`}
-        </span>
+        <div className="drops-toolbar-right">
+          <div className="drops-region-toggle" role="group" aria-label="Filter by region">
+            <button
+              className={region === "usa" ? "active" : ""}
+              type="button"
+              onClick={() => setRegion("usa")}
+              aria-pressed={region === "usa"}
+            >
+              USA
+            </button>
+            <button
+              className={region === "global" ? "active" : ""}
+              type="button"
+              onClick={() => setRegion("global")}
+              aria-pressed={region === "global"}
+            >
+              Global
+            </button>
+          </div>
+          <span className="drops-count">
+            {loading
+              ? "Checking for new internships…"
+              : `Showing ${filteredJobs.length} ${region === "usa" ? "USA" : "global"} internship${filteredJobs.length === 1 ? "" : "s"}`}
+          </span>
+        </div>
       </div>
 
       {!isLive && !loading && (
@@ -115,7 +140,11 @@ export default function LatestDropsDirectory() {
       <div className="drops-results">
         {filteredJobs.map((job) => (
           <article className="drops-result-card" key={job.id}>
-            <CompanyLogo company={job.company} className="drops-result-logo" />
+            <CompanyLogo
+              company={job.company}
+              website={job.companyWebsite}
+              className="drops-result-logo"
+            />
 
             <div className="drops-result-content">
               <span>{job.company}</span>
@@ -139,7 +168,8 @@ export default function LatestDropsDirectory() {
 
         {filteredJobs.length === 0 && (
           <div className="empty-state drops-empty-state">
-            No software internships matched your search.
+            No {region === "usa" ? "USA" : "global"} software internships
+            matched your search.
           </div>
         )}
       </div>

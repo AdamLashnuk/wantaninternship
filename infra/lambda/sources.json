@@ -1,14 +1,74 @@
 [
-  { "company": "Datadog", "provider": "greenhouse", "board": "datadog" },
-  { "company": "Duolingo", "provider": "greenhouse", "board": "duolingo" },
-  { "company": "Cloudflare", "provider": "greenhouse", "board": "cloudflare" },
-  { "company": "Databricks", "provider": "greenhouse", "board": "databricks" },
-  { "company": "Figma", "provider": "greenhouse", "board": "figma" },
-  { "company": "Discord", "provider": "greenhouse", "board": "discord" },
-  { "company": "Lyft", "provider": "greenhouse", "board": "lyft" },
-  { "company": "Airbnb", "provider": "greenhouse", "board": "airbnb" },
-  { "company": "Roblox", "provider": "greenhouse", "board": "roblox" },
-  { "company": "SpaceX", "provider": "greenhouse", "board": "spacex" },
-  { "company": "Robinhood", "provider": "greenhouse", "board": "robinhood" },
-  { "company": "Ramp", "provider": "ashby", "board": "ramp" }
+  {
+    "company": "Datadog",
+    "website": "https://www.datadoghq.com",
+    "provider": "greenhouse",
+    "board": "datadog"
+  },
+  {
+    "company": "Duolingo",
+    "website": "https://www.duolingo.com",
+    "provider": "greenhouse",
+    "board": "duolingo"
+  },
+  {
+    "company": "Cloudflare",
+    "website": "https://www.cloudflare.com",
+    "provider": "greenhouse",
+    "board": "cloudflare"
+  },
+  {
+    "company": "Databricks",
+    "website": "https://www.databricks.com",
+    "provider": "greenhouse",
+    "board": "databricks"
+  },
+  {
+    "company": "Figma",
+    "website": "https://www.figma.com",
+    "provider": "greenhouse",
+    "board": "figma"
+  },
+  {
+    "company": "Discord",
+    "website": "https://discord.com",
+    "provider": "greenhouse",
+    "board": "discord"
+  },
+  {
+    "company": "Lyft",
+    "website": "https://www.lyft.com",
+    "provider": "greenhouse",
+    "board": "lyft"
+  },
+  {
+    "company": "Airbnb",
+    "website": "https://www.airbnb.com",
+    "provider": "greenhouse",
+    "board": "airbnb"
+  },
+  {
+    "company": "Roblox",
+    "website": "https://www.roblox.com",
+    "provider": "greenhouse",
+    "board": "roblox"
+  },
+  {
+    "company": "SpaceX",
+    "website": "https://www.spacex.com",
+    "provider": "greenhouse",
+    "board": "spacex"
+  },
+  {
+    "company": "Robinhood",
+    "website": "https://robinhood.com",
+    "provider": "greenhouse",
+    "board": "robinhood"
+  },
+  {
+    "company": "Ramp",
+    "website": "https://ramp.com",
+    "provider": "ashby",
+    "board": "ramp"
+  }
 ]
