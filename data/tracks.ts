@@ -74,26 +74,7 @@ export const trackContent: Record<CareerTrack, TrackContent> = {
       "Forage",
       "LinkedIn Jobs",
     ],
-    drops: [
-      {
-        company: "Goldman Sachs",
-        role: "Student & summer programs",
-        location: "Multiple locations",
-        url: "https://www.goldmansachs.com/careers/students/programs/",
-      },
-      {
-        company: "JPMorgan Chase",
-        role: "Finance analyst programs",
-        location: "United States",
-        url: "https://careers.jpmorgan.com/global/en/students/programs",
-      },
-      {
-        company: "BlackRock",
-        role: "Student & graduate opportunities",
-        location: "Global",
-        url: "https://careers.blackrock.com/students-and-graduates",
-      },
-    ],
+    drops: [],
   },
   medicine: {
     label: "Medicine",
@@ -111,26 +92,7 @@ export const trackContent: Record<CareerTrack, TrackContent> = {
       "ORISE",
       "Pathways to Science",
     ],
-    drops: [
-      {
-        company: "National Institutes of Health",
-        role: "Biomedical research internships",
-        location: "United States",
-        url: "https://www.training.nih.gov/research-training/pb/sip/",
-      },
-      {
-        company: "Mayo Clinic",
-        role: "Healthcare internship openings",
-        location: "Rochester & other locations",
-        url: "https://jobs.mayoclinic.org/category/internship-jobs/33647/8337056/1",
-      },
-      {
-        company: "Centers for Disease Control",
-        role: "Public-health student opportunities",
-        location: "United States",
-        url: "https://www.cdc.gov/fellowships/php/opportunities/index.html",
-      },
-    ],
+    drops: [],
   },
 };
 

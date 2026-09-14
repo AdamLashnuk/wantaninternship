@@ -47,22 +47,34 @@ export default function HomeExperience() {
           </a>
 
           <label className="track-selector">
-            <span className="track-selector-label">Career field</span>
-            <select
-              value={track}
-              onChange={(event) => changeTrack(event.target.value as CareerTrack)}
-              aria-label="Choose a career field"
-            >
-              {careerTracks.map((trackName) => (
-                <option key={trackName} value={trackName}>
-                  {trackContent[trackName].label}
-                </option>
-              ))}
-            </select>
+            <span className="track-selector-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M7 7h11l-3-3M17 17H6l3 3M18 7l-3 3M6 17l3-3" />
+              </svg>
+            </span>
+            <span className="track-selector-content">
+              <span className="track-selector-label">Career switcher</span>
+              <select
+                value={track}
+                onChange={(event) => changeTrack(event.target.value as CareerTrack)}
+                aria-label="Choose a career field"
+              >
+                {careerTracks.map((trackName) => (
+                  <option key={trackName} value={trackName}>
+                    {trackContent[trackName].label}
+                  </option>
+                ))}
+              </select>
+            </span>
           </label>
 
           <nav className="main-nav" aria-label="Main navigation">
             <a href="#directory">Directory</a>
+            {track === "software" && (
+              <a className="latest-drops-nav-button" href="/latest-drops">
+                Latest Drops
+              </a>
+            )}
             {track === "software" && <a href="/tools">Career toolkit</a>}
             {track !== "finance" && <a href="#research">Research</a>}
             <a href="#government">Government</a>
@@ -73,7 +85,10 @@ export default function HomeExperience() {
         </div>
       </header>
 
-      <div className="container home-layout" id="top">
+      <div
+        className={`container home-layout ${track === "software" ? "" : "home-layout-single"}`}
+        id="top"
+      >
         <div className="home-main-column">
           <section className="community-status">
             <span className="track-eyebrow">{content.label} internships</span>
@@ -139,9 +154,11 @@ export default function HomeExperience() {
           </section>
         </div>
 
-        <div className="latest-drops-column">
-          <LatestDrops track={track} />
-        </div>
+        {track === "software" && (
+          <div className="latest-drops-column">
+            <LatestDrops />
+          </div>
+        )}
       </div>
     </main>
   );
