@@ -71,13 +71,21 @@ export async function GET(request: NextRequest) {
       ? payload.jobs.map(normalizeJob).filter((job): job is InternshipJob => job !== null)
       : [];
 
+    const sourceCounts = payload.sourceCounts && typeof payload.sourceCounts === "object"
+      ? payload.sourceCounts as Record<string, number>
+      : undefined;
+    const countedJobs = sourceCounts
+      ? Object.values(sourceCounts).reduce((sum, count) => sum + Number(count ?? 0), 0)
+      : undefined;
+
     return NextResponse.json<InternshipResponse>({
       jobs,
       live: true,
       updatedAt: typeof payload.updatedAt === "string" ? payload.updatedAt : undefined,
       nextRefreshAt: typeof payload.nextRefreshAt === "string" ? payload.nextRefreshAt : undefined,
       nextCursor: typeof payload.nextCursor === "string" ? payload.nextCursor : undefined,
-      sourceCounts: payload.sourceCounts && typeof payload.sourceCounts === "object" ? payload.sourceCounts as Record<string, number> : undefined,
+      sourceCounts,
+      totalJobs: typeof payload.totalJobs === "number" ? payload.totalJobs : countedJobs,
       partial: payload.partial === true,
     });
   } catch (error) {

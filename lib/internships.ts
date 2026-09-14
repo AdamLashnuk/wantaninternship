@@ -27,5 +27,6 @@ export type InternshipResponse = {
   nextRefreshAt?: string;
   nextCursor?: string;
   sourceCounts?: Record<string, number>;
+  totalJobs?: number;
   partial?: boolean;
 };

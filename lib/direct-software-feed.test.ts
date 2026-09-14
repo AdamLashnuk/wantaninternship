@@ -16,6 +16,8 @@ test("direct fallback requires a clearly technical title", () => {
     "Crypto Operations Intern",
     "Software Sales Intern",
     "Finance Operations Internship",
+    "Sr. Software Engineer, Security (Starship)",
+    "Senior Android Engineer, Wallet",
   ];
 
   accepted.forEach((title) => assert.equal(isRelevantDirectSoftwareTitle(title), true, title));

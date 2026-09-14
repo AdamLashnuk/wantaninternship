@@ -25,7 +25,7 @@ const sources: Source[] = [
 
 const internshipPattern = /\b(intern|internship|co-op|co op)\b/i;
 const softwarePattern = /\b(software(?: engineer(?:ing)?| developer| development| intern(?:ship)?| co[ -]?op)|swe|developer|frontend|front-end|backend|back-end|full[ -]?stack|mobile|ios|android|web (?:engineer|developer)|data (?:engineer(?:ing)?|scientist|science|analyst|analytics)|analytics engineer|machine learning|artificial intelligence|ai|ml|cloud|devops|site reliability|sre|platform engineer|infrastructure engineer|systems software|computer science|cyber(?:security)?|cyber security|information security|application security|cloud security|product security|security (?:engineer(?:ing)?|analyst|operations|research|intern(?:ship)?)|infosec|secops)\b/i;
-const excludedPattern = /\b(quant|trading|finance|investment banking|brokerage|risk analyst|crypto(?:currency)? operations?|business operations|financial operations|compliance|accounting|hardware|firmware|embedded|electrical|mechanical|product manager|product management)\b/i;
+const excludedPattern = /\b(quant|trading|finance|investment banking|brokerage|risk analyst|crypto(?:currency)? operations?|business operations|financial operations|compliance|accounting|hardware|firmware|embedded|electrical|mechanical|product manager|product management|senior|staff|principal|director|architect|manager|lead)\b|\bsr\.?(?=\s|,|$)|\bvp\b/i;
 const securityPattern = /\b(cyber(?:security)?|cyber security|information security|application security|cloud security|product security|security (?:engineer(?:ing)?|analyst|operations|research|intern(?:ship)?)|infosec|secops)\b/i;
 
 type RawJob = InternshipJob & { searchable: string };

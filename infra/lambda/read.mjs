@@ -44,6 +44,9 @@ export async function handler(event = {}) {
   ]);
 
   const meta = metadata.Item;
+  const sourceCounts = meta?.sourceCounts ?? {};
+  const countedJobs = Object.values(sourceCounts).reduce((sum, count) => sum + Number(count ?? 0), 0);
+  const totalJobs = Number.isFinite(meta?.activeJobs) ? meta.activeJobs : countedJobs;
   return {
     statusCode: 200,
     headers: {
@@ -55,7 +58,8 @@ export async function handler(event = {}) {
       nextCursor: encodeCursor(result.LastEvaluatedKey),
       updatedAt: meta?.updatedAt,
       nextRefreshAt: meta?.nextRefreshAt,
-      sourceCounts: meta?.sourceCounts ?? {},
+      sourceCounts,
+      totalJobs,
       partial: Boolean(meta?.failures?.length),
     }),
   };

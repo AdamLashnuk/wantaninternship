@@ -2,12 +2,13 @@ import { createHash } from "node:crypto";
 
 const BLOCKED_HOSTS = /(^|\.)(github\.com|simplify\.jobs|speedyapply\.com|careerpuck\.com)$/i;
 const TRACKING_KEYS = /^(utm_.+|ref|source|src|gh_src|gh_source|lever-source|campaign|campaignid|trk|trackingid|fbclid|gclid|ittk|tags)$/i;
-const OPPORTUNITY = /\b(intern(ship)?|co[ -]?op|new grad(uate)?|recent grad(uate)?|entry[ -]?level|university grad(uate)?)\b/i;
+const OPPORTUNITY = /\b(intern(ship)?|co[ -]?op|new grad(uate)?|recent grad(uate)?|entry[ -]?level|early[ -]?career|university grad(uate)?)\b/i;
 const EXCLUDED = /\b(quant(itative)?|trader|trading|finance|investment banking|brokerage|risk analyst|crypto(?:currency)? operations?|business operations|financial operations|compliance|accounting|hardware|firmware|embedded|electrical|mechanical|manufacturing|silicon|asic|fpga|product manager|product management|program manager)\b/i;
 const SOFTWARE = /\b(software(?: engineer(?:ing)?| developer| development| intern(?:ship)?| co[ -]?op)|swe|developer|frontend|front-end|backend|back-end|full[ -]?stack|mobile|ios|android|web (?:engineer|developer)|data (?:engineer(?:ing)?|scientist|science|analyst|analytics)|analytics engineer|machine learning|artificial intelligence|ai|ml|cloud|devops|site reliability|sre|platform engineer|infrastructure engineer|systems software|computer science|cyber(?:security)?|cyber security|information security|application security|cloud security|product security|security (?:engineer(?:ing)?|analyst|operations|research|intern(?:ship)?)|infosec|secops)\b/i;
 const DATA = /\b(data (?:engineer(?:ing)?|scientist|science|analyst|analytics)|analytics engineer|machine learning|artificial intelligence|ai|ml|deep learning|nlp)\b/i;
 const CLOUD = /\b(cloud|devops|site reliability|sre|platform engineer|infrastructure engineer)\b/i;
 const SECURITY = /\b(cyber(?:security)?|cyber security|information security|application security|cloud security|product security|security (?:engineer(?:ing)?|analyst|operations|research|intern(?:ship)?)|infosec|secops)\b/i;
+const SENIOR = /\b(senior|staff|principal|director|architect|manager|lead|head of|vice president)\b|\bsr\.?(?=\s|,|$)|\bvp\b/i;
 
 export function normalizeText(value = "") {
   return String(value).toLowerCase().replace(/&amp;/g, "and").replace(/[^a-z0-9]+/g, " ").trim();
@@ -30,11 +31,15 @@ export function canonicalizeApplicationUrl(raw = "") {
 }
 
 export function inferOpportunityType(title = "", fallback = "internship") {
-  if (/\b(new grad(uate)?|recent grad(uate)?|entry[ -]?level|university grad(uate)?|graduate software)\b/i.test(title)) {
+  if (/\b(new grad(uate)?|recent grad(uate)?|entry[ -]?level|early[ -]?career|university grad(uate)?|graduate software)\b/i.test(title)) {
     return "new-grad";
   }
   if (/\b(intern(ship)?|co[ -]?op)\b/i.test(title)) return "internship";
   return fallback;
+}
+
+export function hasOpportunitySignal(title = "") {
+  return OPPORTUNITY.test(title);
 }
 
 export function inferSoftwareCategory(title = "") {
@@ -53,6 +58,7 @@ export function isRelevantSoftware(job) {
     (type === "internship" || type === "new-grad") &&
     (OPPORTUNITY.test(title) || job.opportunityType) &&
     SOFTWARE.test(title) &&
+    !SENIOR.test(title) &&
     !EXCLUDED.test(title),
   );
 }

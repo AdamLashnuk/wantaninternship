@@ -12,6 +12,8 @@ export type InternshipFilters = {
   category: CategoryFilter;
 };
 
+const seniorityPattern = /\b(senior|staff|principal|director|architect|manager|lead|head of|vice president)\b|\bsr\.?(?=\s|,|$)|\bvp\b/i;
+
 export function isRemoteInternship(job: InternshipJob) {
   const locations = job.locations?.length ? job.locations : [job.location];
   return locations.some((location) => /\b(remote|work from home|distributed)\b/i.test(location));
@@ -20,6 +22,7 @@ export function isRemoteInternship(job: InternshipJob) {
 export function filterInternships(jobs: InternshipJob[], filters: InternshipFilters) {
   const keyword = filters.keyword.trim().toLowerCase();
   return jobs.filter((job) => {
+    if (seniorityPattern.test(job.title)) return false;
     if (filters.opportunity !== "all" && job.opportunityType !== filters.opportunity) return false;
     if (filters.category !== "all" && job.softwareCategory !== filters.category) return false;
     if (filters.area === "usa" && !isUsInternship(job)) return false;

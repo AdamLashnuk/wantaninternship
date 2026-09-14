@@ -13,6 +13,7 @@ import {
   deduplicateJobs,
   inferOpportunityType,
   inferSoftwareCategory,
+  hasOpportunitySignal,
   isRelevantSoftware,
   parseListingsJson,
   parseSpeedyMarkdown,
@@ -41,7 +42,7 @@ function directJob(source, raw) {
     company: source.company,
     companyWebsite: source.website,
     title: raw.title ?? "Untitled opportunity",
-    opportunityType: inferOpportunityType(raw.title, "internship"),
+    opportunityType: inferOpportunityType(raw.title, ""),
     softwareCategory: inferSoftwareCategory(raw.title),
     location: locations.length > 1 ? "Multiple locations" : locations[0],
     locations,
@@ -229,6 +230,13 @@ function sourceKeysOf(job) {
   return job.sourceKeys?.length ? job.sourceKeys : [job.sourceKey].filter(Boolean);
 }
 
+function isOutOfScopeStoredJob(job) {
+  const keys = sourceKeysOf(job);
+  const hasGithubSource = keys.some((key) => key.startsWith("github:"));
+  const hasDirectSource = keys.some((key) => /^(greenhouse|lever|ashby):/.test(key));
+  return !isRelevantSoftware(job) || (hasDirectSource && !hasGithubSource && !hasOpportunitySignal(job.title));
+}
+
 export async function handler() {
   if (!tableName) throw new Error("TABLE_NAME is required");
 
@@ -295,7 +303,16 @@ export async function handler() {
   });
 
   const missingUpdates = existing.flatMap((job) => {
-    if (seenIds.has(job.id) || !sourceKeysOf(job).some((key) => successfulKeys.has(key))) return [];
+    if (seenIds.has(job.id)) return [];
+    if (isOutOfScopeStoredJob(job)) {
+      return [{
+        ...job,
+        missingRuns: Math.max(3, Number(job.missingRuns ?? 0)),
+        active: false,
+        categoryStatus: "software#inactive",
+      }];
+    }
+    if (!sourceKeysOf(job).some((key) => successfulKeys.has(key))) return [];
     const missingRuns = Number(job.missingRuns ?? 0) + 1;
     const active = missingRuns < 3;
     return [{
@@ -327,6 +344,7 @@ export async function handler() {
       updatedAt,
       nextRefreshAt: new Date(new Date(updatedAt).getTime() + 3_600_000).toISOString(),
       sourceCounts,
+      activeJobs: activeById.size,
       checkedSources: atsSources.length + githubSources.length,
       successfulSources: successfulKeys.size,
       failures,

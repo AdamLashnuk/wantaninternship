@@ -10,12 +10,14 @@ import {
   type CategoryFilter,
   type OpportunityFilter,
 } from "../lib/internship-filters";
+import { formatOfficialPostDate } from "../lib/internship-dates";
 import type { InternshipJob, InternshipResponse } from "../lib/internships";
 import CompanyLogo from "./CompanyLogo";
 import styles from "./LatestDropsControls.module.css";
 
-const CACHE_KEY = "wantaninternship:latest-drops:v4";
+const CACHE_KEY = "wantaninternship:latest-drops:v5";
 const CACHE_TTL = 5 * 60 * 1000;
+const PAGE_SIZE = 100;
 
 function getFallbackJobs(): InternshipJob[] {
   return trackContent.software.drops.map((drop, index) => ({
@@ -33,17 +35,6 @@ function getFallbackJobs(): InternshipJob[] {
     firstSeenAt: "",
     active: true,
   }));
-}
-
-function relativeTime(value: string) {
-  if (!value) return "Recently added";
-  const timestamp = new Date(value).getTime();
-  if (!Number.isFinite(timestamp)) return "Recently added";
-  const hours = Math.max(0, Math.floor((Date.now() - timestamp) / 3_600_000));
-  if (hours < 1) return "Added within the last hour";
-  if (hours < 24) return `Added about ${hours} hour${hours === 1 ? "" : "s"} ago`;
-  const days = Math.floor(hours / 24);
-  return `Added about ${days} day${days === 1 ? "" : "s"} ago`;
 }
 
 function sourceName(source: string) {
@@ -73,6 +64,7 @@ export default function LatestDropsDirectory() {
   const [isLive, setIsLive] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<string>();
   const [nextCursor, setNextCursor] = useState<string>();
+  const [totalJobs, setTotalJobs] = useState<number>();
   const [partial, setPartial] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
@@ -91,6 +83,7 @@ export default function LatestDropsDirectory() {
         setIsLive(cached.live);
         setUpdatedAt(cached.updatedAt);
         setNextCursor(cached.nextCursor);
+        setTotalJobs(cached.totalJobs);
         setPartial(Boolean(cached.partial));
         setLoading(false);
       }
@@ -100,7 +93,7 @@ export default function LatestDropsDirectory() {
 
     async function loadFirstPage() {
       try {
-        const response = await fetch("/api/internships?track=software&limit=50", {
+        const response = await fetch(`/api/internships?track=software&limit=${PAGE_SIZE}`, {
           signal: controller.signal,
         });
         if (!response.ok) throw new Error(`Internship endpoint returned ${response.status}`);
@@ -110,6 +103,7 @@ export default function LatestDropsDirectory() {
         setIsLive(payload.live);
         setUpdatedAt(payload.updatedAt);
         setNextCursor(payload.nextCursor);
+        setTotalJobs(payload.totalJobs);
         setPartial(Boolean(payload.partial));
         sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ...payload, cachedAt: Date.now() }));
       } catch (error) {
@@ -129,7 +123,7 @@ export default function LatestDropsDirectory() {
     if (!nextCursor || loadingMore) return;
     setLoadingMore(true);
     try {
-      const response = await fetch(`/api/internships?track=software&limit=50&cursor=${encodeURIComponent(nextCursor)}`);
+      const response = await fetch(`/api/internships?track=software&limit=${PAGE_SIZE}&cursor=${encodeURIComponent(nextCursor)}`);
       if (!response.ok) throw new Error(`Internship endpoint returned ${response.status}`);
       const payload = (await response.json()) as InternshipResponse;
       setJobs((current) => {
@@ -141,12 +135,14 @@ export default function LatestDropsDirectory() {
           jobs: merged,
           live: true,
           updatedAt: payload.updatedAt ?? updatedAt,
+          totalJobs: payload.totalJobs ?? totalJobs,
           cachedAt: Date.now(),
         }));
         return merged;
       });
       setNextCursor(payload.nextCursor);
       setUpdatedAt(payload.updatedAt ?? updatedAt);
+      setTotalJobs(payload.totalJobs ?? totalJobs);
       setPartial(Boolean(payload.partial));
     } catch (error) {
       console.error("Unable to load more internships", error);
@@ -159,6 +155,8 @@ export default function LatestDropsDirectory() {
     () => filterInternships(jobs, { keyword, opportunity, area, category }),
     [jobs, keyword, opportunity, area, category],
   );
+  const remainingJobs = typeof totalJobs === "number" ? Math.max(totalJobs - jobs.length, 0) : undefined;
+  const nextBatchSize = remainingJobs === undefined ? PAGE_SIZE : Math.min(PAGE_SIZE, remainingJobs);
   const refresh = loading
     ? { label: "Checking refresh status…" }
     : !isLive
@@ -220,9 +218,11 @@ export default function LatestDropsDirectory() {
         <span>
           {loading
             ? "Checking for new opportunities…"
-            : `Showing ${filteredJobs.length} of ${jobs.length} loaded software role${jobs.length === 1 ? "" : "s"}`}
+            : `Showing ${filteredJobs.length} matching role${filteredJobs.length === 1 ? "" : "s"} from ${jobs.length} loaded`}
         </span>
-        {area === "global" && <span>Global includes USA and international roles</span>}
+        {isLive && typeof totalJobs === "number"
+          ? <span>{totalJobs.toLocaleString()} active roles in the database</span>
+          : area === "global" && <span>Global includes USA and international roles</span>}
       </div>
 
       {!isLive && !loading && (
@@ -244,7 +244,7 @@ export default function LatestDropsDirectory() {
                 <h2>{job.title}</h2>
                 <div className="drops-result-meta">
                   <span className={styles.locationList} title={locations.join(", ")}>{locations.join(" • ")}</span>
-                  <span>{relativeTime(job.firstSeenAt)}</span>
+                  <span>{formatOfficialPostDate(job.postedAt)}</span>
                   <span>{job.opportunityType === "new-grad" ? "New Grad" : "Internship"}</span>
                 </div>
                 <div className={styles.source}>
@@ -269,7 +269,7 @@ export default function LatestDropsDirectory() {
       {nextCursor && (
         <div className={styles.loadMoreWrap}>
           <button className={styles.loadMore} type="button" onClick={() => void loadMore()} disabled={loadingMore}>
-            {loadingMore ? "Loading…" : "Load more roles"}
+            {loadingMore ? "Loading…" : `Load ${nextBatchSize || PAGE_SIZE} more roles`}
           </button>
         </div>
       )}

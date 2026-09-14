@@ -46,6 +46,28 @@ test("cybersecurity is a distinct software category", () => {
   assert.deepEqual(result.map((job) => job.id), ["4"]);
 });
 
+test("senior roles never appear in early-career results", () => {
+  const seniorJob: InternshipJob = {
+    id: "senior",
+    company: "Example",
+    title: "Sr. Software Engineer, Security",
+    opportunityType: "internship",
+    softwareCategory: "cybersecurity",
+    location: "Hawthorne, CA",
+    locations: ["Hawthorne, CA"],
+    applicationUrl: "https://example.test/senior",
+    source: "test",
+    firstSeenAt: "",
+    active: true,
+  };
+  assert.equal(filterInternships([...jobs, seniorJob], {
+    keyword: "",
+    opportunity: "internship",
+    area: "usa",
+    category: "all",
+  }).some((job) => job.id === "senior"), false);
+});
+
 test("timer counts down, then reports soon and delayed states", () => {
   const updatedAt = "2026-09-14T12:00:00.000Z";
   assert.equal(getRefreshStatus(updatedAt, Date.parse("2026-09-14T12:17:42.000Z")).label, "Next refresh in 42:18");

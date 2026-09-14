@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { trackContent } from "../data/tracks";
+import { formatOfficialPostDate } from "../lib/internship-dates";
 import { isUsInternship } from "../lib/internship-location";
 import type { InternshipJob, InternshipResponse } from "../lib/internships";
 import CompanyLogo from "./CompanyLogo";
@@ -22,17 +23,6 @@ function fallbackJobs(): InternshipJob[] {
     firstSeenAt: "",
     active: true,
   }));
-}
-
-function freshnessLabel(firstSeenAt: string) {
-  if (!firstSeenAt) return "Recently added";
-  const timestamp = new Date(firstSeenAt).getTime();
-  if (!Number.isFinite(timestamp)) return "Recently added";
-
-  const hours = Math.max(0, Math.floor((Date.now() - timestamp) / 3_600_000));
-  if (hours < 1) return "Added this hour";
-  if (hours < 24) return `Added ${hours}h ago`;
-  return `Added ${Math.floor(hours / 24)}d ago`;
 }
 
 export default function LatestDrops() {
@@ -99,7 +89,7 @@ export default function LatestDrops() {
             <strong>{job.title}</strong>
             <span className="latest-drop-location">{job.location}</span>
             <span className="latest-drop-link" aria-hidden="true">
-              {isLive ? freshnessLabel(job.firstSeenAt) : "View roles"} ↗
+              {isLive ? formatOfficialPostDate(job.postedAt) : "View roles"} ↗
             </span>
           </a>
         ))}

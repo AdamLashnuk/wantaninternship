@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { canonicalizeApplicationUrl, deduplicateJobs, inferSoftwareCategory, isRelevantSoftware, parseListingsJson, parseSpeedyMarkdown } from "./normalize.mjs";
+import { canonicalizeApplicationUrl, deduplicateJobs, hasOpportunitySignal, inferSoftwareCategory, isRelevantSoftware, parseListingsJson, parseSpeedyMarkdown } from "./normalize.mjs";
 
 const fixture = (name) => readFileSync(new URL(`./test/fixtures/${name}`, import.meta.url), "utf8");
 const config = (key) => ({ key, label: key, repository: `https://github.com/${key}`, opportunityType: "internship", collectedAt: "2026-09-14T12:00:00.000Z" });
@@ -32,6 +32,10 @@ test("keeps technical security roles and rejects non-software business roles", (
   assert.equal(isRelevantSoftware({ company: "X", title: "Brokerage Risk Analyst Intern", opportunityType: "internship", applicationUrl: "https://x.example/job/2" }), false);
   assert.equal(isRelevantSoftware({ company: "X", title: "Crypto Operations Intern", opportunityType: "internship", applicationUrl: "https://x.example/job/3" }), false);
   assert.equal(isRelevantSoftware({ company: "X", title: "Software Sales Intern", opportunityType: "internship", applicationUrl: "https://x.example/job/4" }), false);
+  assert.equal(isRelevantSoftware({ company: "X", title: "Sr. Software Engineer, Security", opportunityType: "internship", applicationUrl: "https://x.example/job/5" }), false);
+  assert.equal(isRelevantSoftware({ company: "X", title: "Senior Android Engineer, Wallet", opportunityType: "internship", applicationUrl: "https://x.example/job/6" }), false);
+  assert.equal(hasOpportunitySignal("Early Career Software Engineer"), true);
+  assert.equal(hasOpportunitySignal("Sr. Software Engineer"), false);
   assert.equal(inferSoftwareCategory("Application Security Engineer Intern"), "cybersecurity");
 });
 
