@@ -1,5 +1,5 @@
-import { isUsInternship } from "./internship-location";
-import type { InternshipJob, OpportunityType, SoftwareCategory } from "./internships";
+import { isUsInternship } from "./internship-location.ts";
+import type { InternshipJob, OpportunityType, SoftwareCategory } from "./internships.ts";
 
 export type OpportunityFilter = OpportunityType | "all";
 export type AreaFilter = "usa" | "global" | "remote";
