@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { trackContent } from "../data/tracks";
 import type { InternshipJob, InternshipResponse } from "../lib/internships";
+import CompanyLogo from "./CompanyLogo";
 
 function getFallbackJobs(): InternshipJob[] {
   return trackContent.software.drops.map((drop, index) => ({
@@ -27,16 +28,6 @@ function relativeTime(value: string) {
 
   const days = Math.floor(hours / 24);
   return `Added about ${days} day${days === 1 ? "" : "s"} ago`;
-}
-
-function BriefcaseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M8 7V5.5A2.5 2.5 0 0 1 10.5 3h3A2.5 2.5 0 0 1 16 5.5V7" />
-      <rect x="3" y="7" width="18" height="13" rx="2.5" />
-      <path d="M3 12.5h18M9.5 12.5v2h5v-2" />
-    </svg>
-  );
 }
 
 export default function LatestDropsDirectory() {
@@ -124,9 +115,7 @@ export default function LatestDropsDirectory() {
       <div className="drops-results">
         {filteredJobs.map((job) => (
           <article className="drops-result-card" key={job.id}>
-            <div className="drops-result-icon">
-              <BriefcaseIcon />
-            </div>
+            <CompanyLogo company={job.company} className="drops-result-logo" />
 
             <div className="drops-result-content">
               <span>{job.company}</span>

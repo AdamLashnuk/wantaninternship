@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { trackContent } from "../data/tracks";
 import type { InternshipJob, InternshipResponse } from "../lib/internships";
+import CompanyLogo from "./CompanyLogo";
 
 function fallbackJobs(): InternshipJob[] {
   return trackContent.software.drops.map((drop, index) => ({
@@ -77,7 +78,10 @@ export default function LatestDrops() {
             target="_blank"
             rel="noreferrer"
           >
-            <span className="latest-drop-company">{job.company}</span>
+            <span className="latest-drop-brand">
+              <CompanyLogo company={job.company} />
+              <span className="latest-drop-company">{job.company}</span>
+            </span>
             <strong>{job.title}</strong>
             <span className="latest-drop-location">{job.location}</span>
             <span className="latest-drop-link" aria-hidden="true">

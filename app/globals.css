@@ -1069,6 +1069,53 @@ a:hover {
   text-decoration: none;
 }
 
+.latest-drop-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.company-logo {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-muted);
+  border-radius: 10px;
+  color: var(--muted);
+  background: #ffffff;
+}
+
+.company-logo-fallback {
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+}
+
+.company-logo img {
+  position: absolute;
+  inset: 7px;
+  width: calc(100% - 14px);
+  height: calc(100% - 14px);
+  object-fit: contain;
+}
+
+.latest-drop-brand .company-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+}
+
+.latest-drop-brand .company-logo img {
+  inset: 6px;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+}
+
 .latest-drop-company {
   color: var(--track-accent);
   font-size: 10px;
@@ -1789,25 +1836,10 @@ a:hover {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.26);
 }
 
-.drops-result-icon {
+.drops-result-logo {
   width: 50px;
   height: 50px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   border-radius: 13px;
-  color: var(--track-accent);
-  background: var(--surface-hover);
-}
-
-.drops-result-icon svg {
-  width: 23px;
-  height: 23px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 
 .drops-result-content {
@@ -1888,7 +1920,7 @@ a:hover {
     padding: 16px;
   }
 
-  .drops-result-icon {
+  .drops-result-logo {
     width: 44px;
     height: 44px;
   }
