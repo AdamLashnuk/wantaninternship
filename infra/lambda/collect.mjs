@@ -8,7 +8,7 @@ import {
   PutCommand,
   ScanCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { discoverySortKey } from "./discovery-sort.mjs";
+import { discoverySortKey, isWithinPostingWindow } from "./discovery-sort.mjs";
 import {
   canonicalizeApplicationUrl,
   deduplicateJobs,
@@ -27,6 +27,8 @@ const documentClient = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
 });
 const tableName = process.env.TABLE_NAME;
 const userAgent = "WantAnInternship/2.0 (https://wantaninternship.com)";
+const RETENTION_DAYS = 14;
+const RECENT_WINDOW_DAYS = 7;
 
 function sourceKey(source) {
   return `${source.provider}:${source.board}`;
@@ -278,6 +280,7 @@ export async function handler() {
   const saved = uniqueJobs.map((job) => {
     const prior = existingById.get(job.id);
     const firstSeenAt = prior?.firstSeenAt ?? now;
+    const active = isWithinPostingWindow(job.postedAt, firstSeenAt, now, RETENTION_DAYS);
     return {
       id: job.id,
       company: job.company,
@@ -298,9 +301,9 @@ export async function handler() {
       sourceKeys: job.sourceKeys,
       sourceUrl: job.sourceUrl,
       lastSeenAt: now,
-      active: true,
+      active,
       missingRuns: 0,
-      categoryStatus: "software#active",
+      categoryStatus: active ? "software#active" : "software#inactive",
     };
   });
 
@@ -313,7 +316,14 @@ export async function handler() {
     const needsSortMigration = job.active && job.discoverySort !== discoverySort;
     const migratedJob = needsSortMigration ? { ...job, discoverySort } : job;
 
-    if (isOutOfScopeStoredJob(job)) {
+    const expired = !isWithinPostingWindow(
+      job.postedAt,
+      job.firstSeenAt,
+      now,
+      RETENTION_DAYS,
+    );
+
+    if (isOutOfScopeStoredJob(job) || expired) {
       return [{
         ...migratedJob,
         missingRuns: Math.max(3, Number(job.missingRuns ?? 0)),
@@ -344,8 +354,12 @@ export async function handler() {
     else activeById.delete(job.id);
   }
   const sourceCounts = {};
+  let recentWeekJobs = 0;
   for (const job of activeById.values()) {
     sourceCounts[job.source] = (sourceCounts[job.source] ?? 0) + 1;
+    if (isWithinPostingWindow(job.postedAt, job.firstSeenAt, now, RECENT_WINDOW_DAYS)) {
+      recentWeekJobs += 1;
+    }
   }
 
   const updatedAt = new Date().toISOString();
@@ -358,6 +372,8 @@ export async function handler() {
       nextRefreshAt: new Date(new Date(updatedAt).getTime() + 3_600_000).toISOString(),
       sourceCounts,
       activeJobs: activeById.size,
+      recentWeekJobs,
+      retentionDays: RETENTION_DAYS,
       checkedSources: atsSources.length + githubSources.length,
       successfulSources: successfulKeys.size,
       failures,
@@ -369,6 +385,8 @@ export async function handler() {
     successfulSources: successfulKeys.size,
     savedJobs: saved.length,
     activeJobs: activeById.size,
+    recentWeekJobs,
+    retentionDays: RETENTION_DAYS,
     sourceCounts,
     failures,
   };
