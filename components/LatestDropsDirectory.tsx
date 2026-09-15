@@ -110,7 +110,7 @@ export default function LatestDropsDirectory() {
         if (payload.retentionDays === 14 && payload.nextCursor) {
           const byId = new Map(payload.jobs.map((job) => [job.id, job]));
           const seenCursors = new Set<string>();
-          let cursor = payload.nextCursor;
+          let cursor: string | undefined = payload.nextCursor;
           let latestPage = payload;
 
           while (cursor && !seenCursors.has(cursor)) {
