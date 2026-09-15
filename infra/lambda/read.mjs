@@ -21,7 +21,7 @@ function encodeCursor(value) {
 export async function handler(event = {}) {
   const rawLimit = Number(event.queryStringParameters?.limit ?? 50);
   const limit = Number.isFinite(rawLimit)
-    ? Math.min(Math.max(Math.floor(rawLimit), 1), 100)
+    ? Math.min(Math.max(Math.floor(rawLimit), 1), 250)
     : 50;
   const cursor = decodeCursor(event.queryStringParameters?.cursor);
 
@@ -60,6 +60,8 @@ export async function handler(event = {}) {
       nextRefreshAt: meta?.nextRefreshAt,
       sourceCounts,
       totalJobs,
+      recentWeekJobs: Number.isFinite(meta?.recentWeekJobs) ? meta.recentWeekJobs : undefined,
+      retentionDays: Number.isFinite(meta?.retentionDays) ? meta.retentionDays : undefined,
       partial: Boolean(meta?.failures?.length),
     }),
   };

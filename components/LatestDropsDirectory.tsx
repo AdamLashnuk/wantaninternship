@@ -16,9 +16,9 @@ import type { InternshipJob, InternshipResponse } from "../lib/internships";
 import CompanyLogo from "./CompanyLogo";
 import styles from "./LatestDropsControls.module.css";
 
-const CACHE_KEY = "wantaninternship:latest-drops:v7";
+const CACHE_KEY = "wantaninternship:latest-drops:v8";
 const CACHE_TTL = 5 * 60 * 1000;
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 250;
 
 function getFallbackJobs(): InternshipJob[] {
   return trackContent.software.drops.map((drop, index) => ({
@@ -66,6 +66,8 @@ export default function LatestDropsDirectory() {
   const [updatedAt, setUpdatedAt] = useState<string>();
   const [nextCursor, setNextCursor] = useState<string>();
   const [totalJobs, setTotalJobs] = useState<number>();
+  const [recentWeekJobs, setRecentWeekJobs] = useState<number>();
+  const [retentionDays, setRetentionDays] = useState<number>();
   const [partial, setPartial] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
@@ -85,6 +87,8 @@ export default function LatestDropsDirectory() {
         setUpdatedAt(cached.updatedAt);
         setNextCursor(cached.nextCursor);
         setTotalJobs(cached.totalJobs);
+        setRecentWeekJobs(cached.recentWeekJobs);
+        setRetentionDays(cached.retentionDays);
         setPartial(Boolean(cached.partial));
         setLoading(false);
       }
@@ -99,12 +103,47 @@ export default function LatestDropsDirectory() {
         });
         if (!response.ok) throw new Error(`Internship endpoint returned ${response.status}`);
 
-        const payload = (await response.json()) as InternshipResponse;
+        let payload = (await response.json()) as InternshipResponse;
+
+        // Once the collector reports a bounded retention window, hydrate every
+        // remaining page so search and dropdowns cover the complete recent feed.
+        if (payload.retentionDays === 14 && payload.nextCursor) {
+          const byId = new Map(payload.jobs.map((job) => [job.id, job]));
+          const seenCursors = new Set<string>();
+          let cursor: string | undefined = payload.nextCursor;
+          let latestPage = payload;
+
+          while (cursor && !seenCursors.has(cursor)) {
+            seenCursors.add(cursor);
+            const pageResponse = await fetch(
+              `/api/internships?track=software&limit=${PAGE_SIZE}&cursor=${encodeURIComponent(cursor)}`,
+              { signal: controller.signal },
+            );
+            if (!pageResponse.ok) throw new Error(`Internship endpoint returned ${pageResponse.status}`);
+            latestPage = (await pageResponse.json()) as InternshipResponse;
+            latestPage.jobs.forEach((job) => byId.set(job.id, job));
+            cursor = latestPage.nextCursor;
+          }
+
+          payload = {
+            ...payload,
+            ...latestPage,
+            jobs: [...byId.values()],
+            nextCursor: cursor,
+            updatedAt: latestPage.updatedAt ?? payload.updatedAt,
+            totalJobs: latestPage.totalJobs ?? payload.totalJobs,
+            recentWeekJobs: latestPage.recentWeekJobs ?? payload.recentWeekJobs,
+            retentionDays: latestPage.retentionDays ?? payload.retentionDays,
+          };
+        }
+
         if (payload.jobs.length > 0) setJobs(payload.jobs);
         setIsLive(payload.live);
         setUpdatedAt(payload.updatedAt);
         setNextCursor(payload.nextCursor);
         setTotalJobs(payload.totalJobs);
+        setRecentWeekJobs(payload.recentWeekJobs);
+        setRetentionDays(payload.retentionDays);
         setPartial(Boolean(payload.partial));
         sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ...payload, cachedAt: Date.now() }));
       } catch (error) {
@@ -144,6 +183,8 @@ export default function LatestDropsDirectory() {
       setNextCursor(payload.nextCursor);
       setUpdatedAt(payload.updatedAt ?? updatedAt);
       setTotalJobs(payload.totalJobs ?? totalJobs);
+      setRecentWeekJobs(payload.recentWeekJobs ?? recentWeekJobs);
+      setRetentionDays(payload.retentionDays ?? retentionDays);
       setPartial(Boolean(payload.partial));
     } catch (error) {
       console.error("Unable to load more internships", error);
@@ -224,7 +265,14 @@ export default function LatestDropsDirectory() {
             : `Showing ${filteredJobs.length} matching role${filteredJobs.length === 1 ? "" : "s"} from ${jobs.length} loaded · newest postings first`}
         </span>
         {isLive && typeof totalJobs === "number"
-          ? <span>{totalJobs.toLocaleString()} active roles in the database</span>
+          ? (
+              <span>
+                {typeof recentWeekJobs === "number"
+                  ? `${recentWeekJobs.toLocaleString()} posted in the past 7 days · `
+                  : ""}
+                {totalJobs.toLocaleString()} active roles from the past {retentionDays ?? 14} days
+              </span>
+            )
           : area === "global" && <span>Global includes USA and international roles</span>}
       </div>
 
