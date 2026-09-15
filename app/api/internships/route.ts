@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
   }
 
   const requestedLimit = Number(request.nextUrl.searchParams.get("limit") ?? 50);
-  const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(Math.floor(requestedLimit), 1), 100) : 50;
+  const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(Math.floor(requestedLimit), 1), 250) : 50;
   const cursor = request.nextUrl.searchParams.get("cursor");
   const apiUrl = process.env.INTERNSHIPS_API_URL;
 
@@ -86,6 +86,8 @@ export async function GET(request: NextRequest) {
       nextCursor: typeof payload.nextCursor === "string" ? payload.nextCursor : undefined,
       sourceCounts,
       totalJobs: typeof payload.totalJobs === "number" ? payload.totalJobs : countedJobs,
+      recentWeekJobs: typeof payload.recentWeekJobs === "number" ? payload.recentWeekJobs : undefined,
+      retentionDays: typeof payload.retentionDays === "number" ? payload.retentionDays : undefined,
       partial: payload.partial === true,
     });
   } catch (error) {
