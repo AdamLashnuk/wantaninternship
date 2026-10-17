@@ -17,24 +17,22 @@
 }
 
 .refresh::before {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   content: "";
   border-radius: 50%;
   background: var(--track-accent);
-  box-shadow: 0 0 0 4px var(--track-tint);
 }
 
 .filterPanel {
   display: grid;
   grid-template-columns: minmax(240px, 1fr) repeat(3, minmax(150px, 190px));
   gap: 10px;
-  margin-top: 30px;
-  padding: 13px;
+  margin-top: 28px;
+  padding: 14px;
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 6px;
   background: var(--surface);
-  box-shadow: var(--shadow);
 }
 
 .search {
@@ -44,7 +42,7 @@
   gap: 9px;
   padding: 0 13px;
   border: 1px solid var(--border);
-  border-radius: 11px;
+  border-radius: 5px;
   color: var(--muted);
   background: var(--background);
 }
@@ -68,7 +66,7 @@
   width: 100%;
   padding: 0 34px 0 12px;
   border: 1px solid var(--border);
-  border-radius: 11px;
+  border-radius: 5px;
   outline: 0;
   color: var(--text);
   background: var(--background);
@@ -116,7 +114,7 @@
   min-height: 42px;
   padding: 0 20px;
   border: 1px solid var(--track-accent);
-  border-radius: 999px;
+  border-radius: 5px;
   color: #fff;
   background: var(--track-accent);
   font-weight: 700;
@@ -132,7 +130,7 @@
   margin-top: 28px;
   padding: 16px 18px;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 6px;
   color: var(--muted);
   background: var(--surface);
   font-size: 11px;
@@ -161,7 +159,7 @@
   .filterPanel {
     grid-template-columns: 1fr;
     padding: 10px;
-    border-radius: 13px;
+    border-radius: 6px;
   }
 
   .search {

@@ -154,7 +154,6 @@ function ResourceRow({
           aria-pressed={isSaved}
           aria-label={`${isSaved ? "Remove" : "Save"} ${resource.name}`}
         >
-          <span aria-hidden="true">{isSaved ? "★" : "☆"}</span>
           {isSaved ? "Saved" : "Save"}
         </button>
         <span>{resource.type}</span>

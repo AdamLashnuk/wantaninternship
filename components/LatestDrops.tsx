@@ -67,7 +67,7 @@ export default function LatestDrops() {
         <span className="latest-drops-pulse" aria-hidden="true" />
         <div>
           <p>{isLive ? "Automatically refreshed" : "Fresh opportunities"}</p>
-          <h2 id="latest-drops-title">Latest Software Drops</h2>
+          <h2 id="latest-drops-title">Latest internship drops</h2>
         </div>
       </div>
 

@@ -47,13 +47,8 @@ export default function HomeExperience() {
           </a>
 
           <label className="track-selector">
-            <span className="track-selector-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path d="M7 7h11l-3-3M17 17H6l3 3M18 7l-3 3M6 17l3-3" />
-              </svg>
-            </span>
             <span className="track-selector-content">
-              <span className="track-selector-label">Career switcher</span>
+              <span className="track-selector-label">Internship field</span>
               <select
                 value={track}
                 onChange={(event) => changeTrack(event.target.value as CareerTrack)}
