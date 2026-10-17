@@ -11,6 +11,7 @@ import {
   type OpportunityFilter,
 } from "../lib/internship-filters";
 import { formatOfficialPostDate } from "../lib/internship-dates";
+import { getApplicationTrackerUrl } from "../lib/application-prefill";
 import { sortInternshipsNewestFirst } from "../lib/internship-sorting";
 import type { InternshipJob, InternshipResponse } from "../lib/internships";
 import CompanyLogo from "./CompanyLogo";
@@ -303,9 +304,14 @@ export default function LatestDropsDirectory() {
                 </div>
               </div>
 
-              <a className="drops-apply-button" href={job.applicationUrl || job.applyUrl} target="_blank" rel="noreferrer">
-                Apply <span aria-hidden="true">↗</span>
-              </a>
+              <div className="drops-result-actions">
+                <a className="drops-track-button" href={getApplicationTrackerUrl(job)}>
+                  Track
+                </a>
+                <a className="drops-apply-button" href={job.applicationUrl || job.applyUrl} target="_blank" rel="noreferrer">
+                  Apply <span aria-hidden="true">↗</span>
+                </a>
+              </div>
             </article>
           );
         })}

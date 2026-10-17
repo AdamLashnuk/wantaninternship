@@ -42,7 +42,7 @@ export default function HomeExperience() {
     <main className="track-page" data-track={track}>
       <header className="site-header">
         <div className="container header-inner">
-          <a className="brand" href="#top">
+          <a className="brand" href="/discover">
             WantAnInternship
           </a>
 
@@ -69,6 +69,7 @@ export default function HomeExperience() {
           </label>
 
           <nav className="main-nav" aria-label="Main navigation">
+            <a href="/">Applications</a>
             <a href="#directory">Directory</a>
             {track === "software" && (
               <a className="latest-drops-nav-button" href="/latest-drops">

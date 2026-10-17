@@ -6,12 +6,13 @@ export default function ToolsPage() {
     <main>
       <header className="site-header">
         <div className="container header-inner">
-          <a className="brand" href="/">
+          <a className="brand" href="/discover">
             WantAnInternship
           </a>
 
           <nav className="main-nav tools-page-nav" aria-label="Tools navigation">
-            <a href="/">Internship directory</a>
+            <a href="/">Applications</a>
+            <a href="/discover">Internship directory</a>
             <a href="#tools">Browse tools</a>
           </nav>
 
@@ -21,7 +22,7 @@ export default function ToolsPage() {
 
       <div className="container" id="top">
         <section className="tools-hero">
-          <a className="back-link" href="/">
+          <a className="back-link" href="/discover">
             <span aria-hidden="true">←</span>
             Back to internships
           </a>

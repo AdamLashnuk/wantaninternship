@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { trackContent } from "../data/tracks";
+import { getApplicationTrackerUrl } from "../lib/application-prefill";
 import { formatOfficialPostDate } from "../lib/internship-dates";
 import { isUsInternship } from "../lib/internship-location";
 import { sortInternshipsNewestFirst } from "../lib/internship-sorting";
@@ -73,12 +74,9 @@ export default function LatestDrops() {
 
       <div className="latest-drop-list">
         {jobs.map((job) => (
-          <a
+          <article
             className="latest-drop"
-            href={job.applicationUrl || job.applyUrl}
             key={job.id}
-            target="_blank"
-            rel="noreferrer"
           >
             <span className="latest-drop-brand">
               <CompanyLogo
@@ -88,12 +86,32 @@ export default function LatestDrops() {
               />
               <span className="latest-drop-company">{job.company}</span>
             </span>
-            <strong>{job.title}</strong>
+            <a
+              className="latest-drop-title"
+              href={job.applicationUrl || job.applyUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <strong>{job.title}</strong>
+            </a>
             <span className="latest-drop-location">{job.location}</span>
-            <span className="latest-drop-link" aria-hidden="true">
-              {isLive ? formatOfficialPostDate(job.postedAt) : "View roles"} ↗
-            </span>
-          </a>
+            <div className="latest-drop-actions">
+              <a
+                className="latest-drop-link"
+                href={job.applicationUrl || job.applyUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {isLive ? formatOfficialPostDate(job.postedAt) : "View role"} ↗
+              </a>
+              <a
+                className="latest-drop-track"
+                href={getApplicationTrackerUrl(job)}
+              >
+                Track
+              </a>
+            </div>
+          </article>
         ))}
       </div>
 

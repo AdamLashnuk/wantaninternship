@@ -13,12 +13,13 @@ export default function LatestDropsPage() {
     <main className="track-page drops-page" data-track="software">
       <header className="site-header">
         <div className="container header-inner">
-          <a className="brand" href="/?track=software">
+          <a className="brand" href="/discover?track=software">
             WantAnInternship
           </a>
 
           <nav className="main-nav drops-page-nav" aria-label="Main navigation">
-            <a href="/?track=software#directory">Directory</a>
+            <a href="/">Applications</a>
+            <a href="/discover?track=software#directory">Directory</a>
             <a className="active" href="/latest-drops">
               Latest Drops
             </a>
