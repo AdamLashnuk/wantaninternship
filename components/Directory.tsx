@@ -523,7 +523,7 @@ export default function Directory({ track }: { track: CareerTrack }) {
         </div>
       </section>
 
-      <div className="results-summary">
+      <div className="results-summary" role="status" aria-live="polite">
         <span>
           Showing <strong>{filteredResources.length}</strong> resources
           {savedUrls.size > 0 && (

@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-18T04:03:24.6422482Z",
+  "title": "Design System: WantAnInternship",
+  "extensions": {
+    "colorMeta": {
+      "technical-blue": { "role": "primary", "displayName": "Technical Blue", "canonical": "#1769d2", "tonalRamp": ["#07182f", "#0b2c59", "#0f4184", "#1356ad", "#1769d2", "#4f8ee0", "#93b9ed", "#e8f2fd"] },
+      "ledger-brown": { "role": "primary", "displayName": "Ledger Brown", "canonical": "#89552f", "tonalRamp": ["#24170e", "#41291a", "#603c25", "#794b2b", "#89552f", "#b48765", "#d7b79f", "#f5eee7"] },
+      "clinical-green": { "role": "primary", "displayName": "Clinical Green", "canonical": "#23864b", "tonalRamp": ["#092616", "#0e4325", "#156135", "#1c7742", "#23864b", "#59ac79", "#99d0ad", "#ebf7ef"] },
+      "ink": { "role": "neutral", "displayName": "Index Ink", "canonical": "#1f2328", "tonalRamp": ["#171a1e", "#2f343a", "#50575f", "#727b85", "#959da5", "#b9bec4", "#dce0e3", "#f6f8fa"] },
+      "surface": { "role": "neutral", "displayName": "Cool Index Surface", "canonical": "#f6f8fa", "tonalRamp": ["#171a1e", "#30353b", "#555d66", "#7d8791", "#a6adb5", "#c8cdd2", "#e5e8eb", "#f6f8fa"] },
+      "verified-green": { "role": "secondary", "displayName": "Verified Green", "canonical": "#1a7f37", "tonalRamp": ["#082710", "#0d461e", "#126329", "#1a7f37", "#4ba163", "#7fc491", "#b9e4c4", "#effaf2"] },
+      "recommended-purple": { "role": "secondary", "displayName": "Recommended Purple", "canonical": "#8250df", "tonalRamp": ["#21143e", "#382268", "#54339a", "#6c42bd", "#8250df", "#a27be8", "#c7adf1", "#f6efff"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Page Display", "purpose": "Standalone page introductions only." },
+      "headline": { "displayName": "Index Headline", "purpose": "Directory sections, callouts, and card headings." },
+      "title": { "displayName": "Resource Title", "purpose": "Resource names and compact opportunity titles." },
+      "body": { "displayName": "Interface Body", "purpose": "Default interface copy and descriptions." },
+      "label": { "displayName": "Status Label", "purpose": "Short uppercase categories, status, and freshness metadata." }
+    },
+    "shadows": [
+      { "name": "structural-hairline", "value": "0 1px 0 rgba(31, 35, 40, 0.04)", "purpose": "Default light-mode panel and list reinforcement." },
+      { "name": "showcase-lift", "value": "0 18px 50px rgba(31, 35, 40, 0.1)", "purpose": "Latest Drops showcase rail only." },
+      { "name": "interactive-lift", "value": "0 10px 30px rgba(31, 35, 40, 0.08)", "purpose": "Hover feedback on richer cards." },
+      { "name": "focus-halo", "value": "0 0 0 3px var(--focus-ring)", "purpose": "Keyboard and field focus using the current career color." }
+    ],
+    "motion": [
+      { "name": "state-fast", "value": "120ms ease", "purpose": "Color, border, and background state changes." },
+      { "name": "lift-fast", "value": "140ms ease", "purpose": "Small card translation and shadow changes." },
+      { "name": "theme-shift", "value": "160ms ease", "purpose": "Body foreground and background theme transitions." }
+    ],
+    "breakpoints": [
+      { "name": "wide-rail", "value": "1080px" },
+      { "name": "filter-collapse", "value": "900px" },
+      { "name": "mobile-stack", "value": "760px" },
+      { "name": "compact-controls", "value": "640px" },
+      { "name": "narrow-phone", "value": "520px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Track Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary opportunity or browse action using the active career accent.",
+      "html": "<button class=\"ds-btn-primary\">Browse opportunities →</button>",
+      "css": ".ds-btn-primary{min-height:38px;padding:0 16px;border:1px solid var(--track-accent,#1769d2);border-radius:999px;color:#fff;background:var(--track-accent,#1769d2);font:700 12px/1.5 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;cursor:pointer;transition:background 120ms ease}.ds-btn-primary:hover{background:var(--track-accent-strong,#0f4fa8)}.ds-btn-primary:focus-visible{outline:3px solid var(--focus-ring,rgba(23,105,210,.2));outline-offset:2px}"
+    },
+    {
+      "name": "Utility Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Compact secondary action for filters, saving, and disclosure.",
+      "html": "<button class=\"ds-btn-utility\">Save</button>",
+      "css": ".ds-btn-utility{padding:5px 10px;border:1px solid var(--border,#d0d7de);border-radius:6px;color:var(--muted,#656d76);background:var(--background,#fff);font:500 12px/1.5 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;cursor:pointer;transition:color 120ms ease,background 120ms ease,border-color 120ms ease}.ds-btn-utility:hover{color:var(--text,#1f2328);background:var(--surface-hover,#f3f4f6)}.ds-btn-utility:focus-visible{outline:0;border-color:var(--track-accent,#1769d2);box-shadow:0 0 0 3px var(--focus-ring,rgba(23,105,210,.2))}"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "Compact bordered search field for resource and opportunity filtering.",
+      "html": "<label class=\"ds-search\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m20 20-4-4\"/></svg><input placeholder=\"Search resources…\" /></label>",
+      "css": ".ds-search{min-height:40px;display:flex;align-items:center;gap:9px;padding:0 12px;border:1px solid var(--border,#d0d7de);border-radius:6px;color:var(--muted,#656d76);background:var(--background,#fff)}.ds-search:focus-within{border-color:var(--track-accent,#1769d2);box-shadow:0 0 0 3px var(--focus-ring,rgba(23,105,210,.2))}.ds-search svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8}.ds-search input{width:100%;border:0;outline:0;color:var(--text,#1f2328);background:transparent;font:400 14px/1.5 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "description": "Compact category filter with a clear active state.",
+      "html": "<button class=\"ds-chip\">GitHub Repository</button>",
+      "css": ".ds-chip{padding:5px 10px;border:1px solid var(--border,#d0d7de);border-radius:6px;color:var(--muted,#656d76);background:var(--background,#fff);font:400 12px/1.5 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;cursor:pointer;transition:color 120ms ease,background 120ms ease}.ds-chip:hover{color:var(--text,#1f2328);background:var(--surface-hover,#f3f4f6)}.ds-chip:focus-visible{outline:3px solid var(--focus-ring,rgba(23,105,210,.2));outline-offset:2px}.ds-chip[aria-pressed=\"true\"]{color:#fff;border-color:var(--track-accent,#1769d2);background:var(--track-accent,#1769d2)}"
+    },
+    {
+      "name": "Resource Card",
+      "kind": "card",
+      "refersTo": "card-resource",
+      "description": "Index row showing a resource, its explanation, and compact metadata.",
+      "html": "<article class=\"ds-resource\"><a href=\"#\">Summer Internships</a><p>Current internship listings collected from public and original sources.</p><span>Software</span><span>United States</span></article>",
+      "css": ".ds-resource{padding:20px;border:1px solid var(--border,#d0d7de);border-radius:8px;color:var(--text,#1f2328);background:var(--background,#fff);box-shadow:0 1px 0 rgba(31,35,40,.04);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;transition:background 120ms ease}.ds-resource:hover{background:var(--row-hover,#f8fafc)}.ds-resource>a{color:var(--track-accent,#1769d2);font-size:15px;font-weight:600;text-decoration:none}.ds-resource>a:focus-visible{outline:3px solid var(--focus-ring,rgba(23,105,210,.2));outline-offset:2px}.ds-resource p{margin:8px 0 13px;color:var(--muted,#656d76);font-size:13px;line-height:1.6}.ds-resource span{display:inline-flex;margin-right:6px;padding:2px 7px;border:1px solid var(--border-muted,#d8dee4);border-radius:20px;color:var(--muted,#656d76);background:var(--surface,#f6f8fa);font-size:10px}"
+    },
+    {
+      "name": "Verified Badge",
+      "kind": "chip",
+      "description": "Freshness marker reserved for recently verified resources.",
+      "html": "<span class=\"ds-verified\">Verified recently</span>",
+      "css": ".ds-verified{display:inline-flex;padding:2px 7px;border:1px solid var(--green-border,#aceebb);border-radius:20px;color:var(--green,#1a7f37);background:var(--green-background,#dafbe1);font:600 10px/1.5 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}"
+    },
+    {
+      "name": "Career Selector",
+      "kind": "custom",
+      "description": "Structured switcher that changes the full career context.",
+      "html": "<label class=\"ds-track\"><span class=\"ds-track-icon\">↔</span><span><small>Career switcher</small><select><option>Software</option><option>Finance</option><option>Medicine</option></select></span></label>",
+      "css": ".ds-track{min-width:164px;min-height:46px;display:flex;align-items:center;gap:9px;padding:6px 10px;border:1px solid var(--border,#d0d7de);border-radius:12px;background:var(--surface,#f6f8fa);box-shadow:0 1px 0 rgba(31,35,40,.04);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}.ds-track:focus-within{border-color:var(--track-accent,#1769d2);box-shadow:0 0 0 3px var(--focus-ring,rgba(23,105,210,.2))}.ds-track-icon{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;color:var(--track-accent,#1769d2);background:var(--track-tint,#d9ebff)}.ds-track small{display:block;color:var(--muted,#656d76);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.ds-track select{border:0;outline:0;color:var(--track-accent-strong,#0f4fa8);background:transparent;font-size:12px;font-weight:700}"
+    },
+    {
+      "name": "Latest Drop Card",
+      "kind": "card",
+      "refersTo": "card-feature",
+      "description": "Live opportunity card nested inside the signature Latest Drops rail.",
+      "html": "<a class=\"ds-drop\" href=\"#\"><span>ACME</span><strong>Software Engineering Intern</strong><small>New York, NY</small><em>View role ↗</em></a>",
+      "css": ".ds-drop{display:grid;padding:14px;border:1px solid var(--border-muted,#d8dee4);border-radius:17px;color:var(--text,#1f2328);background:var(--background,#fff);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;text-decoration:none;transition:transform 140ms ease,border-color 140ms ease,background 140ms ease}.ds-drop:hover{transform:translateY(-1px);border-color:var(--track-accent,#1769d2);background:var(--surface-hover,#f3f4f6)}.ds-drop:focus-visible{outline:3px solid var(--focus-ring,rgba(23,105,210,.2));outline-offset:2px}.ds-drop span{color:var(--track-accent,#1769d2);font-size:10px;font-weight:750;letter-spacing:.04em;text-transform:uppercase}.ds-drop strong{margin-top:4px;font-size:13px;line-height:1.4}.ds-drop small{margin-top:4px;color:var(--muted,#656d76);font-size:10px}.ds-drop em{margin-top:10px;color:var(--track-accent,#1769d2);font-size:10px;font-style:normal;font-weight:650}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Opportunity Index",
+    "overview": "WantAnInternship is a technical, current, and precise directory: it should feel like a dependable live index rather than a promotional career platform. Its visual authority comes from orderly information, visible freshness signals, careful hierarchy, and interfaces that stay out of the user's way.\n\nThe system is compact without feeling cramped. Quietly layered surfaces, restrained shadows, explicit borders, and career-specific color worlds divide dense information into approachable units. Components are structured and approachable: clear enough for first-time visitors, efficient enough for repeated scanning.",
+    "keyCharacteristics": [
+      "System-native typography with dense, legible hierarchy.",
+      "Career-specific accents that recolor the environment without changing its structure.",
+      "Borders and tonal surfaces first; shadows reserved for meaningful layers and hover feedback.",
+      "Rounded controls and containers balanced by disciplined grids and table-like resource rows.",
+      "Small uppercase labels communicate status, category, and freshness."
+    ],
+    "rules": [
+      { "name": "The Career Context Rule", "body": "Use the active track accent for navigation, focus, calls to action, and live signals; do not mix career accents on the same surface.", "section": "colors" },
+      { "name": "The Semantic Accent Rule", "body": "Green means verified or positive status, while purple means recommendation or career tooling. These colors do not replace the active career accent.", "section": "colors" },
+      { "name": "The Interface-Native Rule", "body": "Use the system stack everywhere; hierarchy comes from disciplined weight and spacing, not a decorative font pairing.", "section": "typography" },
+      { "name": "The Small Label Rule", "body": "Uppercase text is reserved for brief categorical or status labels and always uses increased tracking.", "section": "typography" },
+      { "name": "The Quiet Layer Rule", "body": "Start with a border and tonal change; add a shadow only when a surface is sticky, featured, focused, or actively lifting on hover.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do preserve the active career track's accent, tint, canvas, border, and strong-state relationship.",
+      "Do use borders and surface tones as the default hierarchy tools.",
+      "Do keep dense resource information in a predictable title–description–tags–metadata order.",
+      "Do retain visible focus halos, 38px-or-taller controls, and reduced-motion behavior.",
+      "Do reserve uppercase tracked labels for short status and category information."
+    ],
+    "donts": [
+      "Don't mix Technical Blue, Ledger Brown, and Clinical Green as competing accents within one track surface.",
+      "Don't add decorative display fonts, ornamental illustration, or promotional visual noise to the index experience.",
+      "Don't use large shadows on ordinary filters, rows, or utility controls.",
+      "Don't turn every action into a pill; keep compact utility controls structurally square.",
+      "Don't hide source, verification, location, or freshness metadata for aesthetic simplicity."
+    ]
+  }
+}

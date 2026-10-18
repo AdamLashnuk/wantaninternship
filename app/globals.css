@@ -58,6 +58,7 @@
 
 html {
   scroll-behavior: smooth;
+  scrollbar-color: var(--border) var(--surface);
 }
 
 body {
@@ -80,6 +81,16 @@ body {
     background-color 160ms ease;
 }
 
+::selection {
+  color: var(--text);
+  background: var(--track-tint, var(--green-background));
+}
+
+input,
+textarea {
+  caret-color: var(--track-accent, var(--blue));
+}
+
 button,
 input,
 select {
@@ -98,6 +109,34 @@ a {
 a:hover {
   color: var(--blue-hover);
   text-decoration: underline;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  padding: 9px 13px;
+  border: 1px solid var(--track-accent, var(--blue));
+  border-radius: 6px;
+  color: #ffffff;
+  background: var(--track-accent, var(--blue));
+  font-size: 12px;
+  font-weight: 700;
+  transform: translateY(calc(-100% - 14px));
+  transition: transform 140ms ease;
+}
+
+.skip-link:focus {
+  color: #ffffff;
+  text-decoration: none;
+  transform: translateY(0);
 }
 
 .container {
@@ -452,6 +491,10 @@ a:hover {
   background: var(--row-hover);
 }
 
+.resource-row:focus-within {
+  background: var(--row-hover);
+}
+
 .resource-main {
   min-width: 0;
 }
@@ -770,8 +813,13 @@ a:hover {
     scroll-behavior: auto;
   }
 
-  body {
-    transition: none;
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

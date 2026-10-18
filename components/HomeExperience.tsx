@@ -40,6 +40,10 @@ export default function HomeExperience() {
 
   return (
     <main className="track-page" data-track={track}>
+      <a className="skip-link" href="#directory">
+        Skip to internship directory
+      </a>
+
       <header className="site-header">
         <div className="container header-inner">
           <a className="brand" href="#top">
