@@ -13,10 +13,14 @@ test("GitHub source configuration has unique keys and supported formats", () => 
   assert.ok(sources.every((source) => source.apiUrl.startsWith("https://api.github.com/repos/")));
 });
 
-test("collector includes the three additional discovery repositories", () => {
+test("collector includes software and engineering discovery repositories", () => {
   const repositories = new Set(sources.map((source) => source.repository));
   assert.ok(repositories.has("https://github.com/sndsh404/summer-2027-internships"));
   assert.ok(repositories.has("https://github.com/speedyapply/2027-AI-College-Jobs"));
   assert.ok(repositories.has("https://github.com/zshah101/Automated-List-Of-Summer-2027-and-Fall-2026-Tech-Internships"));
-  assert.equal(repositories.size, 6);
+  assert.ok(repositories.has("https://github.com/WonOfAKind/New-Grad-And-Internships-2027"));
+  assert.ok(repositories.has("https://github.com/hiderrick/Engineering-Internships-Summer-2027"));
+  assert.ok(repositories.has("https://github.com/thebargon/2027-Mechanical-Engineering-Internships"));
+  assert.equal(repositories.size, 9);
+  assert.equal(sources.filter((source) => source.track === "engineering").length, 4);
 });

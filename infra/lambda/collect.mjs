@@ -13,8 +13,10 @@ import {
   canonicalizeApplicationUrl,
   deduplicateJobs,
   inferOpportunityType,
+  inferPositionType,
   inferSoftwareCategory,
   hasOpportunitySignal,
+  isRelevantEngineering,
   isRelevantSoftware,
   parseListingsJson,
   parseSpeedyMarkdown,
@@ -46,7 +48,9 @@ function directJob(source, raw) {
     companyWebsite: source.website,
     title: raw.title ?? "Untitled opportunity",
     opportunityType: inferOpportunityType(raw.title, ""),
+    positionType: inferPositionType(raw.title),
     softwareCategory: inferSoftwareCategory(raw.title),
+    track: "software",
     location: locations.length > 1 ? "Multiple locations" : locations[0],
     locations,
     applicationUrl,
@@ -234,6 +238,7 @@ function sourceKeysOf(job) {
 }
 
 function isOutOfScopeStoredJob(job) {
+  if ((job.track ?? "software") === "engineering") return !isRelevantEngineering(job);
   const keys = sourceKeysOf(job);
   const hasGithubSource = keys.some((key) => key.startsWith("github:"));
   const hasDirectSource = keys.some((key) => /^(greenhouse|lever|ashby):/.test(key));
@@ -287,7 +292,10 @@ export async function handler() {
       companyWebsite: job.companyWebsite,
       title: job.title,
       opportunityType: job.opportunityType,
+      positionType: job.positionType,
       softwareCategory: job.softwareCategory,
+      engineeringDiscipline: job.engineeringDiscipline,
+      track: job.track ?? "software",
       location: job.location,
       locations: job.locations,
       applicationUrl: job.applicationUrl,
@@ -303,7 +311,7 @@ export async function handler() {
       lastSeenAt: now,
       active,
       missingRuns: 0,
-      categoryStatus: active ? "software#active" : "software#inactive",
+      categoryStatus: `${job.track ?? "software"}#${active ? "active" : "inactive"}`,
     };
   });
 
@@ -328,7 +336,7 @@ export async function handler() {
         ...migratedJob,
         missingRuns: Math.max(3, Number(job.missingRuns ?? 0)),
         active: false,
-        categoryStatus: "software#inactive",
+        categoryStatus: `${job.track ?? "software"}#inactive`,
       }];
     }
 
@@ -342,7 +350,7 @@ export async function handler() {
       ...migratedJob,
       missingRuns,
       active,
-      categoryStatus: active ? "software#active" : "software#inactive",
+      categoryStatus: `${job.track ?? "software"}#${active ? "active" : "inactive"}`,
     }];
   });
 
@@ -354,13 +362,18 @@ export async function handler() {
     else activeById.delete(job.id);
   }
   const sourceCounts = {};
-  let recentWeekJobs = 0;
+  const trackStats = {};
   for (const job of activeById.values()) {
+    const track = job.track ?? "software";
+    trackStats[track] ??= { activeJobs: 0, recentWeekJobs: 0, sourceCounts: {} };
+    trackStats[track].activeJobs += 1;
+    trackStats[track].sourceCounts[job.source] = (trackStats[track].sourceCounts[job.source] ?? 0) + 1;
     sourceCounts[job.source] = (sourceCounts[job.source] ?? 0) + 1;
     if (isWithinPostingWindow(job.postedAt, job.firstSeenAt, now, RECENT_WINDOW_DAYS)) {
-      recentWeekJobs += 1;
+      trackStats[track].recentWeekJobs += 1;
     }
   }
+  const recentWeekJobs = Object.values(trackStats).reduce((sum, stats) => sum + stats.recentWeekJobs, 0);
 
   const updatedAt = new Date().toISOString();
   await documentClient.send(new PutCommand({
@@ -371,6 +384,7 @@ export async function handler() {
       updatedAt,
       nextRefreshAt: new Date(new Date(updatedAt).getTime() + 3_600_000).toISOString(),
       sourceCounts,
+      trackStats,
       activeJobs: activeById.size,
       recentWeekJobs,
       retentionDays: RETENTION_DAYS,
@@ -388,6 +402,7 @@ export async function handler() {
     recentWeekJobs,
     retentionDays: RETENTION_DAYS,
     sourceCounts,
+    trackStats,
     failures,
   };
   console.log(JSON.stringify(summary));

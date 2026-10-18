@@ -1,5 +1,21 @@
 export type OpportunityType = "internship" | "new-grad";
 export type SoftwareCategory = "swe" | "data-ai-ml" | "cloud-devops" | "cybersecurity";
+export type OpportunityTrack = "software" | "engineering";
+export type PositionType = "internship" | "co-op";
+export type EngineeringDiscipline =
+  | "mechanical"
+  | "electrical"
+  | "civil"
+  | "chemical"
+  | "aerospace"
+  | "biomedical"
+  | "industrial-manufacturing"
+  | "computer-hardware"
+  | "environmental"
+  | "materials"
+  | "nuclear"
+  | "robotics-mechatronics"
+  | "other-engineering";
 
 export type InternshipJob = {
   id: string;
@@ -7,7 +23,10 @@ export type InternshipJob = {
   companyWebsite?: string;
   title: string;
   opportunityType: OpportunityType;
-  softwareCategory: SoftwareCategory;
+  positionType?: PositionType;
+  softwareCategory?: SoftwareCategory;
+  engineeringDiscipline?: EngineeringDiscipline;
+  track?: OpportunityTrack;
   location: string;
   locations?: string[];
   applicationUrl: string;
@@ -22,6 +41,7 @@ export type InternshipJob = {
 
 export type InternshipResponse = {
   jobs: InternshipJob[];
+  track?: OpportunityTrack;
   live: boolean;
   updatedAt?: string;
   nextRefreshAt?: string;

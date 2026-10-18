@@ -856,6 +856,21 @@ button:focus-visible {
   --header-background: rgba(245, 238, 231, 0.94);
 }
 
+.track-page[data-track="engineering"] {
+  --track-accent: #b45309;
+  --track-accent-strong: #8a3f05;
+  --track-tint: #ffdfb5;
+  --background: #fff7ed;
+  --surface: #fffaf5;
+  --surface-hover: #ffedd5;
+  --border: #e6c7a6;
+  --border-muted: #f0d9c2;
+  --blue: var(--track-accent);
+  --blue-hover: var(--track-accent-strong);
+  --focus-ring: rgba(180, 83, 9, 0.2);
+  --header-background: rgba(255, 247, 237, 0.94);
+}
+
 .track-page[data-track="medicine"] {
   --track-accent: #23864b;
   --track-accent-strong: #176536;
@@ -893,6 +908,18 @@ button:focus-visible {
   --border: #5b422f;
   --border-muted: #483424;
   --header-background: rgba(33, 23, 16, 0.94);
+}
+
+:root[data-theme="dark"] .track-page[data-track="engineering"] {
+  --track-accent: #f0a45d;
+  --track-accent-strong: #ffc58e;
+  --track-tint: rgba(180, 83, 9, 0.28);
+  --background: #21150b;
+  --surface: #2b1d11;
+  --surface-hover: #3a2717;
+  --border: #5e422b;
+  --border-muted: #49331f;
+  --header-background: rgba(33, 21, 11, 0.94);
 }
 
 :root[data-theme="dark"] .track-page[data-track="medicine"] {
@@ -1757,10 +1784,43 @@ button:focus-visible {
   }
 }
 
-/* Software latest drops page */
+/* Latest drops page */
 .drops-page {
   min-height: 100vh;
   padding-bottom: 80px;
+}
+
+.drops-track-switcher {
+  width: fit-content;
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 28px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.drops-track-switcher a {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.drops-track-switcher a:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.drops-track-switcher a.active {
+  color: #ffffff;
+  background: var(--track-accent);
 }
 
 .drops-page-nav a.active {
@@ -1771,7 +1831,7 @@ button:focus-visible {
 .drops-directory {
   max-width: 1060px;
   margin: 0 auto;
-  padding: 52px 0 72px;
+  padding: 30px 0 72px;
 }
 
 .drops-page-intro {

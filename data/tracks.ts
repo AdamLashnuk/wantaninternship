@@ -1,4 +1,4 @@
-export const careerTracks = ["software", "finance", "medicine"] as const;
+export const careerTracks = ["software", "engineering", "finance", "medicine"] as const;
 
 export type CareerTrack = (typeof careerTracks)[number];
 
@@ -59,6 +59,46 @@ export const trackContent: Record<CareerTrack, TrackContent> = {
         role: "University software roles",
         location: "Pittsburgh & New York",
         url: "https://careers.duolingo.com/",
+      },
+    ],
+  },
+  engineering: {
+    label: "Engineering",
+    shortLabel: "Engineering internships",
+    description:
+      "Find engineering internships and co-ops across mechanical, electrical, civil, chemical, aerospace and related disciplines.",
+    subtext:
+      "Fresh engineering roles, discipline-specific GitHub lists and student resources—kept separate from software-only listings and tools.",
+    searchPlaceholder: "Search engineering websites, repositories or programs...",
+    majors: ["Engineering"],
+    recommendations: [
+      "2027 Mechanical Engineering Internships",
+      "Engineering Internships Summer 2027",
+      "New Grad and Internships 2027",
+      "SimplifyJobs Summer 2027 Internships",
+      "NSF Research Experiences for Undergraduates",
+    ],
+    drops: [
+      {
+        company: "Boeing",
+        website: "https://www.boeing.com",
+        role: "Engineering internships and co-ops",
+        location: "United States — multiple locations",
+        url: "https://jobs.boeing.com/internships",
+      },
+      {
+        company: "GE Aerospace",
+        website: "https://www.geaerospace.com",
+        role: "Engineering internships and co-ops",
+        location: "United States — multiple locations",
+        url: "https://careers.geaerospace.com/global/en/internships-co-ops",
+      },
+      {
+        company: "Lockheed Martin",
+        website: "https://www.lockheedmartin.com",
+        role: "College engineering opportunities",
+        location: "United States — multiple locations",
+        url: "https://www.lockheedmartinjobs.com/college-students",
       },
     ],
   },

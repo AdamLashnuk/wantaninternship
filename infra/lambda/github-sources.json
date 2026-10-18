@@ -94,5 +94,41 @@
     "apiUrl": "https://api.github.com/repos/zshah101/Automated-List-Of-Summer-2027-and-Fall-2026-Tech-Internships/contents/docs/api/jobs.json?ref=main",
     "format": "json",
     "opportunityType": "internship"
+  },
+  {
+    "key": "github:simplify:engineering",
+    "label": "github:simplify-engineering",
+    "repository": "https://github.com/SimplifyJobs/Summer2027-Internships",
+    "apiUrl": "https://api.github.com/repos/SimplifyJobs/Summer2027-Internships/contents/.github/scripts/listings.json?ref=dev",
+    "format": "json",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:wonofakind:engineering",
+    "label": "github:wonofakind-engineering",
+    "repository": "https://github.com/WonOfAKind/New-Grad-And-Internships-2027",
+    "apiUrl": "https://api.github.com/repos/WonOfAKind/New-Grad-And-Internships-2027/contents/data/roles.json?ref=main",
+    "format": "json",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:hiderrick:engineering",
+    "label": "github:hiderrick-engineering",
+    "repository": "https://github.com/hiderrick/Engineering-Internships-Summer-2027",
+    "apiUrl": "https://api.github.com/repos/hiderrick/Engineering-Internships-Summer-2027/contents/README.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:thebargon:engineering",
+    "label": "github:thebargon-engineering",
+    "repository": "https://github.com/thebargon/2027-Mechanical-Engineering-Internships",
+    "apiUrl": "https://api.github.com/repos/thebargon/2027-Mechanical-Engineering-Internships/contents/data/listings.json?ref=main",
+    "format": "json",
+    "opportunityType": "internship",
+    "track": "engineering"
   }
 ]

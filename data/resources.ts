@@ -287,8 +287,8 @@ export const resources: Resource[] = [
   },
 
   {
-    name: "SimplifyJobs Summer Internships",
-    url: "https://github.com/SimplifyJobs/Summer2026-Internships",
+    name: "SimplifyJobs Summer 2027 Internships",
+    url: "https://github.com/SimplifyJobs/Summer2027-Internships",
     description:
       "Community-maintained list of software engineering, data science, product, hardware and related internships.",
     type: "GitHub list",
@@ -410,6 +410,45 @@ export const resources: Resource[] = [
     regions: ["United States"],
     keywords: ["2027", "off-season", "AI", "machine learning", "SWE"],
     updatedAt: "2026-08-02",
+  },
+  {
+    name: "2027 Mechanical Engineering Internships",
+    url: "https://github.com/thebargon/2027-Mechanical-Engineering-Internships",
+    description:
+      "Structured tracker for mechanical, manufacturing, aerospace, thermal and closely related internships and co-ops.",
+    type: "GitHub list",
+    section: "GitHub Repository",
+    majors: ["Engineering"],
+    regions: ["United States"],
+    keywords: ["mechanical", "manufacturing", "aerospace", "thermal", "co-op"],
+    updatedAt: "2026-10-17",
+    featured: true,
+  },
+  {
+    name: "Engineering Internships Summer 2027",
+    url: "https://github.com/hiderrick/Engineering-Internships-Summer-2027",
+    description:
+      "Frequently refreshed engineering list covering mechanical, electrical, hardware, robotics, manufacturing and aerospace roles.",
+    type: "GitHub list",
+    section: "GitHub Repository",
+    majors: ["Engineering"],
+    regions: ["United States", "Canada"],
+    keywords: ["engineering", "hardware", "robotics", "manufacturing", "2027"],
+    updatedAt: "2026-10-17",
+    featured: true,
+  },
+  {
+    name: "New Grad and Internships 2027",
+    url: "https://github.com/WonOfAKind/New-Grad-And-Internships-2027",
+    description:
+      "Large structured board with engineering roles tagged across mechanical, electrical, aerospace, manufacturing and other disciplines.",
+    type: "GitHub list",
+    section: "GitHub Repository",
+    majors: ["Engineering"],
+    regions: ["United States", "Canada"],
+    keywords: ["mechanical", "electrical", "aerospace", "industrial", "new grad"],
+    updatedAt: "2026-10-16",
+    featured: true,
   },
 
   {

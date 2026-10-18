@@ -10,6 +10,8 @@ const DATA = /\b(data (?:engineer(?:ing)?|scientist|science|analyst|analytics)|a
 const CLOUD = /\b(cloud|devops|site reliability|sre|platform engineer|infrastructure engineer)\b/i;
 const SECURITY = /\b(cyber(?:security)?|cyber security|information security|application security|cloud security|product security|security (?:engineer(?:ing)?|analyst|operations|research|intern(?:ship)?)|infosec|secops)\b/i;
 const SENIOR = /\b(senior|staff|principal|director|architect|manager|lead|head of|vice president)\b|\bsr\.?(?=\s|,|$)|\bvp\b/i;
+const ENGINEERING = /\b(engineer(?:ing)?|mechanical|electrical|electronics?|civil|construction|chemical|process|aerospace|aeronautical|biomedical|bioengineering|industrial|manufacturing|environmental|materials?|metallurgy|nuclear|robotics?|mechatronics|hardware|embedded|firmware|semiconductor|asic|fpga|propulsion|avionics|thermal|fluid|structural|geotechnical|controls?|automation|quality|reliability|test)\b/i;
+const SOFTWARE_ROLE = /\b(software (?:engineer(?:ing)?|developer)|web developer|front[ -]?end|back[ -]?end|full[ -]?stack|data (?:scientist|engineer|analyst)|machine learning|artificial intelligence|ai\/ml|cybersecurity|information security|product manager)\b/i;
 
 export function normalizeText(value = "") {
   return String(value).toLowerCase().replace(/&amp;/g, "and").replace(/[^a-z0-9]+/g, " ").trim();
@@ -50,6 +52,27 @@ export function inferSoftwareCategory(title = "") {
   return "swe";
 }
 
+export function inferPositionType(value = "") {
+  return /\bco[ -]?op(?:erative)?\b/i.test(value) ? "co-op" : "internship";
+}
+
+export function inferEngineeringDiscipline(title = "", hints = []) {
+  const value = [title, ...(Array.isArray(hints) ? hints : [hints])].join(" ");
+  if (/\b(biomedical|bioengineering|biomechanical|medical device|clinical engineering)\b/i.test(value)) return "biomedical";
+  if (/\b(aerospace|aeronautical|astronautical|propulsion|avionics|flight dynamics|airframe|spacecraft|satellite|rocket)\b/i.test(value)) return "aerospace";
+  if (/\b(civil|construction|structural|geotechnical|transportation engineering|surveying|land development)\b/i.test(value)) return "civil";
+  if (/\b(chemical|process engineering|petrochemical|polymer|refining)\b/i.test(value)) return "chemical";
+  if (/\b(environmental|sustainability|wastewater|water resources|air quality)\b/i.test(value)) return "environmental";
+  if (/\b(materials?|metallurg(?:y|ical)|ceramics?|composites?)\b/i.test(value)) return "materials";
+  if (/\b(nuclear|reactor|radiation engineering)\b/i.test(value)) return "nuclear";
+  if (/\b(robotics?|mechatronics|autonomous systems?)\b/i.test(value)) return "robotics-mechatronics";
+  if (/\b(industrial|manufacturing|production|operations engineering|quality engineering|supplier quality|continuous improvement|lean engineering)\b/i.test(value)) return "industrial-manufacturing";
+  if (/\b(electrical|electronics?|circuit|analog|mixed[ -]?signal|radio frequency|\brf\b|power systems?|controls?|instrumentation)\b/i.test(value)) return "electrical";
+  if (/\b(computer engineering|hardware|embedded|firmware|semiconductor|silicon|asic|fpga|computer architecture)\b/i.test(value)) return "computer-hardware";
+  if (/\b(mechanical|thermal|fluid|hvac|cad|mechanical design|chassis|powertrain)\b/i.test(value)) return "mechanical";
+  return "other-engineering";
+}
+
 export function isRelevantSoftware(job) {
   const title = String(job.title ?? "");
   const type = job.opportunityType ?? inferOpportunityType(title, "");
@@ -62,6 +85,27 @@ export function isRelevantSoftware(job) {
     !SENIOR.test(title) &&
     !EXCLUDED.test(title),
   );
+}
+
+export function isRelevantEngineering(job) {
+  const title = String(job.title ?? "");
+  const type = job.opportunityType ?? inferOpportunityType(title, "");
+  const discipline = job.engineeringDiscipline ?? inferEngineeringDiscipline(title);
+  const hasSpecificEngineeringSignal = discipline !== "other-engineering";
+  return Boolean(
+    job.company &&
+    canonicalizeApplicationUrl(job.applicationUrl ?? job.applyUrl) &&
+    type === "internship" &&
+    (OPPORTUNITY.test(title) || job.positionType) &&
+    ENGINEERING.test(title) &&
+    !SENIOR.test(title) &&
+    !SOFTWARE_ROLE.test(title) &&
+    (hasSpecificEngineeringSignal || /\bengineer(?:ing)?\b/i.test(title)),
+  );
+}
+
+export function isRelevantOpportunity(job) {
+  return job.track === "engineering" ? isRelevantEngineering(job) : isRelevantSoftware(job);
 }
 
 function cleanText(value = "") {
@@ -97,15 +141,19 @@ function linkOf(value = "") {
   return markdownLinks.at(-1)?.[1] ?? "";
 }
 
-function baseJob({ company, companyWebsite, title, opportunityType, locations, applicationUrl, postedAt, source, sourceKey, sourceUrl, active = true, sourcePriority = 10 }) {
+function baseJob({ company, companyWebsite, title, opportunityType, positionType, track = "software", disciplineHints = [], locations, applicationUrl, postedAt, source, sourceKey, sourceUrl, active = true, sourcePriority = 10 }) {
   const cleanUrl = canonicalizeApplicationUrl(applicationUrl);
   const allLocations = locationsOf(locations);
+  const cleanTitle = cleanText(title);
   return {
     company: cleanText(company),
     companyWebsite: resolveCompanyWebsite(company, companyWebsite, cleanUrl),
-    title: cleanText(title),
+    title: cleanTitle,
     opportunityType: inferOpportunityType(title, opportunityType),
     softwareCategory: inferSoftwareCategory(title),
+    engineeringDiscipline: track === "engineering" ? inferEngineeringDiscipline(cleanTitle, disciplineHints) : undefined,
+    positionType: positionType ?? inferPositionType(cleanTitle),
+    track,
     locations: allLocations.length ? allLocations : ["Location not listed"],
     location: allLocations.length > 1 ? "Multiple locations" : (allLocations[0] ?? "Location not listed"),
     applicationUrl: cleanUrl,
@@ -181,24 +229,37 @@ export function resolveCompanyWebsite(company, website, applicationUrl) {
 
 export function parseListingsJson(text, config) {
   const parsed = JSON.parse(text);
-  const listings = Array.isArray(parsed) ? parsed : (parsed.listings ?? parsed.jobs ?? []);
+  const listings = Array.isArray(parsed) ? parsed : (parsed.listings ?? parsed.jobs ?? parsed.roles ?? []);
   return listings
-    .filter((item) => item && item.active !== false && item.is_visible !== false && !/\b(quant|hardware|product management|finance|operations|risk)\b/i.test(String(item.category ?? "")))
-    .map((item) => baseJob({
+    .filter((item) => {
+      if (!item || item.active === false || item.is_visible === false || /^(closed|inactive)$/i.test(String(item.status ?? ""))) return false;
+      const category = String(item.category ?? item.discipline ?? "");
+      return config.track === "engineering"
+        ? !/\b(software|data science|ai|machine learning|quant|product management|finance|business)\b/i.test(category)
+        : !/\b(quant|hardware|product management|finance|operations|risk)\b/i.test(category);
+    })
+    .map((item) => {
+      const roleType = String(item.role_type ?? item.opportunity_type ?? "");
+      const opportunityType = /new grad/i.test(roleType) ? "new-grad" : config.opportunityType ?? "internship";
+      return baseJob({
       company: item.company_name ?? item.company ?? item.companyName,
-      companyWebsite: item.company_url ?? item.companyWebsite ?? item.company_website,
+      companyWebsite: item.company_url ?? item.companyUrl ?? item.companyWebsite ?? item.company_website,
       title: item.title ?? item.role ?? item.position,
-      opportunityType: config.opportunityType ?? "internship",
+      opportunityType,
+      positionType: inferPositionType(`${item.title ?? item.role ?? item.position ?? ""} ${roleType}`),
+      track: config.track ?? "software",
+      disciplineHints: item.disciplines ?? item.discipline ?? item.category ?? [],
       locations: item.locations ?? item.location,
       applicationUrl: item.url ?? item.application_url ?? item.apply_url ?? item.job_url,
-      postedAt: item.date_posted ?? item.posted_at ?? item.postedAt ?? item.date_updated,
+      postedAt: item.date_posted ?? item.posted_at ?? item.postedAt ?? item.date_updated ?? item.firstSeenAt ?? item.date_seen,
       source: config.label,
       sourceKey: config.key,
       sourceUrl: config.repository,
       active: item.active !== false,
       sourcePriority: 10,
-    }))
-    .filter(isRelevantSoftware);
+      });
+    })
+    .filter(isRelevantOpportunity);
 }
 
 export function parseSpeedyMarkdown(text, config) {
@@ -241,6 +302,9 @@ export function parseSpeedyMarkdown(text, config) {
       companyWebsite: companyLink,
       title,
       opportunityType: config.opportunityType,
+      positionType: inferPositionType(title),
+      track: config.track ?? "software",
+      disciplineHints: [section],
       locations: [location],
       applicationUrl,
       postedAt,
@@ -249,7 +313,7 @@ export function parseSpeedyMarkdown(text, config) {
       sourceUrl: config.repository,
       sourcePriority: 10,
     });
-    if (isRelevantSoftware(job)) jobs.push(job);
+    if (isRelevantOpportunity(job)) jobs.push(job);
   }
   return jobs;
 }
@@ -262,11 +326,13 @@ function urlKey(job) {
     .replace(/\/(apply|application)$/i, "")
     .replace(/^\/en-us\//i, "/")
     .replace(/\/+$/, "");
-  return `url:${parsed.hostname.replace(/^www\./, "")}${pathname}${parsed.search}`;
+  const trackPrefix = job.track === "engineering" ? "engineering:" : "";
+  return `${trackPrefix}url:${parsed.hostname.replace(/^www\./, "")}${pathname}${parsed.search}`;
 }
 
 export function listingKey(job) {
-  return `listing:${normalizeText(job.company)}:${normalizeText(job.title)}`;
+  const trackPrefix = job.track === "engineering" ? "engineering:" : "";
+  return `${trackPrefix}listing:${normalizeText(job.company)}:${normalizeText(job.title)}`;
 }
 
 function mergePair(existing, incoming) {
@@ -292,7 +358,7 @@ export function deduplicateJobs(jobs) {
   const records = new Set();
   const index = new Map();
 
-  for (const job of jobs.filter(isRelevantSoftware)) {
+  for (const job of jobs.filter(isRelevantOpportunity)) {
     const keys = [urlKey(job), listingKey(job)].filter(Boolean);
     const existing = keys.map((key) => index.get(key)).find(Boolean);
     if (!existing) {

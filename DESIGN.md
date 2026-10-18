@@ -19,6 +19,10 @@ colors:
   technical-blue-strong: "#0f4fa8"
   technical-blue-tint: "#d9ebff"
   technical-blue-canvas: "#edf6ff"
+  engineering-orange: "#b45309"
+  engineering-orange-strong: "#8a3f05"
+  engineering-orange-tint: "#ffdfb5"
+  engineering-orange-canvas: "#fff7ed"
   ledger-brown: "#89552f"
   ledger-brown-strong: "#663c20"
   ledger-brown-tint: "#ead5c2"
@@ -131,6 +135,7 @@ The palette begins with cool GitHub-like neutrals, then lets each career track o
 ### Primary
 
 - **Technical Blue:** The Software track's links, active controls, focus states, and live-opportunity signals.
+- **Engineering Orange:** The Engineering track's practical, warm accent for discipline filters, co-op controls, and live-opportunity signals.
 - **Ledger Brown:** The Finance track's warmer, grounded accent and interactive hierarchy.
 - **Clinical Green:** The Medicine track's clear, reassuring accent and interactive hierarchy.
 
@@ -258,7 +263,7 @@ The signature opportunity rail combines a track-tinted radial wash, live pulse, 
 
 ### Don't:
 
-- **Don't** mix Technical Blue, Ledger Brown, and Clinical Green as competing accents within one track surface.
+- **Don't** mix Technical Blue, Engineering Orange, Ledger Brown, and Clinical Green as competing accents within one track surface.
 - **Don't** add decorative display fonts, ornamental illustration, or promotional visual noise to the index experience.
 - **Don't** use large shadows on ordinary filters, rows, or utility controls.
 - **Don't** turn every action into a pill; keep compact utility controls structurally square.

@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { canonicalizeApplicationUrl, deduplicateJobs, hasOpportunitySignal, inferSoftwareCategory, isRelevantSoftware, parseListingsJson, parseSpeedyMarkdown, resolveCompanyWebsite } from "./normalize.mjs";
+import { canonicalizeApplicationUrl, deduplicateJobs, hasOpportunitySignal, inferEngineeringDiscipline, inferSoftwareCategory, isRelevantEngineering, isRelevantSoftware, parseListingsJson, parseSpeedyMarkdown, resolveCompanyWebsite } from "./normalize.mjs";
 
 const fixture = (name) => readFileSync(new URL(`./test/fixtures/${name}`, import.meta.url), "utf8");
 const config = (key) => ({ key, label: key, repository: `https://github.com/${key}`, opportunityType: "internship", collectedAt: "2026-09-14T12:00:00.000Z" });
+const engineeringConfig = (key) => ({ ...config(key), track: "engineering" });
 
 test("parses SpeedyApply tables while excluding quant", () => {
   const jobs = parseSpeedyMarkdown(fixture("speedy.md"), config("speedyapply"));
@@ -42,6 +43,24 @@ test("parses wrapped JSON feeds with snake-case dates", () => {
   assert.equal(jobs[0].softwareCategory, "cloud-devops");
 });
 
+test("parses engineering internships and co-ops without leaking software or new-grad roles", () => {
+  const jobs = parseListingsJson(fixture("engineering.json"), engineeringConfig("engineering"));
+  assert.equal(jobs.length, 3);
+  assert.equal(jobs[0].positionType, "co-op");
+  assert.equal(jobs[0].engineeringDiscipline, "mechanical");
+  assert.equal(jobs[1].engineeringDiscipline, "electrical");
+  assert.equal(jobs[2].engineeringDiscipline, "civil");
+  assert.ok(jobs.every((job) => job.track === "engineering"));
+});
+
+test("classifies the major engineering disciplines", () => {
+  assert.equal(inferEngineeringDiscipline("Chemical Process Engineering Intern"), "chemical");
+  assert.equal(inferEngineeringDiscipline("Biomedical Engineering Intern"), "biomedical");
+  assert.equal(inferEngineeringDiscipline("FPGA Hardware Intern"), "computer-hardware");
+  assert.equal(inferEngineeringDiscipline("Environmental Engineering Co-op"), "environmental");
+  assert.equal(isRelevantEngineering({ company: "X", title: "Software Engineering Intern", opportunityType: "internship", positionType: "internship", applicationUrl: "https://x.example/job/7", track: "engineering" }), false);
+});
+
 test("keeps technical security roles and rejects non-software business roles", () => {
   assert.equal(canonicalizeApplicationUrl("https://simplify.jobs/p/abc"), "");
   assert.equal(isRelevantSoftware({ company: "X", title: "Cybersecurity Intern", opportunityType: "internship", applicationUrl: "https://x.example/job/1" }), true);
@@ -77,4 +96,11 @@ test("deduplicates by canonical URL, prefers ATS and merges locations", () => {
   assert.equal(jobs.length, 1);
   assert.equal(jobs[0].source, "greenhouse");
   assert.deepEqual(new Set(jobs[0].locations), new Set(["New York, NY", "Pittsburgh, PA"]));
+});
+
+test("keeps software and engineering partitions separate during deduplication", () => {
+  const software = { company: "Example Co", title: "Software Engineering Intern", opportunityType: "internship", softwareCategory: "swe", locations: ["Austin, TX"], location: "Austin, TX", applicationUrl: "https://jobs.example.com/shared", applyUrl: "https://jobs.example.com/shared", source: "software-list", sourceKey: "software:list", active: true, sourcePriority: 10 };
+  const engineering = { ...software, title: "Electrical Hardware Intern", track: "engineering", positionType: "internship", engineeringDiscipline: "electrical", source: "engineering-list", sourceKey: "engineering:list" };
+  const jobs = deduplicateJobs([software, engineering]);
+  assert.equal(jobs.length, 2);
 });
