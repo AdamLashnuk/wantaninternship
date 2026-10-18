@@ -5,17 +5,20 @@ import { trackContent } from "../data/tracks";
 import { formatOfficialPostDate } from "../lib/internship-dates";
 import { isUsInternship } from "../lib/internship-location";
 import { sortInternshipsNewestFirst } from "../lib/internship-sorting";
-import type { InternshipJob, InternshipResponse } from "../lib/internships";
+import type { InternshipJob, InternshipResponse, OpportunityTrack } from "../lib/internships";
 import CompanyLogo from "./CompanyLogo";
 
-function fallbackJobs(): InternshipJob[] {
-  return trackContent.software.drops.map((drop, index) => ({
+function fallbackJobs(track: OpportunityTrack): InternshipJob[] {
+  return trackContent[track].drops.map((drop, index) => ({
     id: `curated-${index}`,
     company: drop.company,
     companyWebsite: drop.website,
     title: drop.role,
     opportunityType: "internship",
-    softwareCategory: "swe",
+    positionType: "internship",
+    softwareCategory: track === "software" ? "swe" : undefined,
+    engineeringDiscipline: track === "engineering" ? "other-engineering" : undefined,
+    track,
     location: drop.location,
     locations: [drop.location],
     applicationUrl: drop.url,
@@ -26,20 +29,22 @@ function fallbackJobs(): InternshipJob[] {
   }));
 }
 
-export default function LatestDrops() {
+export default function LatestDrops({ track }: { track: OpportunityTrack }) {
   const curatedJobs = useMemo(
-    () => fallbackJobs().filter(isUsInternship).slice(0, 3),
-    [],
+    () => fallbackJobs(track).filter(isUsInternship).slice(0, 3),
+    [track],
   );
   const [jobs, setJobs] = useState<InternshipJob[]>(curatedJobs);
   const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
+    setJobs(curatedJobs);
+    setIsLive(false);
 
     async function loadJobs() {
       try {
-        const response = await fetch("/api/internships?track=software&limit=100", {
+        const response = await fetch(`/api/internships?track=${track}&limit=100`, {
           signal: controller.signal,
         });
         if (!response.ok) return;
@@ -59,7 +64,9 @@ export default function LatestDrops() {
 
     loadJobs();
     return () => controller.abort();
-  }, []);
+  }, [curatedJobs, track]);
+
+  const trackLabel = track === "engineering" ? "Engineering" : "Software";
 
   return (
     <aside className="latest-drops" aria-labelledby="latest-drops-title">
@@ -67,7 +74,7 @@ export default function LatestDrops() {
         <span className="latest-drops-pulse" aria-hidden="true" />
         <div>
           <p>{isLive ? "Automatically refreshed" : "Fresh opportunities"}</p>
-          <h2 id="latest-drops-title">Latest Software Drops</h2>
+          <h2 id="latest-drops-title">Latest {trackLabel} Drops</h2>
         </div>
       </div>
 
@@ -97,13 +104,13 @@ export default function LatestDrops() {
         ))}
       </div>
 
-      <a className="latest-drops-view-all" href="/latest-drops">
-        Browse all software internships
+      <a className="latest-drops-view-all" href={`/latest-drops?track=${track}`}>
+        Browse all {trackLabel.toLowerCase()} roles
         <span aria-hidden="true">→</span>
       </a>
 
       <p className="latest-drops-note">
-        Free software listings. Always verify deadlines on the employer site.
+        Free {trackLabel.toLowerCase()} listings. Always verify deadlines on the employer site.
       </p>
     </aside>
   );

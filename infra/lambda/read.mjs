@@ -19,6 +19,7 @@ function encodeCursor(value) {
 }
 
 export async function handler(event = {}) {
+  const track = event.queryStringParameters?.track === "engineering" ? "engineering" : "software";
   const rawLimit = Number(event.queryStringParameters?.limit ?? 50);
   const limit = Number.isFinite(rawLimit)
     ? Math.min(Math.max(Math.floor(rawLimit), 1), 250)
@@ -30,11 +31,11 @@ export async function handler(event = {}) {
       TableName: tableName,
       IndexName: "category-discovery-index",
       KeyConditionExpression: "categoryStatus = :categoryStatus",
-      ExpressionAttributeValues: { ":categoryStatus": "software#active" },
+      ExpressionAttributeValues: { ":categoryStatus": `${track}#active` },
       ScanIndexForward: false,
       Limit: limit,
       ExclusiveStartKey: cursor,
-      ProjectionExpression: "id, company, companyWebsite, title, opportunityType, softwareCategory, #location, locations, applicationUrl, applyUrl, #source, sources, sourceUrl, firstSeenAt, postedAt, active",
+      ProjectionExpression: "id, company, companyWebsite, title, opportunityType, positionType, softwareCategory, engineeringDiscipline, track, #location, locations, applicationUrl, applyUrl, #source, sources, sourceUrl, firstSeenAt, postedAt, active",
       ExpressionAttributeNames: { "#location": "location", "#source": "source" },
     })),
     documentClient.send(new GetCommand({
@@ -44,9 +45,12 @@ export async function handler(event = {}) {
   ]);
 
   const meta = metadata.Item;
-  const sourceCounts = meta?.sourceCounts ?? {};
+  const stats = meta?.trackStats?.[track];
+  const sourceCounts = stats?.sourceCounts ?? (track === "software" ? meta?.sourceCounts : {}) ?? {};
   const countedJobs = Object.values(sourceCounts).reduce((sum, count) => sum + Number(count ?? 0), 0);
-  const totalJobs = Number.isFinite(meta?.activeJobs) ? meta.activeJobs : countedJobs;
+  const totalJobs = Number.isFinite(stats?.activeJobs)
+    ? stats.activeJobs
+    : track === "software" && Number.isFinite(meta?.activeJobs) ? meta.activeJobs : countedJobs;
   return {
     statusCode: 200,
     headers: {
@@ -55,12 +59,15 @@ export async function handler(event = {}) {
     },
     body: JSON.stringify({
       jobs: result.Items ?? [],
+      track,
       nextCursor: encodeCursor(result.LastEvaluatedKey),
       updatedAt: meta?.updatedAt,
       nextRefreshAt: meta?.nextRefreshAt,
       sourceCounts,
       totalJobs,
-      recentWeekJobs: Number.isFinite(meta?.recentWeekJobs) ? meta.recentWeekJobs : undefined,
+      recentWeekJobs: Number.isFinite(stats?.recentWeekJobs)
+        ? stats.recentWeekJobs
+        : track === "software" && Number.isFinite(meta?.recentWeekJobs) ? meta.recentWeekJobs : undefined,
       retentionDays: Number.isFinite(meta?.retentionDays) ? meta.retentionDays : undefined,
       partial: Boolean(meta?.failures?.length),
     }),

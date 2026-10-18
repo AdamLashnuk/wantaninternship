@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { InternshipJob, InternshipResponse, OpportunityType, SoftwareCategory } from "../../../lib/internships";
+import type { EngineeringDiscipline, InternshipJob, InternshipResponse, OpportunityTrack, OpportunityType, SoftwareCategory } from "../../../lib/internships";
 import { getDirectSoftwareJobs } from "../../../lib/direct-software-feed";
 
 export const revalidate = 60;
 
-function normalizeJob(value: unknown): InternshipJob | null {
+const engineeringDisciplines = new Set<EngineeringDiscipline>([
+  "mechanical", "electrical", "civil", "chemical", "aerospace", "biomedical",
+  "industrial-manufacturing", "computer-hardware", "environmental", "materials",
+  "nuclear", "robotics-mechatronics", "other-engineering",
+]);
+
+function normalizeJob(value: unknown, requestedTrack: OpportunityTrack): InternshipJob | null {
   if (!value || typeof value !== "object") return null;
   const job = value as Record<string, unknown>;
   const applicationUrl = typeof job.applicationUrl === "string"
@@ -17,6 +23,9 @@ function normalizeJob(value: unknown): InternshipJob | null {
     job.softwareCategory === "data-ai-ml" || job.softwareCategory === "cloud-devops" || job.softwareCategory === "cybersecurity"
       ? job.softwareCategory
       : "swe";
+  const engineeringDiscipline = engineeringDisciplines.has(job.engineeringDiscipline as EngineeringDiscipline)
+    ? job.engineeringDiscipline as EngineeringDiscipline
+    : "other-engineering";
 
   return {
     ...job,
@@ -25,7 +34,10 @@ function normalizeJob(value: unknown): InternshipJob | null {
     companyWebsite: typeof job.companyWebsite === "string" ? job.companyWebsite : undefined,
     title: job.title,
     opportunityType,
-    softwareCategory,
+    positionType: job.positionType === "co-op" ? "co-op" : "internship",
+    softwareCategory: requestedTrack === "software" ? softwareCategory : undefined,
+    engineeringDiscipline: requestedTrack === "engineering" ? engineeringDiscipline : undefined,
+    track: requestedTrack,
     location: job.location,
     locations: Array.isArray(job.locations) ? job.locations.filter((item): item is string => typeof item === "string") : [job.location],
     applicationUrl,
@@ -41,8 +53,8 @@ function normalizeJob(value: unknown): InternshipJob | null {
 
 export async function GET(request: NextRequest) {
   const requestedTrack = request.nextUrl.searchParams.get("track") ?? "software";
-  if (requestedTrack !== "software") {
-    return NextResponse.json({ error: "Live opportunity drops are available for Software only." }, { status: 400 });
+  if (requestedTrack !== "software" && requestedTrack !== "engineering") {
+    return NextResponse.json({ error: "Unknown opportunity track." }, { status: 400 });
   }
 
   const requestedLimit = Number(request.nextUrl.searchParams.get("limit") ?? 50);
@@ -51,13 +63,14 @@ export async function GET(request: NextRequest) {
   const apiUrl = process.env.INTERNSHIPS_API_URL;
 
   if (!apiUrl) {
-    const jobs = await getDirectSoftwareJobs(limit);
-    return NextResponse.json<InternshipResponse>({ jobs, live: false });
+    const jobs = requestedTrack === "software" ? await getDirectSoftwareJobs(limit) : [];
+    return NextResponse.json<InternshipResponse>({ jobs, track: requestedTrack, live: false });
   }
 
   try {
     const upstreamUrl = new URL(apiUrl);
     upstreamUrl.searchParams.set("limit", String(limit));
+    upstreamUrl.searchParams.set("track", requestedTrack);
     if (cursor) upstreamUrl.searchParams.set("cursor", cursor);
 
     const response = await fetch(upstreamUrl, {
@@ -67,8 +80,11 @@ export async function GET(request: NextRequest) {
     if (!response.ok) throw new Error(`Internship API returned ${response.status}`);
 
     const payload = (await response.json()) as Record<string, unknown>;
+    if (requestedTrack === "engineering" && payload.track !== "engineering") {
+      return NextResponse.json<InternshipResponse>({ jobs: [], track: requestedTrack, live: false });
+    }
     const jobs = Array.isArray(payload.jobs)
-      ? payload.jobs.map(normalizeJob).filter((job): job is InternshipJob => job !== null)
+      ? payload.jobs.map((job) => normalizeJob(job, requestedTrack)).filter((job): job is InternshipJob => job !== null)
       : [];
 
     const sourceCounts = payload.sourceCounts && typeof payload.sourceCounts === "object"
@@ -80,6 +96,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json<InternshipResponse>({
       jobs,
+      track: requestedTrack,
       live: true,
       updatedAt: typeof payload.updatedAt === "string" ? payload.updatedAt : undefined,
       nextRefreshAt: typeof payload.nextRefreshAt === "string" ? payload.nextRefreshAt : undefined,
@@ -92,7 +109,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Unable to load live internships", error);
-    const jobs = await getDirectSoftwareJobs(limit);
-    return NextResponse.json<InternshipResponse>({ jobs, live: false });
+    const jobs = requestedTrack === "software" ? await getDirectSoftwareJobs(limit) : [];
+    return NextResponse.json<InternshipResponse>({ jobs, track: requestedTrack, live: false });
   }
 }

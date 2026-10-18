@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { filterInternships, getRefreshStatus } from "./internship-filters.ts";
+import { filterEngineeringOpportunities, filterInternships, getRefreshStatus } from "./internship-filters.ts";
 import type { InternshipJob } from "./internships.ts";
 
 const jobs: InternshipJob[] = [
@@ -66,6 +66,20 @@ test("senior roles never appear in early-career results", () => {
     area: "usa",
     category: "all",
   }).some((job) => job.id === "senior"), false);
+});
+
+test("engineering filters combine discipline, co-op and location", () => {
+  const engineeringJobs: InternshipJob[] = [
+    { id: "me", company: "Forge", title: "Mechanical Engineering Co-op", opportunityType: "internship", positionType: "co-op", engineeringDiscipline: "mechanical", track: "engineering", location: "Pittsburgh, PA", locations: ["Pittsburgh, PA"], applicationUrl: "https://forge.example/me", source: "test", firstSeenAt: "", active: true },
+    { id: "ee", company: "Grid", title: "Electrical Engineering Intern", opportunityType: "internship", positionType: "internship", engineeringDiscipline: "electrical", track: "engineering", location: "Austin, TX", locations: ["Austin, TX"], applicationUrl: "https://grid.example/ee", source: "test", firstSeenAt: "", active: true },
+  ];
+  const result = filterEngineeringOpportunities(engineeringJobs, {
+    keyword: "forge",
+    positionType: "co-op",
+    area: "usa",
+    discipline: "mechanical",
+  });
+  assert.deepEqual(result.map((job) => job.id), ["me"]);
 });
 
 test("timer counts down, then reports soon and delayed states", () => {

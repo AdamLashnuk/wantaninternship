@@ -1,15 +1,24 @@
 import { isUsInternship } from "./internship-location.ts";
-import type { InternshipJob, OpportunityType, SoftwareCategory } from "./internships.ts";
+import type { EngineeringDiscipline, InternshipJob, OpportunityType, PositionType, SoftwareCategory } from "./internships.ts";
 
 export type OpportunityFilter = OpportunityType | "all";
 export type AreaFilter = "usa" | "global" | "remote";
 export type CategoryFilter = SoftwareCategory | "all";
+export type PositionFilter = PositionType | "all";
+export type DisciplineFilter = EngineeringDiscipline | "all";
 
 export type InternshipFilters = {
   keyword: string;
   opportunity: OpportunityFilter;
   area: AreaFilter;
   category: CategoryFilter;
+};
+
+export type EngineeringFilters = {
+  keyword: string;
+  positionType: PositionFilter;
+  area: AreaFilter;
+  discipline: DisciplineFilter;
 };
 
 const seniorityPattern = /\b(senior|staff|principal|director|architect|manager|lead|head of|vice president)\b|\bsr\.?(?=\s|,|$)|\bvp\b/i;
@@ -25,6 +34,22 @@ export function filterInternships(jobs: InternshipJob[], filters: InternshipFilt
     if (seniorityPattern.test(job.title)) return false;
     if (filters.opportunity !== "all" && job.opportunityType !== filters.opportunity) return false;
     if (filters.category !== "all" && job.softwareCategory !== filters.category) return false;
+    if (filters.area === "usa" && !isUsInternship(job)) return false;
+    if (filters.area === "remote" && !isRemoteInternship(job)) return false;
+    if (!keyword) return true;
+    return [job.company, job.title, ...(job.locations?.length ? job.locations : [job.location])]
+      .join(" ")
+      .toLowerCase()
+      .includes(keyword);
+  });
+}
+
+export function filterEngineeringOpportunities(jobs: InternshipJob[], filters: EngineeringFilters) {
+  const keyword = filters.keyword.trim().toLowerCase();
+  return jobs.filter((job) => {
+    if (seniorityPattern.test(job.title)) return false;
+    if (filters.positionType !== "all" && (job.positionType ?? "internship") !== filters.positionType) return false;
+    if (filters.discipline !== "all" && job.engineeringDiscipline !== filters.discipline) return false;
     if (filters.area === "usa" && !isUsInternship(job)) return false;
     if (filters.area === "remote" && !isRemoteInternship(job)) return false;
     if (!keyword) return true;

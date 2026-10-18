@@ -1,11 +1,11 @@
-# Software Latest Drops feed
+# Latest Drops feeds
 
-This AWS SAM stack powers the software-only Latest Drops experience.
+This AWS SAM stack powers the separate Software and Engineering Latest Drops experiences.
 
 It creates:
 
 - a DynamoDB table for normalized internships and new-grad roles;
-- a Lambda collector for direct employer ATS feeds and six GitHub discovery repositories;
+- a Lambda collector for direct employer ATS feeds, six software repositories and four engineering source feeds;
 - an EventBridge schedule that refreshes once per hour; and
 - a paginated public HTTP API used by the Next.js site.
 
@@ -40,6 +40,6 @@ Redeploy Vercel after adding the variable. Populate immediately with the
 aws lambda invoke --function-name YOUR_COLLECTOR_FUNCTION_NAME wantaninternship-response.json
 ```
 
-The API supports `limit` (1–100) and an opaque `cursor` returned as
-`nextCursor`. Edit `lambda/sources.json` for direct ATS employers and
-`lambda/github-sources.json` for scheduled GitHub discovery inputs.
+The API supports `track=software|engineering`, `limit` (1–250) and an opaque
+`cursor` returned as `nextCursor`. Edit `lambda/sources.json` for direct ATS
+employers and `lambda/github-sources.json` for scheduled GitHub discovery inputs.

@@ -80,6 +80,59 @@
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
+.disciplinePanel {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 14px 15px 15px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 86%, var(--track-tint));
+}
+
+.disciplineLabel {
+  color: var(--track-accent-strong);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.disciplineChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.disciplineChip {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  background: var(--background);
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.disciplineChip:hover {
+  color: var(--text);
+  border-color: var(--track-accent);
+}
+
+.disciplineChipActive {
+  color: #ffffff;
+  border-color: var(--track-accent);
+  background: var(--track-accent);
+}
+
+.disciplineChipActive:hover {
+  color: #ffffff;
+  background: var(--track-accent-strong);
+}
+
 .summary {
   display: flex;
   align-items: center;
@@ -172,5 +225,22 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 4px;
+  }
+
+  .disciplinePanel {
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 13px;
+  }
+
+  .disciplineChips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 3px;
+    scrollbar-width: thin;
+  }
+
+  .disciplineChip {
+    flex-shrink: 0;
   }
 }

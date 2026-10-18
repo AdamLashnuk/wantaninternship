@@ -16,6 +16,7 @@ const TRACK_STORAGE_KEY = "wantaninternship-career-track";
 export default function HomeExperience() {
   const [track, setTrack] = useState<CareerTrack>("software");
   const content = trackContent[track];
+  const hasLiveDrops = track === "software" || track === "engineering";
 
   useEffect(() => {
     const urlTrack = new URLSearchParams(window.location.search).get("track");
@@ -74,8 +75,8 @@ export default function HomeExperience() {
 
           <nav className="main-nav" aria-label="Main navigation">
             <a href="#directory">Directory</a>
-            {track === "software" && (
-              <a className="latest-drops-nav-button" href="/latest-drops">
+            {hasLiveDrops && (
+              <a className="latest-drops-nav-button" href={`/latest-drops?track=${track}`}>
                 Latest Drops
               </a>
             )}
@@ -88,7 +89,7 @@ export default function HomeExperience() {
       </header>
 
       <div
-        className={`container home-layout ${track === "software" ? "" : "home-layout-single"}`}
+        className={`container home-layout ${hasLiveDrops ? "" : "home-layout-single"}`}
         id="top"
       >
         <div className="home-main-column">
@@ -156,9 +157,9 @@ export default function HomeExperience() {
           </section>
         </div>
 
-        {track === "software" && (
+        {hasLiveDrops && (
           <div className="latest-drops-column">
-            <LatestDrops />
+            <LatestDrops track={track} />
           </div>
         )}
       </div>

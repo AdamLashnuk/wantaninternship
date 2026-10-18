@@ -1,0 +1,47 @@
+[
+  {
+    "company": "Example Motors",
+    "title": "Mechanical Engineering Co-op - Spring 2027",
+    "location": "Pittsburgh, PA",
+    "role_type": "Co-op",
+    "disciplines": ["mechanical"],
+    "url": "https://jobs.example.com/mechanical-coop",
+    "posted_at": "2026-10-17"
+  },
+  {
+    "company": "Example Grid",
+    "title": "Electrical Engineering Intern",
+    "location": "Austin, TX",
+    "role_type": "Internship",
+    "disciplines": ["hardware-electrical"],
+    "url": "https://jobs.example.com/electrical-intern",
+    "posted_at": "2026-10-16"
+  },
+  {
+    "company": "Example Civil",
+    "title": "Civil Engineering Intern",
+    "location": "Chicago, IL",
+    "role_type": "Internship",
+    "disciplines": ["other-engineering"],
+    "url": "https://jobs.example.com/civil-intern",
+    "posted_at": "2026-10-15"
+  },
+  {
+    "company": "Example Software",
+    "title": "Software Engineering Intern",
+    "location": "Remote",
+    "role_type": "Internship",
+    "disciplines": ["software"],
+    "url": "https://jobs.example.com/software-intern",
+    "posted_at": "2026-10-17"
+  },
+  {
+    "company": "Example Aerospace",
+    "title": "Aerospace Engineer - New Graduate",
+    "location": "Seattle, WA",
+    "role_type": "New Grad",
+    "disciplines": ["aerospace"],
+    "url": "https://jobs.example.com/aerospace-new-grad",
+    "posted_at": "2026-10-17"
+  }
+]

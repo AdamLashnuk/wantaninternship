@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: Software opportunity collector and public API for WantAnInternship
+Description: Software and engineering opportunity collector and public API for WantAnInternship
 
 Parameters:
   AllowedOrigin:
@@ -61,7 +61,7 @@ Resources:
     Properties:
       CodeUri: lambda/
       Handler: collect.handler
-      Description: Collects software internships and new-grad roles from ATS and GitHub discovery sources
+      Description: Collects software and engineering opportunities from ATS and GitHub discovery sources
       MemorySize: 768
       Timeout: 180
       Policies:
@@ -79,7 +79,7 @@ Resources:
     Properties:
       CodeUri: lambda/
       Handler: read.handler
-      Description: Returns active software opportunities newest first
+      Description: Returns active software or engineering opportunities newest first
       Timeout: 15
       Policies:
         - DynamoDBReadPolicy:
