@@ -28,6 +28,10 @@ export default async function LatestDropsPage({ searchParams }: { searchParams: 
           </nav>
 
           <ThemeToggle />
+
+          <span className="position-context-label">
+            {track === "engineering" ? "Engineering Positions" : "Tech Positions"}
+          </span>
         </div>
       </header>
 
