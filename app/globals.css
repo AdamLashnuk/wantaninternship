@@ -856,21 +856,6 @@ button:focus-visible {
   --header-background: rgba(245, 238, 231, 0.94);
 }
 
-.track-page[data-track="engineering"] {
-  --track-accent: #b45309;
-  --track-accent-strong: #8a3f05;
-  --track-tint: #ffdfb5;
-  --background: #fff7ed;
-  --surface: #fffaf5;
-  --surface-hover: #ffedd5;
-  --border: #e6c7a6;
-  --border-muted: #f0d9c2;
-  --blue: var(--track-accent);
-  --blue-hover: var(--track-accent-strong);
-  --focus-ring: rgba(180, 83, 9, 0.2);
-  --header-background: rgba(255, 247, 237, 0.94);
-}
-
 .track-page[data-track="medicine"] {
   --track-accent: #23864b;
   --track-accent-strong: #176536;
@@ -886,7 +871,8 @@ button:focus-visible {
   --header-background: rgba(235, 247, 239, 0.94);
 }
 
-:root[data-theme="dark"] .track-page[data-track="software"] {
+:root[data-theme="dark"] .track-page[data-track="software"],
+:root[data-theme="dark"] .track-page[data-track="engineering"] {
   --track-accent: #79b8ff;
   --track-accent-strong: #a7d2ff;
   --track-tint: rgba(50, 126, 213, 0.23);
@@ -910,18 +896,6 @@ button:focus-visible {
   --header-background: rgba(33, 23, 16, 0.94);
 }
 
-:root[data-theme="dark"] .track-page[data-track="engineering"] {
-  --track-accent: #f0a45d;
-  --track-accent-strong: #ffc58e;
-  --track-tint: rgba(180, 83, 9, 0.28);
-  --background: #21150b;
-  --surface: #2b1d11;
-  --surface-hover: #3a2717;
-  --border: #5e422b;
-  --border-muted: #49331f;
-  --header-background: rgba(33, 21, 11, 0.94);
-}
-
 :root[data-theme="dark"] .track-page[data-track="medicine"] {
   --track-accent: #69d391;
   --track-accent-strong: #91e5ae;
@@ -936,6 +910,18 @@ button:focus-visible {
 
 .track-page .container {
   width: min(100% - 40px, 1280px);
+}
+
+.position-context-label {
+  min-width: 124px;
+  flex-shrink: 0;
+  color: var(--track-accent-strong);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: right;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .track-page .status-dot,
@@ -1300,6 +1286,10 @@ button:focus-visible {
 
   .track-selector {
     min-width: 108px;
+  }
+
+  .position-context-label {
+    display: none;
   }
 
   .latest-drop-list {
