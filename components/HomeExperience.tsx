@@ -17,6 +17,12 @@ export default function HomeExperience() {
   const [track, setTrack] = useState<CareerTrack>("software");
   const content = trackContent[track];
   const hasLiveDrops = track === "software" || track === "engineering";
+  const positionLabel =
+    track === "engineering"
+      ? "Engineering Positions"
+      : track === "software"
+        ? "Tech Positions"
+        : null;
 
   useEffect(() => {
     const urlTrack = new URLSearchParams(window.location.search).get("track");
@@ -85,6 +91,10 @@ export default function HomeExperience() {
           </nav>
 
           <ThemeToggle />
+
+          {positionLabel && (
+            <span className="position-context-label">{positionLabel}</span>
+          )}
         </div>
       </header>
 
