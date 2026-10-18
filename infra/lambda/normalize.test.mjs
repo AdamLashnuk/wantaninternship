@@ -13,6 +13,14 @@ test("parses SpeedyApply tables while excluding quant", () => {
   assert.equal(jobs[0].applicationUrl, "https://jobs.example.com/123");
 });
 
+test("parses five-column markdown tables with absolute posting dates", () => {
+  const jobs = parseSpeedyMarkdown(fixture("sndsh.md"), config("sndsh404"));
+  assert.equal(jobs.length, 1);
+  assert.equal(jobs[0].company, "Example Labs");
+  assert.equal(jobs[0].postedAt, "2026-09-12T00:00:00.000Z");
+  assert.equal(jobs[0].applicationUrl, "https://jobs.example.com/software-intern");
+});
+
 test("parses vanshb03 JSON, filters hardware and keeps merged locations", () => {
   const jobs = parseListingsJson(fixture("vansh.json"), config("vanshb03"));
   assert.equal(jobs.length, 1);
@@ -24,6 +32,14 @@ test("parses Simplify JSON and categorizes cloud roles", () => {
   assert.equal(jobs.length, 1);
   assert.equal(jobs[0].softwareCategory, "cloud-devops");
   assert.equal(jobs[0].applicationUrl, "https://boards.greenhouse.io/cloud/jobs/77");
+});
+
+test("parses wrapped JSON feeds with snake-case dates", () => {
+  const jobs = parseListingsJson(fixture("zshah.json"), config("zshah101"));
+  assert.equal(jobs.length, 1);
+  assert.equal(jobs[0].company, "Example Cloud");
+  assert.equal(jobs[0].postedAt, "2026-09-13T15:30:00.000Z");
+  assert.equal(jobs[0].softwareCategory, "cloud-devops");
 });
 
 test("keeps technical security roles and rejects non-software business roles", () => {

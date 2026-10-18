@@ -44,8 +44,11 @@ function sourceName(source: string) {
     lever: "Lever",
     ashby: "Ashby",
     "github:speedyapply": "SpeedyApply GitHub",
+    "github:speedyapply-ai": "SpeedyApply AI GitHub",
     "github:vanshb03": "vanshb03 GitHub",
     "github:simplify": "Simplify GitHub",
+    "github:sndsh404": "sndsh404 GitHub",
+    "github:zshah101": "zshah101 GitHub",
     curated: "Curated",
   };
   return names[source] ?? source;
@@ -330,7 +333,10 @@ export default function LatestDropsDirectory() {
           Sources include direct Greenhouse, Lever and Ashby employer feeds plus discovery from{" "}
           <a href="https://github.com/speedyapply/2027-SWE-College-Jobs" target="_blank" rel="noreferrer">SpeedyApply</a>,{" "}
           <a href="https://github.com/vanshb03/Summer2027-Internships" target="_blank" rel="noreferrer">vanshb03</a> and{" "}
-          <a href="https://github.com/SimplifyJobs/Summer2027-Internships" target="_blank" rel="noreferrer">SimplifyJobs</a>.
+          <a href="https://github.com/SimplifyJobs/Summer2027-Internships" target="_blank" rel="noreferrer">SimplifyJobs</a>,{" "}
+          <a href="https://github.com/sndsh404/summer-2027-internships" target="_blank" rel="noreferrer">sndsh404</a>,{" "}
+          <a href="https://github.com/speedyapply/2027-AI-College-Jobs" target="_blank" rel="noreferrer">SpeedyApply AI</a> and{" "}
+          <a href="https://github.com/zshah101/Automated-List-Of-Summer-2027-and-Fall-2026-Tech-Internships" target="_blank" rel="noreferrer">zshah101</a>.
           GitHub sources are checked hourly on the backend; every Apply button uses the original employer listing.
         </p>
       </aside>

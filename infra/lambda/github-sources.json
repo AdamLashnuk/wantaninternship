@@ -32,6 +32,38 @@
     "opportunityType": "new-grad"
   },
   {
+    "key": "github:speedyapply-ai:intern-usa",
+    "label": "github:speedyapply-ai",
+    "repository": "https://github.com/speedyapply/2027-AI-College-Jobs",
+    "apiUrl": "https://api.github.com/repos/speedyapply/2027-AI-College-Jobs/contents/README.md?ref=main",
+    "format": "speedy-markdown",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:speedyapply-ai:new-grad-usa",
+    "label": "github:speedyapply-ai",
+    "repository": "https://github.com/speedyapply/2027-AI-College-Jobs",
+    "apiUrl": "https://api.github.com/repos/speedyapply/2027-AI-College-Jobs/contents/NEW_GRAD_USA.md?ref=main",
+    "format": "speedy-markdown",
+    "opportunityType": "new-grad"
+  },
+  {
+    "key": "github:speedyapply-ai:intern-global",
+    "label": "github:speedyapply-ai",
+    "repository": "https://github.com/speedyapply/2027-AI-College-Jobs",
+    "apiUrl": "https://api.github.com/repos/speedyapply/2027-AI-College-Jobs/contents/INTERN_INTL.md?ref=main",
+    "format": "speedy-markdown",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:speedyapply-ai:new-grad-global",
+    "label": "github:speedyapply-ai",
+    "repository": "https://github.com/speedyapply/2027-AI-College-Jobs",
+    "apiUrl": "https://api.github.com/repos/speedyapply/2027-AI-College-Jobs/contents/NEW_GRAD_INTL.md?ref=main",
+    "format": "speedy-markdown",
+    "opportunityType": "new-grad"
+  },
+  {
     "key": "github:vanshb03",
     "label": "github:vanshb03",
     "repository": "https://github.com/vanshb03/Summer2027-Internships",
@@ -44,6 +76,22 @@
     "label": "github:simplify",
     "repository": "https://github.com/SimplifyJobs/Summer2027-Internships",
     "apiUrl": "https://api.github.com/repos/SimplifyJobs/Summer2027-Internships/contents/.github/scripts/listings.json?ref=dev",
+    "format": "json",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:sndsh404",
+    "label": "github:sndsh404",
+    "repository": "https://github.com/sndsh404/summer-2027-internships",
+    "apiUrl": "https://api.github.com/repos/sndsh404/summer-2027-internships/contents/README.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:zshah101",
+    "label": "github:zshah101",
+    "repository": "https://github.com/zshah101/Automated-List-Of-Summer-2027-and-Fall-2026-Tech-Internships",
+    "apiUrl": "https://api.github.com/repos/zshah101/Automated-List-Of-Summer-2027-and-Fall-2026-Tech-Internships/contents/docs/api/jobs.json?ref=main",
     "format": "json",
     "opportunityType": "internship"
   }
