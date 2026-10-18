@@ -90,6 +90,13 @@ function locationsOf(value) {
   return [...new Set(values.map(cleanText).filter(Boolean))];
 }
 
+function linkOf(value = "") {
+  const htmlLink = String(value).match(/href="([^"]+)"/i)?.[1];
+  if (htmlLink) return htmlLink;
+  const markdownLinks = [...String(value).matchAll(/\]\((https?:\/\/[^)\s]+)\)/gi)];
+  return markdownLinks.at(-1)?.[1] ?? "";
+}
+
 function baseJob({ company, companyWebsite, title, opportunityType, locations, applicationUrl, postedAt, source, sourceKey, sourceUrl, active = true, sourcePriority = 10 }) {
   const cleanUrl = canonicalizeApplicationUrl(applicationUrl);
   const allLocations = locationsOf(locations);
@@ -211,7 +218,7 @@ export function parseSpeedyMarkdown(text, config) {
     const cells = line.split("|").slice(1, -1);
     if (cells.length < 5 || /company/i.test(cells[0]) && /position|role/i.test(cells[1])) continue;
 
-    let companyLink = cells[0].match(/href="([^"]+)"/i)?.[1] ?? "";
+    let companyLink = linkOf(cells[0]);
     let company = cleanText(cells[0]);
     if (company === "↳") {
       company = lastCompany;
@@ -222,12 +229,12 @@ export function parseSpeedyMarkdown(text, config) {
     }
     const title = cleanText(cells[1]);
     const location = cleanText(cells[2]);
-    const applicationUrl = cells[4].match(/href="([^"]+)"/i)?.[1] ?? cells[3].match(/href="([^"]+)"/i)?.[1] ?? "";
+    const applicationUrl = linkOf(cells[4]) || linkOf(cells[3]);
     const ageCell = cells.at(-1) ?? "";
     const ageDays = Number(ageCell.match(/(\d+)d/i)?.[1]);
     const postedAt = Number.isFinite(ageDays)
       ? new Date(new Date(config.collectedAt).getTime() - ageDays * 86_400_000).toISOString()
-      : undefined;
+      : isoDate(cleanText(ageCell));
 
     const job = baseJob({
       company,

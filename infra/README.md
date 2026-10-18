@@ -5,7 +5,7 @@ This AWS SAM stack powers the software-only Latest Drops experience.
 It creates:
 
 - a DynamoDB table for normalized internships and new-grad roles;
-- a Lambda collector for direct employer ATS feeds and three GitHub discovery sources;
+- a Lambda collector for direct employer ATS feeds and six GitHub discovery repositories;
 - an EventBridge schedule that refreshes once per hour; and
 - a paginated public HTTP API used by the Next.js site.
 
