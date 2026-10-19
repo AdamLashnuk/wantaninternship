@@ -31,17 +31,13 @@ export default function OpportunityRadarMockup() {
           <nav aria-label="Main navigation">
             <Link href="/directory">Directory</Link><Link className={styles.latestButton} href="/latest-drops">Latest Drops</Link><Link href="/tools">Career toolkit</Link><Link href="/directory#submit">Submit</Link>
           </nav>
-          <p>Free. No account. Direct to the source.</p>
           <ThemeToggle />
           <AccountMenu />
         </div>
       </header>
 
       <div className={styles.shell}>
-        <section className={styles.intro}>
-          <h1>Catch the opening while it&apos;s <span>fresh.</span></h1>
-          <p>A free, no-account directory of internships from trusted sources, so you can go directly to the opportunity.</p>
-        </section>
+        <h1 className={styles.srOnly}>WantAnInternship opportunities</h1>
 
         <HomeLatestDrops />
 
