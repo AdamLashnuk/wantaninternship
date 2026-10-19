@@ -64,26 +64,6 @@ function getFallbackJobs(track: OpportunityTrack): InternshipJob[] {
   }));
 }
 
-function sourceName(source: string) {
-  const names: Record<string, string> = {
-    greenhouse: "Greenhouse",
-    lever: "Lever",
-    ashby: "Ashby",
-    "github:speedyapply": "SpeedyApply GitHub",
-    "github:speedyapply-ai": "SpeedyApply AI GitHub",
-    "github:vanshb03": "vanshb03 GitHub",
-    "github:simplify": "Simplify GitHub",
-    "github:sndsh404": "sndsh404 GitHub",
-    "github:zshah101": "zshah101 GitHub",
-    "github:simplify-engineering": "Simplify Engineering GitHub",
-    "github:wonofakind-engineering": "WonOfAKind GitHub",
-    "github:hiderrick-engineering": "hiderrick GitHub",
-    "github:thebargon-engineering": "thebargon GitHub",
-    curated: "Curated",
-  };
-  return names[source] ?? source;
-}
-
 type CachedPage = InternshipResponse & { cachedAt: number };
 
 export default function LatestDropsDirectory({ track }: { track: OpportunityTrack }) {
@@ -372,9 +352,7 @@ export default function LatestDropsDirectory({ track }: { track: OpportunityTrac
                   <span>{track === "engineering" ? (job.positionType === "co-op" ? "Co-op" : "Internship") : (job.opportunityType === "new-grad" ? "New Grad" : "Internship")}</span>
                   {track === "engineering" && <span>{disciplineLabel(job.engineeringDiscipline)}</span>}
                 </div>
-                <div className={styles.source}>
-                  Source: {job.sourceUrl ? <a href={job.sourceUrl} target="_blank" rel="noreferrer">{sourceName(job.source)}</a> : sourceName(job.source)}
-                </div>
+
               </div>
 
               <a className="drops-apply-button" href={job.applicationUrl || job.applyUrl} target="_blank" rel="noreferrer">
@@ -399,29 +377,7 @@ export default function LatestDropsDirectory({ track }: { track: OpportunityTrac
         </div>
       )}
 
-      <aside className={styles.attribution}>
-        {track === "engineering" ? (
-          <p>
-            Engineering discovery comes from{" "}
-            <a href="https://github.com/SimplifyJobs/Summer2027-Internships" target="_blank" rel="noreferrer">SimplifyJobs</a>,{" "}
-            <a href="https://github.com/WonOfAKind/New-Grad-And-Internships-2027" target="_blank" rel="noreferrer">WonOfAKind</a>,{" "}
-            <a href="https://github.com/hiderrick/Engineering-Internships-Summer-2027" target="_blank" rel="noreferrer">hiderrick</a> and{" "}
-            <a href="https://github.com/thebargon/2027-Mechanical-Engineering-Internships" target="_blank" rel="noreferrer">thebargon</a>.
-            Sources are checked hourly, normalized by discipline and deduplicated before display.
-          </p>
-        ) : (
-          <p>
-          Sources include direct Greenhouse, Lever and Ashby employer feeds plus discovery from{" "}
-          <a href="https://github.com/speedyapply/2027-SWE-College-Jobs" target="_blank" rel="noreferrer">SpeedyApply</a>,{" "}
-          <a href="https://github.com/vanshb03/Summer2027-Internships" target="_blank" rel="noreferrer">vanshb03</a> and{" "}
-          <a href="https://github.com/SimplifyJobs/Summer2027-Internships" target="_blank" rel="noreferrer">SimplifyJobs</a>,{" "}
-          <a href="https://github.com/sndsh404/summer-2027-internships" target="_blank" rel="noreferrer">sndsh404</a>,{" "}
-          <a href="https://github.com/speedyapply/2027-AI-College-Jobs" target="_blank" rel="noreferrer">SpeedyApply AI</a> and{" "}
-          <a href="https://github.com/zshah101/Automated-List-Of-Summer-2027-and-Fall-2026-Tech-Internships" target="_blank" rel="noreferrer">zshah101</a>.
-          GitHub sources are checked hourly on the backend; every Apply button uses the original employer listing.
-          </p>
-        )}
-      </aside>
+
     </section>
   );
 }

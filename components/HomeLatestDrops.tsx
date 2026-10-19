@@ -27,11 +27,6 @@ async function loadTrack(track: OpportunityTrack, signal: AbortSignal) {
   return [...jobs.values()];
 }
 
-function sourceName(source: string) {
-  if (source.startsWith("github:")) return `${source.slice(7)} GitHub`;
-  return source.charAt(0).toUpperCase() + source.slice(1);
-}
-
 export default function HomeLatestDrops() {
   const [jobs, setJobs] = useState<InternshipJob[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +55,7 @@ export default function HomeLatestDrops() {
           Date.parse(originalPostingDate(job) || job.firstSeenAt) >= cutoff,
         );
         const unique = new Map(active.map((job) => [job.applicationUrl, job]));
-        setJobs(sortInternshipsNewestFirst([...unique.values()]).slice(0, 6));
+        setJobs(sortInternshipsNewestFirst([...unique.values()]).slice(0, 10));
         setFailed(false);
       } finally {
         refreshing = false;
@@ -80,13 +75,12 @@ export default function HomeLatestDrops() {
       </div>
       {jobs.length > 0 ? (
         <div className={styles.table}>
-          <div className={styles.tableHead}><span>Posted / discovered</span><span>Role</span><span>Company</span><span>Location</span><span>Type</span><span>Source</span></div>
+          <div className={styles.tableHead}><span>Posted / discovered</span><span>Role</span><span>Company</span><span>Location</span><span>Type</span></div>
           {jobs.map((job) => (
             <a className={styles.dropRow} href={job.applicationUrl} key={job.id} target="_blank" rel="noreferrer">
               <time title={formatJobDate(job)}>{formatJobDate(job)}</time>
               <strong>{job.title}</strong><span>{job.company}</span><span>{job.location}</span>
               <span className={styles.type}>{job.positionType === "co-op" ? "Co-op" : "Internship"}</span>
-              <span className={styles.source}>{sourceName(job.source)}<b aria-hidden="true">↗</b></span>
             </a>
           ))}
         </div>

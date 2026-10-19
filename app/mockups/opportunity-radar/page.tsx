@@ -10,9 +10,13 @@ const lanes = careerTracks.map((track) => ({
   name: trackContent[track].label,
   mark: track === "software" ? "</>" : "⚙",
   summary: track === "software" ? "Developer-focused sources" : "Mechanical, electrical, civil and more",
-  sources: trackContent[track].recommendations
-    .map((name) => resources.find((resource) => resource.name === name))
-    .filter((resource) => resource !== undefined)
+  sources: resources
+    .filter((resource) => resource.section === "Website" &&
+      !new URL(resource.url).hostname.endsWith("github.com") &&
+      (resource.majors.includes("All Majors") ||
+        resource.majors.some((major) => trackContent[track].majors.includes(major))))
+    .sort((a, b) => Number(trackContent[track].recommendations.includes(b.name)) -
+      Number(trackContent[track].recommendations.includes(a.name)))
     .slice(0, 4),
 }));
 
