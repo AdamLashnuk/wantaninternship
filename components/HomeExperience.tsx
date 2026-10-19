@@ -53,8 +53,8 @@ export default function HomeExperience() {
 
       <header className="site-header">
         <div className="container header-inner">
-          <a className="brand" href="#top">
-            WantAnInternship
+          <a className="brand directory-brand" href="/" aria-label="WantAnInternship homepage">
+            WantAn<span>Internship</span>
           </a>
 
           <label className="track-selector">
