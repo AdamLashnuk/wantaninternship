@@ -4,7 +4,7 @@
 .trigger:active{transform:scale(.96)}
 .trigger:focus-visible,.item:focus-visible{outline:2px solid var(--track-accent,var(--blue));outline-offset:4px}
 .trigger:disabled{cursor:wait;opacity:.65}
-.avatar{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:var(--track-tint,var(--surface-hover));color:var(--track-accent,var(--blue));font-size:13px;font-weight:750}
+.avatar{width:32px;height:32px;flex-shrink:0;display:grid;place-items:center;border-radius:50%;background:var(--track-tint,var(--surface-hover));color:var(--track-accent,var(--blue));font-size:13px;font-weight:750}
 .dropdown{position:absolute;right:0;top:calc(100% + 13px);width:min(248px,calc(100vw - 24px));padding:9px;border:1px solid var(--border);border-radius:12px;background:var(--background);box-shadow:0 20px 65px #0003,0 3px 10px #0001;opacity:0;visibility:hidden;transform:translateY(-10px) scale(.91);transform-origin:top right;transition:opacity .16s,visibility .16s,transform .22s cubic-bezier(.2,.8,.2,1);pointer-events:none}
 .dropdownOpen{opacity:1;visibility:visible;transform:translateY(0) scale(1);pointer-events:auto;animation:bubble-in .38s cubic-bezier(.2,.8,.2,1)}
 @keyframes bubble-in{0%{opacity:0;transform:translateY(-9px) scale(.9)}65%{opacity:1;transform:translateY(2px) scale(1.015)}100%{transform:translateY(0) scale(1)}}
@@ -20,11 +20,11 @@
 
 @media(prefers-reduced-motion:reduce){.trigger,.dropdown,.item{transition:none}.dropdownOpen{animation:none}}
 
-.signedIn { border-radius:999px; padding:5px 13px 5px 5px; gap:9px; border-color:var(--track-accent,var(--blue)); background:var(--surface); }
+.signedIn { min-width:160px; min-height:46px; white-space:nowrap; border-radius:999px; padding:5px 13px 5px 5px; gap:9px; border-color:var(--track-accent,var(--blue)); background:var(--surface); }
 .heading strong { overflow-wrap:anywhere; }
 
-.triggerLabel { line-height:1.3; }
+.triggerLabel { display:inline-block!important; flex-shrink:0; white-space:nowrap; line-height:1.3; }
 
-.chevron { transition:transform .2s ease; }
+.chevron { flex-shrink:0; transition:transform .2s ease; }
 .triggerOpen .chevron { transform:rotate(180deg); }
-@media(prefers-reduced-motion:reduce) { .chevron { transition:none; } }
+@media(prefers-reduced-motion:reduce) { .chevron { flex-shrink:0; transition:none; } }
