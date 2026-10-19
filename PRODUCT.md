@@ -24,7 +24,7 @@ Users browse by career track, search and filter curated resources, review live S
 
 ## Capabilities and Constraints
 
-- Preserve the Software, Finance, and Medicine career-track model.
+- Offer exactly two career tracks: Software and Engineering.
 - Keep the service free to use and available without an account.
 - Preserve direct links to original employer, applicant-tracking-system, GitHub, and resource pages.
 - Software Latest Drops aggregate normalized public listings from employer feeds and selected GitHub discovery sources; source attribution remains visible.

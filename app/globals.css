@@ -2104,3 +2104,12 @@ button:focus-visible {
     content: none;
   }
 }
+
+.main-nav .latest-drops-nav-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 16px;
+  color: var(--background) !important;
+  box-shadow: 0 0 0 4px var(--track-tint);
+}

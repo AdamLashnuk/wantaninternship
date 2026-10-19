@@ -4,15 +4,15 @@ import "./globals.css";
 
 const themeInitializationScript = `
   (function () {
-    var theme = "light";
+    var theme = "dark";
 
     try {
       var savedTheme = localStorage.getItem("wantaninternship-theme");
       theme = savedTheme === "light" || savedTheme === "dark"
         ? savedTheme
-        : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        : "dark";
     } catch (error) {
-      theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      theme = "dark";
     }
 
     document.documentElement.dataset.theme = theme;

@@ -397,8 +397,7 @@ export default function Directory({ track }: { track: CareerTrack }) {
         .filter(
           (section) =>
             (section.type !== "Tool" ||
-              (track === "software" && sectionFilter === "Tool")) &&
-            (track !== "finance" || section.type !== "Research"),
+              (track === "software" && sectionFilter === "Tool")),
         )
         .map((section) => ({
           section,

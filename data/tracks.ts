@@ -1,4 +1,4 @@
-export const careerTracks = ["software", "engineering", "finance", "medicine"] as const;
+export const careerTracks = ["software", "engineering"] as const;
 
 export type CareerTrack = (typeof careerTracks)[number];
 
@@ -102,42 +102,7 @@ export const trackContent: Record<CareerTrack, TrackContent> = {
       },
     ],
   },
-  finance: {
-    label: "Finance",
-    shortLabel: "Finance internships",
-    description:
-      "Find finance, banking, accounting and investment internships in one focused directory.",
-    subtext:
-      "Finance-first job boards, student programs and recruiting resources—without software interview tools mixed in.",
-    searchPlaceholder: "Search finance websites, programs or keywords...",
-    majors: ["Finance", "Business"],
-    recommendations: [
-      "eFinancialCareers",
-      "Wall Street Oasis Jobs",
-      "Handshake",
-      "Forage",
-      "LinkedIn Jobs",
-    ],
-    drops: [],
-  },
-  medicine: {
-    label: "Medicine",
-    shortLabel: "Medicine internships",
-    description:
-      "Find healthcare, biomedical research and public-health opportunities built for students.",
-    subtext:
-      "Medical and research programs stay separate from software job boards and coding-preparation tools.",
-    searchPlaceholder: "Search medicine, healthcare or research resources...",
-    majors: ["Healthcare", "Research"],
-    recommendations: [
-      "Health eCareers",
-      "Public Health Jobs",
-      "NSF Research Experiences for Undergraduates",
-      "ORISE",
-      "Pathways to Science",
-    ],
-    drops: [],
-  },
+
 };
 
 export function isCareerTrack(value: string | null): value is CareerTrack {

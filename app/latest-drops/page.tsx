@@ -21,7 +21,7 @@ export default async function LatestDropsPage({ searchParams }: { searchParams: 
 
           <nav className="main-nav drops-page-nav" aria-label="Main navigation">
             <a href={`/?track=${track}#directory`}>Directory</a>
-            <a className="active" href={`/latest-drops?track=${track}`}>
+            <a className="latest-drops-nav-button active" aria-current="page" href={`/latest-drops?track=${track}`}>
               Latest Drops
             </a>
             {track === "software" && <a href="/tools">Career toolkit</a>}
