@@ -43,3 +43,12 @@ aws lambda invoke --function-name YOUR_COLLECTOR_FUNCTION_NAME wantaninternship-
 The API supports `track=software|engineering`, `limit` (1–250) and an opaque
 `cursor` returned as `nextCursor`. Edit `lambda/sources.json` for direct ATS
 employers and `lambda/github-sources.json` for scheduled GitHub discovery inputs.
+
+## Listing freshness
+
+The collector preserves each listing's first discovery time and earliest known
+publication date. Greenhouse `updated_at` is stored separately as `sourceUpdatedAt`;
+employer edits do not move existing jobs to the top. Older Greenhouse records are
+migrated on the next collector run. Deploy the Lambda changes with `sam build`
+and `sam deploy`, then invoke the collector to apply the migration immediately.
+The website also corrects legacy Greenhouse dates when reading existing API data.

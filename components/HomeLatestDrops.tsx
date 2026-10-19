@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { sortInternshipsNewestFirst } from "../lib/internship-sorting";
-import { formatOfficialPostDate } from "../lib/internship-dates";
+import { formatJobDate, originalPostingDate } from "../lib/internship-dates";
 import type { InternshipJob, InternshipResponse, OpportunityTrack } from "../lib/internships";
 import styles from "../app/mockups/opportunity-radar/page.module.css";
 
@@ -57,7 +57,7 @@ export default function HomeLatestDrops() {
         const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
         const active = successful.flatMap((result) => result.value).filter((job) =>
           job.active && job.opportunityType === "internship" &&
-          Date.parse(job.postedAt || job.firstSeenAt) >= cutoff,
+          Date.parse(originalPostingDate(job) || job.firstSeenAt) >= cutoff,
         );
         const unique = new Map(active.map((job) => [job.applicationUrl, job]));
         setJobs(sortInternshipsNewestFirst([...unique.values()]).slice(0, 6));
@@ -80,12 +80,10 @@ export default function HomeLatestDrops() {
       </div>
       {jobs.length > 0 ? (
         <div className={styles.table}>
-          <div className={styles.tableHead}><span>Posted</span><span>Role</span><span>Company</span><span>Location</span><span>Type</span><span>Source</span></div>
+          <div className={styles.tableHead}><span>Posted / discovered</span><span>Role</span><span>Company</span><span>Location</span><span>Type</span><span>Source</span></div>
           {jobs.map((job) => (
             <a className={styles.dropRow} href={job.applicationUrl} key={job.id} target="_blank" rel="noreferrer">
-              <time dateTime={job.postedAt} title={formatOfficialPostDate(job.postedAt)}>{job.postedAt && Number.isFinite(Date.parse(job.postedAt))
-                ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(job.postedAt))
-                : "Date unavailable"}</time>
+              <time title={formatJobDate(job)}>{formatJobDate(job)}</time>
               <strong>{job.title}</strong><span>{job.company}</span><span>{job.location}</span>
               <span className={styles.type}>{job.positionType === "co-op" ? "Co-op" : "Internship"}</span>
               <span className={styles.source}>{sourceName(job.source)}<b aria-hidden="true">↗</b></span>

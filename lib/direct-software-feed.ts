@@ -100,8 +100,10 @@ async function greenhouseJobs(source: Source): Promise<RawJob[]> {
       applyUrl: applicationUrl,
       source: "greenhouse",
       sourceUrl: `https://boards.greenhouse.io/${source.board}`,
-      firstSeenAt: updatedAt,
-      postedAt: updatedAt,
+      // This stateless fallback cannot establish a stable discovery date.
+      firstSeenAt: "",
+      sourceUpdatedAt: updatedAt,
+      freshnessVersion: 1,
       active: true,
       searchable: `${title} ${departments} ${typeof job.content === "string" ? job.content : ""}`,
     };

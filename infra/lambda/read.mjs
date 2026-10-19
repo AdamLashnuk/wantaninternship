@@ -35,7 +35,7 @@ export async function handler(event = {}) {
       ScanIndexForward: false,
       Limit: limit,
       ExclusiveStartKey: cursor,
-      ProjectionExpression: "id, company, companyWebsite, title, opportunityType, positionType, softwareCategory, engineeringDiscipline, track, #location, locations, applicationUrl, applyUrl, #source, sources, sourceUrl, firstSeenAt, postedAt, active",
+      ProjectionExpression: "id, company, companyWebsite, title, opportunityType, positionType, softwareCategory, engineeringDiscipline, track, #location, locations, applicationUrl, applyUrl, #source, sources, sourceUrl, firstSeenAt, postedAt, sourceUpdatedAt, freshnessVersion, active",
       ExpressionAttributeNames: { "#location": "location", "#source": "source" },
     })),
     documentClient.send(new GetCommand({

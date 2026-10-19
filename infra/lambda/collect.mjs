@@ -1,3 +1,4 @@
+import { preserveJobFreshness } from "./job-freshness.mjs";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
@@ -56,6 +57,7 @@ function directJob(source, raw) {
     applicationUrl,
     applyUrl: applicationUrl,
     postedAt: raw.postedAt,
+    sourceUpdatedAt: raw.sourceUpdatedAt,
     source: source.provider,
     sourceKey: sourceKey(source),
     sourceUrl: raw.sourceUrl,
@@ -81,7 +83,7 @@ async function fetchGreenhouse(source) {
     title: job.title,
     locations: [job.location?.name ?? "Location not listed"],
     applicationUrl: job.absolute_url,
-    postedAt: job.updated_at,
+    sourceUpdatedAt: job.updated_at,
     sourceUrl: `https://boards.greenhouse.io/${source.board}`,
     searchable: [job.title, ...(job.departments ?? []).map((item) => item.name), stripHtml(job.content)].join(" "),
   })).filter(isRelevantSoftware);
@@ -282,9 +284,10 @@ export async function handler() {
   const uniqueJobs = deduplicateJobs(collected);
   const seenIds = new Set(uniqueJobs.map((job) => job.id));
 
-  const saved = uniqueJobs.map((job) => {
-    const prior = existingById.get(job.id);
-    const firstSeenAt = prior?.firstSeenAt ?? now;
+  const saved = uniqueJobs.map((incoming) => {
+    const prior = existingById.get(incoming.id);
+    const job = preserveJobFreshness(incoming, prior, now);
+    const { firstSeenAt } = job;
     const active = isWithinPostingWindow(job.postedAt, firstSeenAt, now, RETENTION_DAYS);
     return {
       id: job.id,
@@ -301,6 +304,8 @@ export async function handler() {
       applicationUrl: job.applicationUrl,
       applyUrl: job.applicationUrl,
       postedAt: job.postedAt,
+      sourceUpdatedAt: job.sourceUpdatedAt,
+      freshnessVersion: job.freshnessVersion,
       firstSeenAt,
       discoverySort: discoverySortKey(job, firstSeenAt, now),
       source: job.source,
@@ -320,13 +325,17 @@ export async function handler() {
 
     // Re-key existing rows too. GitHub can return 304, so unchanged source files
     // still need their first-import discovery keys migrated to official post dates.
-    const discoverySort = discoverySortKey(job, job.firstSeenAt ?? now, now);
-    const needsSortMigration = job.active && job.discoverySort !== discoverySort;
-    const migratedJob = needsSortMigration ? { ...job, discoverySort } : job;
+    const corrected = preserveJobFreshness({
+      ...job,
+      postedAt: job.source === "greenhouse" && job.freshnessVersion !== 1 ? undefined : job.postedAt,
+    }, job, now);
+    const discoverySort = discoverySortKey(corrected, corrected.firstSeenAt, now);
+    const needsSortMigration = job.freshnessVersion !== 1 || (job.active && job.discoverySort !== discoverySort);
+    const migratedJob = needsSortMigration ? { ...corrected, discoverySort } : job;
 
     const expired = !isWithinPostingWindow(
-      job.postedAt,
-      job.firstSeenAt,
+      migratedJob.postedAt,
+      migratedJob.firstSeenAt,
       now,
       RETENTION_DAYS,
     );

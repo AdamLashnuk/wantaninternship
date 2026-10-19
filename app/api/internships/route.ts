@@ -46,7 +46,11 @@ function normalizeJob(value: unknown, requestedTrack: OpportunityTrack): Interns
     sources: Array.isArray(job.sources) ? job.sources.filter((item): item is string => typeof item === "string") : undefined,
     sourceUrl: typeof job.sourceUrl === "string" ? job.sourceUrl : undefined,
     firstSeenAt: job.firstSeenAt,
-    postedAt: typeof job.postedAt === "string" ? job.postedAt : undefined,
+    postedAt: job.source === "greenhouse" && job.freshnessVersion !== 1
+      ? undefined : typeof job.postedAt === "string" ? job.postedAt : undefined,
+    sourceUpdatedAt: typeof job.sourceUpdatedAt === "string" ? job.sourceUpdatedAt
+      : job.source === "greenhouse" && job.freshnessVersion !== 1 && typeof job.postedAt === "string" ? job.postedAt : undefined,
+    freshnessVersion: job.freshnessVersion === 1 ? 1 : undefined,
     active: job.active !== false,
   };
 }

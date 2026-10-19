@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { trackContent } from "../data/tracks";
-import { formatOfficialPostDate } from "../lib/internship-dates";
+import { formatJobDate } from "../lib/internship-dates";
 import { isUsInternship } from "../lib/internship-location";
 import { sortInternshipsNewestFirst } from "../lib/internship-sorting";
 import type { InternshipJob, InternshipResponse, OpportunityTrack } from "../lib/internships";
@@ -98,7 +98,7 @@ export default function LatestDrops({ track }: { track: OpportunityTrack }) {
             <strong>{job.title}</strong>
             <span className="latest-drop-location">{job.location}</span>
             <span className="latest-drop-link" aria-hidden="true">
-              {isLive ? formatOfficialPostDate(job.postedAt) : "View roles"} ↗
+              {isLive ? formatJobDate(job) : "View roles"} ↗
             </span>
           </a>
         ))}

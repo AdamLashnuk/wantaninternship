@@ -36,6 +36,8 @@ export type InternshipJob = {
   sourceUrl?: string;
   firstSeenAt: string;
   postedAt?: string;
+  sourceUpdatedAt?: string;
+  freshnessVersion?: number;
   active: boolean;
 };
 

@@ -39,3 +39,9 @@ test("uses first-seen time only when source dates tie or are unavailable", () =>
   ]);
   assert.deepEqual(result.map((item) => item.id), ["newer-discovery", "older-discovery"]);
 });
+
+test("an edited Greenhouse job stays below a genuinely new posting", () => {
+  const edited = { ...job("edited", "Roblox", "2026-10-19T12:00:00Z", "2026-10-01T12:00:00Z"), source: "greenhouse" };
+  const fresh = job("fresh", "New employer", "2026-10-18T12:00:00Z", "2026-10-18T12:00:00Z");
+  assert.deepEqual(sortInternshipsNewestFirst([edited, fresh]).map((item) => item.id), ["fresh", "edited"]);
+});

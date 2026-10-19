@@ -251,7 +251,7 @@ export function parseListingsJson(text, config) {
       disciplineHints: item.disciplines ?? item.discipline ?? item.category ?? [],
       locations: item.locations ?? item.location,
       applicationUrl: item.url ?? item.application_url ?? item.apply_url ?? item.job_url,
-      postedAt: item.date_posted ?? item.posted_at ?? item.postedAt ?? item.date_updated ?? item.firstSeenAt ?? item.date_seen,
+      postedAt: item.date_posted ?? item.posted_at ?? item.postedAt,
       source: config.label,
       sourceKey: config.key,
       sourceUrl: config.repository,

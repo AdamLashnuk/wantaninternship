@@ -13,7 +13,7 @@ import {
   type OpportunityFilter,
   type PositionFilter,
 } from "../lib/internship-filters";
-import { formatOfficialPostDate } from "../lib/internship-dates";
+import { formatJobDate, formatJobUpdate } from "../lib/internship-dates";
 import { sortInternshipsNewestFirst } from "../lib/internship-sorting";
 import type { EngineeringDiscipline, InternshipJob, InternshipResponse, OpportunityTrack } from "../lib/internships";
 import CompanyLogo from "./CompanyLogo";
@@ -87,7 +87,7 @@ function sourceName(source: string) {
 type CachedPage = InternshipResponse & { cachedAt: number };
 
 export default function LatestDropsDirectory({ track }: { track: OpportunityTrack }) {
-  const cacheKey = `wantaninternship:latest-drops:${track}:v9`;
+  const cacheKey = `wantaninternship:latest-drops:${track}:v10`;
   const fallback = useMemo(() => getFallbackJobs(track), [track]);
   const [jobs, setJobs] = useState<InternshipJob[]>(fallback);
   const [keyword, setKeyword] = useState("");
@@ -340,7 +340,7 @@ export default function LatestDropsDirectory({ track }: { track: OpportunityTrac
           ? (
               <span>
                 {typeof recentWeekJobs === "number"
-                  ? `${recentWeekJobs.toLocaleString()} posted in the past 7 days · `
+                  ? `${recentWeekJobs.toLocaleString()} posted or first discovered in the past 7 days · `
                   : ""}
                 {totalJobs.toLocaleString()} active roles from the past {retentionDays ?? 14} days
               </span>
@@ -367,7 +367,8 @@ export default function LatestDropsDirectory({ track }: { track: OpportunityTrac
                 <h2>{job.title}</h2>
                 <div className="drops-result-meta">
                   <span className={styles.locationList} title={locations.join(", ")}>{locations.join(" • ")}</span>
-                  <span>{formatOfficialPostDate(job.postedAt)}</span>
+                  <span>{formatJobDate(job)}</span>
+                  {formatJobUpdate(job) && <span>{formatJobUpdate(job)}</span>}
                   <span>{track === "engineering" ? (job.positionType === "co-op" ? "Co-op" : "Internship") : (job.opportunityType === "new-grad" ? "New Grad" : "Internship")}</span>
                   {track === "engineering" && <span>{disciplineLabel(job.engineeringDiscipline)}</span>}
                 </div>
