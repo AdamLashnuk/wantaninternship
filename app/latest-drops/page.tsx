@@ -1,3 +1,4 @@
+import AccountMenu from "../../components/AccountMenu";
 import type { Metadata } from "next";
 import LatestDropsDirectory from "../../components/LatestDropsDirectory";
 import ThemeToggle from "../../components/ThemeToggle";
@@ -32,6 +33,7 @@ export default async function LatestDropsPage({ searchParams }: { searchParams: 
           <span className="position-context-label">
             {track === "engineering" ? "Engineering Positions" : "Tech Positions"}
           </span>
+          <AccountMenu />
         </div>
       </header>
 

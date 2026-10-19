@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+import { AccountProvider } from "../components/AccountProvider";
 
 const themeInitializationScript = `
   (function () {
@@ -36,7 +37,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitializationScript }} />
       </head>
       <body>
-        {children}
+        <AccountProvider>{children}</AccountProvider>
         <Analytics />
       </body>
     </html>

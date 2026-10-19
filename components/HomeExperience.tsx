@@ -1,5 +1,7 @@
 "use client";
 
+import AccountMenu from "./AccountMenu";
+
 import { useEffect, useState } from "react";
 import Directory from "./Directory";
 import LatestDrops from "./LatestDrops";
@@ -95,6 +97,7 @@ export default function HomeExperience() {
           {positionLabel && (
             <span className="position-context-label">{positionLabel}</span>
           )}
+          <AccountMenu />
         </div>
       </header>
 

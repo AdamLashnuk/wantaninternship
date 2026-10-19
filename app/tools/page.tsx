@@ -1,3 +1,4 @@
+import AccountMenu from "../../components/AccountMenu";
 import ThemeToggle from "../../components/ThemeToggle";
 import ToolDirectory from "../../components/ToolDirectory";
 
@@ -16,6 +17,7 @@ export default function ToolsPage() {
           </nav>
 
           <ThemeToggle />
+          <AccountMenu />
         </div>
       </header>
 

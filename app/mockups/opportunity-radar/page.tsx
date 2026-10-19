@@ -1,3 +1,4 @@
+import AccountMenu from "../../../components/AccountMenu";
 import Link from "next/link";
 import HomeLatestDrops from "../../../components/HomeLatestDrops";
 import styles from "./page.module.css";
@@ -32,6 +33,7 @@ export default function OpportunityRadarMockup() {
           </nav>
           <p>Free. No account. Direct to the source.</p>
           <ThemeToggle />
+          <AccountMenu />
         </div>
       </header>
 

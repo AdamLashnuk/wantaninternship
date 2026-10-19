@@ -52,3 +52,21 @@ employer edits do not move existing jobs to the top. Older Greenhouse records ar
 migrated on the next collector run. Deploy the Lambda changes with `sam build`
 and `sam deploy`, then invoke the collector to apply the migration immediately.
 The website also corrects legacy Greenhouse dates when reading existing API data.
+
+## Student accounts
+
+The same SAM stack also creates a Cognito user pool and web app client for email
+and password accounts. Passwords are managed by Cognito; the website stores only
+HttpOnly, Secure (in production), SameSite=Lax session cookies. Signup requires
+an emailed confirmation code. Account data comes from Cognito GetUser, not from
+browser storage. The pool is retained if the stack is deleted.
+
+Deploy with `sam build` and `sam deploy`. Copy the `AccountsClientId` output into
+Vercel as `COGNITO_CLIENT_ID`, and `AccountsRegion` as `COGNITO_REGION`, then
+redeploy Vercel. Until configured, browsing and the account pages remain available,
+while signup/login return an honest service-unavailable message. There are no
+mock accounts or password storage in localStorage. Subscription billing is not
+connected; accounts start on the free plan.
+
+Cognito's default email sender has sending quotas. Configure a verified SES
+sender and request appropriate production quotas before a public signup campaign.

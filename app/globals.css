@@ -2128,3 +2128,13 @@ button:focus-visible {
 }
 
 .site-header .brand:hover { text-decoration: none; }
+
+:root { --account-danger: #bd253a; --account-danger-bg: rgba(189,37,58,.07); }
+:root[data-theme="dark"] { --account-danger: #ff8591; --account-danger-bg: rgba(255,100,120,.09); }
+@media (max-width: 1080px) {
+  .header-inner .position-context-label { display: none; }
+}
+@media (max-width: 620px) {
+  .header-inner { flex-wrap: wrap; }
+  .header-inner .track-selector { order: 4; width: 100%; }
+}

@@ -20,6 +20,58 @@ Globals:
         TABLE_NAME: !Ref InternshipsTable
 
 Resources:
+  AccountsUserPool:
+    Type: AWS::Cognito::UserPool
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      UserPoolName: !Sub "${AWS::StackName}-accounts"
+      UsernameAttributes: [email]
+      UsernameConfiguration:
+        CaseSensitive: false
+      AutoVerifiedAttributes: [email]
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 12
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: true
+        - Name: name
+          AttributeDataType: String
+          Mutable: true
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_CODE
+        EmailSubject: "Your WantAnInternship verification code"
+        EmailMessage: "Your verification code is {####}. Enter it to finish creating your WantAnInternship account."
+  AccountsUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: wantaninternship-web
+      UserPoolId: !Ref AccountsUserPool
+      GenerateSecret: false
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      RefreshTokenValidity: 30
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+      ReadAttributes: [email, email_verified, name]
+      WriteAttributes: [email, name]
   InternshipsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -99,3 +151,10 @@ Outputs:
   CollectorFunctionName:
     Description: Invoke this once after deployment to populate the table immediately
     Value: !Ref CollectorFunction
+
+  AccountsClientId:
+    Description: Set COGNITO_CLIENT_ID in Vercel to this value
+    Value: !Ref AccountsUserPoolClient
+  AccountsRegion:
+    Description: Set COGNITO_REGION in Vercel to this value
+    Value: !Ref AWS::Region
