@@ -108,15 +108,7 @@ export default function HomeExperience() {
             <h1 className="community-description">{content.description}</h1>
             <p className="community-subtext">{content.subtext}</p>
 
-            <div className="community-status-meta">
-              <span>
-                <span className="status-dot" aria-hidden="true" />
-                Actively maintained
-              </span>
-              <span>Free to use</span>
-              <span>Community curated</span>
-              <span>No account required</span>
-            </div>
+
           </section>
 
           {track === "software" && (
