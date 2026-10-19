@@ -1,5 +1,5 @@
-import HomeExperience from "../components/HomeExperience";
+import OpportunityRadar from "./mockups/opportunity-radar/page";
 
 export default function Home() {
-  return <HomeExperience />;
+  return <OpportunityRadar />;
 }
