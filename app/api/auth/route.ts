@@ -36,8 +36,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true });
     }
     if (action !== "login" || !password || password.length > 256) throw new AccountError("InvalidInput", "Enter your email and password.");
+    const displayName = typeof body.name === "string" ? body.name.trim() : "";
+    if (displayName.length > 100) throw new AccountError("InvalidInput", "Keep your display name under 100 characters.");
     const result = await cognito<{ AuthenticationResult?: { AccessToken: string; RefreshToken?: string; ExpiresIn?: number } }>("InitiateAuth", { ClientId: client, AuthFlow: "USER_PASSWORD_AUTH", AuthParameters: { USERNAME: email, PASSWORD: password } });
     if (!result.AuthenticationResult?.AccessToken) throw new AccountError("AdditionalVerification", "Additional verification is required. Please contact support.");
+    if (displayName) await cognito("UpdateUserAttributes", {
+      AccessToken: result.AuthenticationResult.AccessToken,
+      UserAttributes: [{ Name: "name", Value: displayName }],
+    });
     const response = NextResponse.json({ ok: true }); setSession(response, result.AuthenticationResult); return response;
   } catch (error) {
     if (error instanceof AccountError) return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });

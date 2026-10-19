@@ -46,8 +46,7 @@ export default function LoginForm() {
   const changeMode = (next: Mode) => { setMode(next); setError(""); setNotice(""); setPassword(""); setCode(""); };
 
   return <section className={styles.card}>
-    <span className={styles.kicker}>Your next chapter</span>
-    <h1>{mode === "signup" ? "Make room for opportunity." : mode === "confirm" ? "Check your inbox." : "Good to see you."}</h1>
+    <h1>{mode === "signup" ? "Create your account" : mode === "confirm" ? "Verify your email" : "Log in"}</h1>
     <p className={styles.subtitle}>{mode === "signup" ? "Create your WantAnInternship account." : mode === "confirm" ? `Enter the verification code sent to ${email}.` : "Log in and pick up where you left off."}</p>
     {mode !== "confirm" && <div className={styles.tabs} aria-label="Account options">
       <button type="button" aria-pressed={mode === "login"} onClick={() => changeMode("login")} disabled={busy}>Log in</button>
@@ -57,6 +56,10 @@ export default function LoginForm() {
       {mode === "signup" && <label>Your name<input name="name" autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} maxLength={100} required disabled={busy} placeholder="Alex Morgan" /></label>}
       {mode !== "confirm" && <label>Email address<input type="email" name="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={254} disabled={busy} placeholder="you@university.edu" /></label>}
       {mode !== "confirm" && <label>Password<span className={styles.passwordInput}><input type={showPassword ? "text" : "password"} name="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} value={password} onChange={(event) => setPassword(event.target.value)} minLength={mode === "signup" ? 12 : 1} maxLength={256} disabled={busy} required placeholder={mode === "signup" ? "Create a strong password" : "Enter your password"} aria-describedby={mode === "signup" ? "password-hint" : undefined} /><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword(!showPassword)}>{showPassword ? "Hide" : "Show"}</button></span>{mode === "signup" && <small id="password-hint">12+ characters, with uppercase, lowercase, and a number.</small>}</label>}
+      {mode === "login" && <details className={styles.nameOption}>
+        <summary>Add a display name (optional)</summary>
+        <label>Display name<input name="name" autoComplete="nickname" value={name} onChange={(event) => setName(event.target.value)} maxLength={100} disabled={busy} placeholder="How should we call you?" /><small>Saved to your profile when you log in. Leave blank to keep your current name.</small></label>
+      </details>}
       {mode === "confirm" && <label>Verification code<input name="code" autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value)} disabled={busy} required placeholder="000000" /></label>}
       {error && <p className={styles.error} role="alert">{error}</p>}
       {notice && <p className={styles.notice} role="status">{notice}</p>}

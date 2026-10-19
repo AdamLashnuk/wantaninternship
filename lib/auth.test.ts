@@ -89,3 +89,30 @@ test("logout revokes the refresh token and clears both session cookies", async (
   assert.equal(response.status, 200);
   response.headers.getSetCookie().forEach((cookie: string) => assert.match(cookie, /max-age=0/i));
 });
+
+test("optional display names are saved only after successful authentication", async (t) => {
+  const { route } = setup();
+  const calls: string[] = [];
+  t.mock.method(globalThis, "fetch", async (_url: unknown, options: RequestInit) => {
+    const headers = options.headers as Record<string, string>;
+    const action = headers["X-Amz-Target"].split(".").pop()!;
+    calls.push(action);
+    if (action === "InitiateAuth") return Response.json({ AuthenticationResult: { AccessToken: "authenticated-access", ExpiresIn: 3600 } });
+    const body = JSON.parse(String(options.body));
+    assert.equal(body.AccessToken, "authenticated-access");
+    assert.deepEqual(body.UserAttributes, [{ Name: "name", Value: "Adam" }]);
+    return Response.json({});
+  });
+  const response = await route.POST(request({ action: "login", email: "student@example.com", password: "StudentPassword123", name: " Adam " }));
+  assert.equal(response.status, 200);
+  assert.deepEqual(calls, ["InitiateAuth", "UpdateUserAttributes"]);
+});
+
+test("failed login cannot modify the account name", async (t) => {
+  const { route } = setup();
+  const network = t.mock.method(globalThis, "fetch", async () => Response.json({ __type: "NotAuthorizedException" }, { status: 400 }));
+  const response = await route.POST(request({ action: "login", email: "student@example.com", password: "wrong", name: "Someone else" }));
+  assert.equal(response.status, 400);
+  assert.equal(network.mock.callCount(), 1);
+  assert.equal(response.headers.getSetCookie().length, 0);
+});
