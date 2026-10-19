@@ -27,3 +27,5 @@
   .dropRow .type { grid-column: 2; }
   .sectionHead { height: auto; min-height: 56px; gap: 12px; padding-block: 12px; flex-wrap: wrap; }
 }
+
+.brand:hover { color: var(--text); text-decoration: none; }

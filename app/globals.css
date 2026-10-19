@@ -2126,3 +2126,5 @@ button:focus-visible {
 .directory-brand span {
   color: var(--track-accent, var(--blue));
 }
+
+.site-header .brand:hover { text-decoration: none; }
