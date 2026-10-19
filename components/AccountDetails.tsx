@@ -21,8 +21,8 @@ export default function AccountDetails({ subscription = false }: { subscription?
     </> : <>
       <p className={styles.subtitle}>The essentials, all in one place.</p>
       <dl className={styles.details}><div><dt>Name</dt><dd>{user.name || "Not provided"}</dd></div><div><dt>Email</dt><dd>{user.email}</dd></div></dl>
-      <Link className={styles.secondary} href="/subscription">View subscription <span aria-hidden="true">→</span></Link>
+      <Link className={styles.secondary} href="/subscription">View subscription</Link>
     </>}
-    <Link className={styles.back} href="/">← Back to opportunities</Link>
+    <Link className={styles.back} href="/">Back to opportunities</Link>
   </section>;
 }

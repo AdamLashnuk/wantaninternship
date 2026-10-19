@@ -35,7 +35,6 @@ export default function AccountMenu() {
         onClick={() => { setOpen(!open); setError(""); }}
         onKeyDown={(event) => { if (event.key === "ArrowDown") { event.preventDefault(); setOpen(true); requestAnimationFrame(() => root.current?.querySelector<HTMLAnchorElement>("nav a")?.focus()); } }}>
         {user ? <span className={styles.avatar}>{initial}</span> : <span className={styles.triggerLabel}>Sign in</span>}
-        <span className={styles.chevron} aria-hidden="true" />
       </button>
       <div className={`${styles.dropdown} ${open ? styles.dropdownOpen : ""}`} inert={!open} aria-hidden={!open} id={id}>
         {user && <div className={styles.heading}>

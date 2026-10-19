@@ -63,7 +63,7 @@ export default function LoginForm() {
       {mode === "confirm" && <label>Verification code<input name="code" autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value)} disabled={busy} required placeholder="000000" /></label>}
       {error && <p className={styles.error} role="alert">{error}</p>}
       {notice && <p className={styles.notice} role="status">{notice}</p>}
-      <button className={styles.primary} type="submit" disabled={busy}>{busy ? "One moment…" : mode === "signup" ? "Create account" : mode === "confirm" ? "Verify email" : "Log in"}<span aria-hidden="true">→</span></button>
+      <button className={styles.primary} type="submit" disabled={busy}>{busy ? "One moment…" : mode === "signup" ? "Create account" : mode === "confirm" ? "Verify email" : "Log in"}</button>
     </form>
     {mode === "confirm" ? <div className={styles.footer}>
       <button disabled={busy} type="button" onClick={async () => { setBusy(true); setError(""); try {
@@ -72,6 +72,6 @@ export default function LoginForm() {
       } catch (error) { setError((error as Error).message); } finally { setBusy(false); } }}>Send a new code</button>
       <button type="button" disabled={busy} onClick={() => changeMode("login")}>Back to log in</button>
     </div> : <p className={styles.footer}>{mode === "login" ? "New around here?" : "Already have an account?"} <button type="button" disabled={busy} onClick={() => changeMode(mode === "login" ? "signup" : "login")}>{mode === "login" ? "Create an account" : "Log in"}</button></p>}
-    <Link className={styles.back} href="/">← Back to opportunities</Link>
+    <Link className={styles.back} href="/">Back to opportunities</Link>
   </section>;
 }
