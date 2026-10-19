@@ -37,7 +37,9 @@ export default function OpportunityRadarMockup() {
       </header>
 
       <div className={styles.shell}>
-        <h1 className={styles.srOnly}>WantAnInternship opportunities</h1>
+        <section className={styles.intro}>
+          <h1>Catch the opening while it&apos;s <span>fresh.</span></h1>
+        </section>
 
         <HomeLatestDrops />
 
