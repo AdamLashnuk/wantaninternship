@@ -34,7 +34,11 @@ export default function AccountMenu() {
       <button ref={trigger} className={`${styles.trigger} ${user ? styles.signedIn : ""} ${open ? styles.triggerOpen : ""}`} type="button" aria-label={user ? "Open account menu" : "Create an account or log in"} aria-expanded={open} aria-controls={id} disabled={loading}
         onClick={() => { setOpen(!open); setError(""); }}
         onKeyDown={(event) => { if (event.key === "ArrowDown") { event.preventDefault(); setOpen(true); requestAnimationFrame(() => root.current?.querySelector<HTMLAnchorElement>("nav a")?.focus()); } }}>
-        {user ? <span className={styles.avatar}>{initial}</span> : <span className={styles.triggerLabel}>Sign in</span>}
+        {user ? <>
+          <span className={styles.avatar}>{initial}</span>
+          <span className={styles.triggerLabel}>My account</span>
+          <svg className={styles.chevron} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="m8 10 4 4 4-4" /></svg>
+        </> : <span className={styles.triggerLabel}>Sign in</span>}
       </button>
       <div className={`${styles.dropdown} ${open ? styles.dropdownOpen : ""}`} inert={!open} aria-hidden={!open} id={id}>
         {user && <div className={styles.heading}>
