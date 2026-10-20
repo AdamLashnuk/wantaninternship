@@ -20,11 +20,13 @@ Keep the existing stack (`WantAnInternshipInternships`) and region (`us-east-1`)
 | Parameter | Initial value |
 | --- | --- |
 | BillingMode | `test` |
-| StripeSecretKey | Leave blank for the first deployment, or enter your Stripe test secret key |
+| StripeSecretKey | Keep `pending` for the first deployment, or enter your Stripe test secret key |
 | StripePriceId | Leave blank until the test price is created |
-| StripeWebhookSecret | Leave blank until the webhook is registered |
+| StripeWebhookSecret | Keep `pending` until the webhook is registered |
 | FreeAccessCodeHash | Keep its default to enable the requested free-access code |
 | AllowedOrigin | Your canonical website origin, normally `https://wantaninternship.com` |
+
+Secret inputs are hidden while typing. If SAM keeps repeating a secret prompt when you press Enter, type `pending` explicitly instead of leaving it blank. This placeholder keeps checkout disabled.
 
 This creates a retained BillingTable, billing Lambda, and server-side feed/tracker access enforcement. The `StripeWebhookUrl` output is the direct AWS webhook URL.
 

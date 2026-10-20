@@ -11,7 +11,7 @@ Parameters:
   StripeSecretKey:
     Type: String
     NoEcho: true
-    Default: ""
+    Default: "pending"
     Description: Stripe test secret key first; switch to a live key only after testing
   StripePriceId:
     Type: String
@@ -20,7 +20,7 @@ Parameters:
   StripeWebhookSecret:
     Type: String
     NoEcho: true
-    Default: ""
+    Default: "pending"
     Description: Signing secret for the Stripe billing webhook endpoint
   FreeAccessCodeHash:
     Type: String

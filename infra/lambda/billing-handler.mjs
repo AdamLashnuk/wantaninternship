@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { verifiedAccount, premiumAccess, publicBilling, AccessError, billingKey } from "./account-access.mjs";
+import { verifiedAccount, premiumAccess, publicBilling, AccessError, billingKey, billingConfigured } from "./account-access.mjs";
 import { matchesAccessCode, verifiedStripeEvent, subscriptionFields, validatePrice, checkoutFields } from "./billing-core.mjs";
 export function createBillingHandler({ database: db, commands, request = fetch, account = verifiedAccount }) {
 const { GetCommand, UpdateCommand } = commands;
@@ -105,7 +105,7 @@ return async function handler(event) {
       return reply(200, { url: portal.url });
     }
     if (action !== "checkout") return reply(404, { error: "Not found." });
-    if (!process.env.STRIPE_PRICE_ID || !process.env.STRIPE_WEBHOOK_SECRET) throw new AccessError("Payments are being set up. Please try again soon.", 503);
+    if (!billingConfigured()) throw new AccessError("Payments are being set up. Please try again soon.", 503);
     if (premiumAccess(record)) throw new AccessError("Your account already has Premium access.", 409);
     const lockId = await acquireLock(user.id);
     try {

@@ -101,3 +101,13 @@ test("a free code cannot silently leave an active subscription billing",async()=
  const {call,rows}=setup({initial:{alice:{userId:"alice",customerId:"cus_alice",subscriptionId:"sub_alice"}},remote:async()=>({id:"sub_alice",customer:"cus_alice",metadata:{userId:"alice"},status:"active",items:{data:[{price:{id:"price_monthly"},current_period_end:Date.now()/1000+3600}]}})});
  assert.equal((await call("redeem",{code:"TestAccessCode-2026"})).status,409);assert.notEqual(rows.get("alice").complimentary,true);
 });
+test("pending setup placeholders cannot enable or open checkout",async()=>{
+ const previous={key:process.env.STRIPE_SECRET_KEY,price:process.env.STRIPE_PRICE_ID,secret:process.env.STRIPE_WEBHOOK_SECRET};
+ try {
+  process.env.STRIPE_SECRET_KEY="sk_test_fake";process.env.STRIPE_PRICE_ID="price_monthly";process.env.STRIPE_WEBHOOK_SECRET="pending";
+  const {call,calls}=setup();
+  assert.equal((await call("status",{},"alice","GET")).billingReady,false);
+  assert.equal((await call("checkout")).status,503);
+  assert.equal(calls.length,0);
+ } finally { for(const [name,value] of [["STRIPE_SECRET_KEY",previous.key],["STRIPE_PRICE_ID",previous.price],["STRIPE_WEBHOOK_SECRET",previous.secret]]){if(value===undefined)delete process.env[name];else process.env[name]=value;} }
+});
