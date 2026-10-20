@@ -136,12 +136,27 @@ function locationsOf(value) {
 
 function linkOf(value = "") {
   const htmlLink = String(value).match(/href="([^"]+)"/i)?.[1];
-  if (htmlLink) return htmlLink;
-  const markdownLinks = [...String(value).matchAll(/\]\((https?:\/\/[^)\s]+)\)/gi)];
-  return markdownLinks.at(-1)?.[1] ?? "";
+  if (htmlLink) return htmlLink.replace(/&amp;/g, "&");
+  // Markdown destinations can contain balanced parentheses or use <angle brackets>.
+  let last = "";
+  for (const match of String(value).matchAll(/\]\(<?https?:\/\//gi)) {
+    const start = match.index + 2;
+    const angle = value[start] === "<";
+    let depth = 0;
+    for (let end = start + (angle ? 1 : 0); end < value.length; end += 1) {
+      const char = value[end];
+      if (angle ? char === ">" : (char === ")" && depth === 0) || /\s/.test(char)) {
+        last = value.slice(start + (angle ? 1 : 0), end);
+        break;
+      }
+      if (!angle && char === "(") depth += 1;
+      if (!angle && char === ")") depth -= 1;
+    }
+  }
+  return last.replace(/&amp;/g, "&");
 }
 
-function baseJob({ company, companyWebsite, title, opportunityType, positionType, track = "software", disciplineHints = [], locations, applicationUrl, postedAt, source, sourceKey, sourceUrl, active = true, sourcePriority = 10 }) {
+function baseJob({ company, companyWebsite, title, opportunityType, positionType, track = "software", disciplineHints = [], locations, applicationUrl, postedAt, firstSeenAt, source, sourceKey, sourceUrl, active = true, sourcePriority = 10 }) {
   const cleanUrl = canonicalizeApplicationUrl(applicationUrl);
   const allLocations = locationsOf(locations);
   const cleanTitle = cleanText(title);
@@ -159,6 +174,7 @@ function baseJob({ company, companyWebsite, title, opportunityType, positionType
     applicationUrl: cleanUrl,
     applyUrl: cleanUrl,
     postedAt: isoDate(postedAt),
+    firstSeenAt: isoDate(firstSeenAt),
     source,
     sourceKey,
     sourceUrl,
@@ -262,41 +278,87 @@ export function parseListingsJson(text, config) {
     .filter(isRelevantOpportunity);
 }
 
+function markdownText(value = "") {
+  return cleanText(value)
+    .replace(/\[((?:\\.|[^\]])*)\]\([^)]*\)/g, "$1")
+    .replace(/\\([\[\]|()])/g, "$1")
+    .replace(/[*`]/g, "")
+    .replace(/[🔥🆕🛂🆁🇺🇸]/gu, "")
+    .trim();
+}
+
+function markdownDate(value, collectedAt) {
+  const text = markdownText(value);
+  if (!text || /^(?:[-—–]|N\/A)$/i.test(text)) return undefined;
+  const now = new Date(collectedAt);
+  const age = text.match(/^(\d+)\s*d(?:ays?)?$/i);
+  if (age) return new Date(now.getTime() - Number(age[1]) * 86_400_000).toISOString();
+  // Never mistake a source's first-seen/check date for an employer posting date.
+  if (/first seen/i.test(text)) {
+    const posted = text.match(/\bPosted\s+([^;]+)/i)?.[1];
+    return posted ? markdownDate(posted, collectedAt) : undefined;
+  }
+  const monthDay = text.match(/^([A-Za-z]{3,9})\s+(\d{1,2})$/);
+  if (monthDay) {
+    let date = new Date(`${monthDay[1]} ${monthDay[2]}, ${now.getUTCFullYear()} 00:00:00 GMT`);
+    if (date.getTime() > now.getTime() + 86_400_000) date.setUTCFullYear(date.getUTCFullYear() - 1);
+    return Number.isFinite(date.getTime()) ? date.toISOString() : undefined;
+  }
+  if (/^[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}$/.test(text)) return isoDate(`${text} 00:00:00 GMT`);
+  return isoDate(text);
+}
+
 export function parseSpeedyMarkdown(text, config) {
   const jobs = [];
   let section = "";
+  let columns;
   let lastCompany = "";
   let lastCompanyWebsite = "";
 
   for (const line of text.split(/\r?\n/)) {
-    if (line.startsWith("### ")) {
-      section = cleanText(line.slice(4)).toLowerCase();
+    if (/^#{1,6}\s/.test(line)) {
+      section = markdownText(line.replace(/^#+\s*/, "")).toLowerCase();
+      columns = undefined;
+      lastCompany = "";
+      lastCompanyWebsite = "";
       continue;
     }
-    if (!line.startsWith("|") || /^\|[-:| ]+\|$/.test(line)) continue;
-    if (section.includes("quant")) continue;
+    if (!line.trimStart().startsWith("|")) continue;
+    const cells = line.trim().replace(/^\||\|$/g, "").split(/(?<!\\)\|/).map((cell) => cell.replace(/\\\|/g, "|"));
+    if (cells.every((cell) => /^\s*:?-+:?\s*$/.test(cell))) continue;
+    const headers = cells.map((cell) => markdownText(cell).toLowerCase());
+    const companyIndex = headers.indexOf("company");
+    const titleIndex = headers.findIndex((header) => /^(job title|title|role|position)$/.test(header));
+    if (companyIndex >= 0 && titleIndex >= 0) {
+      columns = {
+        company: companyIndex,
+        title: titleIndex,
+        location: headers.findIndex((header) => /^locations?$/.test(header)),
+        apply: headers.findIndex((header) => /^(apply|application|application link|link|posting)$/.test(header)),
+        date: headers.findIndex((header) => /^(date posted|posted|posted \/ first seen|posting date|age|added)$/.test(header)),
+        found: headers.findIndex((header) => /^(found|first seen)$/.test(header)),
+      };
+      lastCompany = "";
+      lastCompanyWebsite = "";
+      continue;
+    }
+    if (!columns || section.includes("quant") || cells.length <= Math.max(columns.company, columns.title)) continue;
+    // Hardware lists sometimes include a separate new-grad table.
+    if (config.track === "engineering" && /new[ -]?grad/.test(section)) continue;
 
-    const cells = line.split("|").slice(1, -1);
-    if (cells.length < 5 || /company/i.test(cells[0]) && /position|role/i.test(cells[1])) continue;
-
-    let companyLink = linkOf(cells[0]);
-    let company = cleanText(cells[0]);
-    if (company === "↳") {
+    const companyCell = cells[columns.company];
+    const titleCell = cells[columns.title];
+    let companyLink = linkOf(companyCell);
+    let company = markdownText(companyCell);
+    if (/^(↳|↪|→|\u21b3)$/.test(company)) {
       company = lastCompany;
       companyLink = lastCompanyWebsite;
     } else {
       lastCompany = company;
       lastCompanyWebsite = companyLink;
     }
-    const title = cleanText(cells[1]);
-    const location = cleanText(cells[2]);
-    const applicationUrl = linkOf(cells[4]) || linkOf(cells[3]);
-    const ageCell = cells.at(-1) ?? "";
-    const ageDays = Number(ageCell.match(/(\d+)d/i)?.[1]);
-    const postedAt = Number.isFinite(ageDays)
-      ? new Date(new Date(config.collectedAt).getTime() - ageDays * 86_400_000).toISOString()
-      : isoDate(cleanText(ageCell));
-
+    const title = markdownText(titleCell);
+    const applicationUrl = columns.apply >= 0 ? linkOf(cells[columns.apply] ?? "") : linkOf(titleCell) || companyLink;
     const job = baseJob({
       company,
       companyWebsite: companyLink,
@@ -305,9 +367,12 @@ export function parseSpeedyMarkdown(text, config) {
       positionType: inferPositionType(title),
       track: config.track ?? "software",
       disciplineHints: [section],
-      locations: [location],
+      locations: cells[columns.location] ?? "",
       applicationUrl,
-      postedAt,
+      postedAt: columns.date >= 0 ? markdownDate(cells[columns.date], config.collectedAt) : undefined,
+      firstSeenAt: columns.found >= 0
+        ? markdownDate(cells[columns.found], config.collectedAt)
+        : markdownDate(cleanText(cells[columns.date] ?? "").match(/First seen\s+([^;]+)/i)?.[1] ?? "", config.collectedAt),
       source: config.label,
       sourceKey: config.key,
       sourceUrl: config.repository,
@@ -346,6 +411,9 @@ function mergePair(existing, incoming) {
     ...winner,
     companyWebsite: winner.companyWebsite ?? loser.companyWebsite,
     postedAt: winner.postedAt ?? loser.postedAt,
+    firstSeenAt: [winner.firstSeenAt, loser.firstSeenAt]
+      .filter((value) => Number.isFinite(Date.parse(value ?? "")))
+      .sort((a, b) => Date.parse(a) - Date.parse(b))[0],
     locations,
     location: locations.length > 1 ? "Multiple locations" : (locations[0] ?? "Location not listed"),
     sources,

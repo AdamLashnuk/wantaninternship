@@ -105,20 +105,11 @@
     "track": "engineering"
   },
   {
-    "key": "github:wonofakind:engineering",
-    "label": "github:wonofakind-engineering",
-    "repository": "https://github.com/WonOfAKind/New-Grad-And-Internships-2027",
-    "apiUrl": "https://api.github.com/repos/WonOfAKind/New-Grad-And-Internships-2027/contents/data/roles.json?ref=main",
-    "format": "json",
-    "opportunityType": "internship",
-    "track": "engineering"
-  },
-  {
     "key": "github:hiderrick:engineering",
     "label": "github:hiderrick-engineering",
     "repository": "https://github.com/hiderrick/Engineering-Internships-Summer-2027",
-    "apiUrl": "https://api.github.com/repos/hiderrick/Engineering-Internships-Summer-2027/contents/README.md?ref=main",
-    "format": "markdown",
+    "apiUrl": "https://api.github.com/repos/hiderrick/Engineering-Internships-Summer-2027/contents/jobs.json?ref=main",
+    "format": "json",
     "opportunityType": "internship",
     "track": "engineering"
   },
@@ -128,6 +119,187 @@
     "repository": "https://github.com/thebargon/2027-Mechanical-Engineering-Internships",
     "apiUrl": "https://api.github.com/repos/thebargon/2027-Mechanical-Engineering-Internships/contents/data/listings.json?ref=main",
     "format": "json",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:surya:software-engineering",
+    "label": "github:surya:software-engineering",
+    "repository": "https://github.com/SuryaHarikrishnan/2027-internship-tracker",
+    "apiUrl": "https://api.github.com/repos/SuryaHarikrishnan/2027-internship-tracker/contents/listings/software-engineering.md?ref=master",
+    "format": "markdown",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:surya:data-science-ai-machine-learning",
+    "label": "github:surya:data-science-ai-machine-learning",
+    "repository": "https://github.com/SuryaHarikrishnan/2027-internship-tracker",
+    "apiUrl": "https://api.github.com/repos/SuryaHarikrishnan/2027-internship-tracker/contents/listings/data-science-ai-machine-learning.md?ref=master",
+    "format": "markdown",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:surya:hardware-engineering",
+    "label": "github:surya:hardware-engineering",
+    "repository": "https://github.com/SuryaHarikrishnan/2027-internship-tracker",
+    "apiUrl": "https://api.github.com/repos/SuryaHarikrishnan/2027-internship-tracker/contents/listings/hardware-engineering.md?ref=master",
+    "format": "markdown",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:wonofakind:software",
+    "label": "github:wonofakind:software",
+    "repository": "https://github.com/WonOfAKind/New-Grad-And-Internships-2027",
+    "apiUrl": "https://api.github.com/repos/WonOfAKind/New-Grad-And-Internships-2027/contents/internships/software.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:wonofakind:ai-ml",
+    "label": "github:wonofakind:ai-ml",
+    "repository": "https://github.com/WonOfAKind/New-Grad-And-Internships-2027",
+    "apiUrl": "https://api.github.com/repos/WonOfAKind/New-Grad-And-Internships-2027/contents/internships/ai-ml.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:wonofakind:data",
+    "label": "github:wonofakind:data",
+    "repository": "https://github.com/WonOfAKind/New-Grad-And-Internships-2027",
+    "apiUrl": "https://api.github.com/repos/WonOfAKind/New-Grad-And-Internships-2027/contents/internships/data.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:wonofakind:engineering",
+    "label": "github:wonofakind:engineering",
+    "repository": "https://github.com/WonOfAKind/New-Grad-And-Internships-2027",
+    "apiUrl": "https://api.github.com/repos/WonOfAKind/New-Grad-And-Internships-2027/contents/internships/hardware-electrical.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:wonofakind:mechanical",
+    "label": "github:wonofakind:mechanical",
+    "repository": "https://github.com/WonOfAKind/New-Grad-And-Internships-2027",
+    "apiUrl": "https://api.github.com/repos/WonOfAKind/New-Grad-And-Internships-2027/contents/internships/mechanical.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:wonofakind:aerospace",
+    "label": "github:wonofakind:aerospace",
+    "repository": "https://github.com/WonOfAKind/New-Grad-And-Internships-2027",
+    "apiUrl": "https://api.github.com/repos/WonOfAKind/New-Grad-And-Internships-2027/contents/internships/aerospace.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:wonofakind:manufacturing-industrial",
+    "label": "github:wonofakind:manufacturing-industrial",
+    "repository": "https://github.com/WonOfAKind/New-Grad-And-Internships-2027",
+    "apiUrl": "https://api.github.com/repos/WonOfAKind/New-Grad-And-Internships-2027/contents/internships/manufacturing-industrial.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:wonofakind:other-engineering",
+    "label": "github:wonofakind:other-engineering",
+    "repository": "https://github.com/WonOfAKind/New-Grad-And-Internships-2027",
+    "apiUrl": "https://api.github.com/repos/WonOfAKind/New-Grad-And-Internships-2027/contents/internships/other-engineering.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:jobright:software",
+    "label": "github:jobright:software",
+    "repository": "https://github.com/jobright-ai/2026-Software-Engineer-Internship",
+    "apiUrl": "https://api.github.com/repos/jobright-ai/2026-Software-Engineer-Internship/contents/README.md?ref=master",
+    "format": "markdown",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:jobright:data",
+    "label": "github:jobright:data",
+    "repository": "https://github.com/jobright-ai/2026-Data-Analysis-Internship",
+    "apiUrl": "https://api.github.com/repos/jobright-ai/2026-Data-Analysis-Internship/contents/README.md?ref=master",
+    "format": "markdown",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:jobright:engineering",
+    "label": "github:jobright:engineering",
+    "repository": "https://github.com/jobright-ai/2026-Engineer-Internship",
+    "apiUrl": "https://api.github.com/repos/jobright-ai/2026-Engineer-Internship/contents/README.md?ref=master",
+    "format": "markdown",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:jobright:technical",
+    "label": "github:jobright:technical",
+    "repository": "https://github.com/jobright-ai/2026-Engineer-Internship",
+    "apiUrl": "https://api.github.com/repos/jobright-ai/2026-Engineer-Internship/contents/README.md?ref=master",
+    "format": "markdown",
+    "opportunityType": "internship"
+  },
+  {
+    "key": "github:mehek:electrical",
+    "label": "github:mehek:electrical",
+    "repository": "https://github.com/mehek-builds/Electrical-Engineering-Internships",
+    "apiUrl": "https://api.github.com/repos/mehek-builds/Electrical-Engineering-Internships/contents/lists/electrical-engineering.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:mehek:mechanical",
+    "label": "github:mehek:mechanical",
+    "repository": "https://github.com/mehek-builds/Mechanical-Engineering-Internships",
+    "apiUrl": "https://api.github.com/repos/mehek-builds/Mechanical-Engineering-Internships/contents/lists/mechanical-engineering.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:water473:all",
+    "label": "github:water473:all",
+    "repository": "https://github.com/water473/mechanical-engineering-job-posting-tracker",
+    "apiUrl": "https://api.github.com/repos/water473/mechanical-engineering-job-posting-tracker/contents/views/all.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:water473:all-2",
+    "label": "github:water473:all-2",
+    "repository": "https://github.com/water473/mechanical-engineering-job-posting-tracker",
+    "apiUrl": "https://api.github.com/repos/water473/mechanical-engineering-job-posting-tracker/contents/views/all-2.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:water473:all-3",
+    "label": "github:water473:all-3",
+    "repository": "https://github.com/water473/mechanical-engineering-job-posting-tracker",
+    "apiUrl": "https://api.github.com/repos/water473/mechanical-engineering-job-posting-tracker/contents/views/all-3.md?ref=main",
+    "format": "markdown",
+    "opportunityType": "internship",
+    "track": "engineering"
+  },
+  {
+    "key": "github:khushsj30:hardware",
+    "label": "github:khushsj30:hardware",
+    "repository": "https://github.com/Khushsj30/hardware-internships-2027",
+    "apiUrl": "https://api.github.com/repos/Khushsj30/hardware-internships-2027/contents/README.md?ref=main",
+    "format": "markdown",
     "opportunityType": "internship",
     "track": "engineering"
   }

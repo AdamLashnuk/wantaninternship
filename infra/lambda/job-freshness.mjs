@@ -1,6 +1,11 @@
 // An employer edit must never reset a listing's original discovery/posting date.
 export function preserveJobFreshness(job, prior, now) {
-  const firstSeenAt = prior?.firstSeenAt || now;
+  const sourceDiscovery = Date.parse(job.firstSeenAt ?? "");
+  const firstSeenAt = prior?.firstSeenAt || (
+    Number.isFinite(sourceDiscovery) && sourceDiscovery <= Date.parse(now)
+      ? new Date(sourceDiscovery).toISOString()
+      : now
+  );
   const legacyGreenhouse = prior?.source === "greenhouse" && prior?.freshnessVersion !== 1;
   const previousPost = legacyGreenhouse ? undefined : prior?.postedAt;
   const dates = [previousPost, job.postedAt].filter((value) => Number.isFinite(Date.parse(value ?? "")));

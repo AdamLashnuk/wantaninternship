@@ -5,7 +5,7 @@ This AWS SAM stack powers the separate Software and Engineering Latest Drops exp
 It creates:
 
 - a DynamoDB table for normalized internships and new-grad roles;
-- a Lambda collector for direct employer ATS feeds, six software repositories and four engineering source feeds;
+- a Lambda collector for direct employer ATS feeds and 36 discovery feeds from 17 GitHub repositories (11 tech repositories and 10 engineering repositories, with overlap);
 - an EventBridge schedule that refreshes once per hour; and
 - a paginated public HTTP API used by the Next.js site.
 
@@ -43,6 +43,7 @@ aws lambda invoke --function-name YOUR_COLLECTOR_FUNCTION_NAME wantaninternship-
 The API supports `track=software|engineering`, `limit` (1–250) and an opaque
 `cursor` returned as `nextCursor`. Edit `lambda/sources.json` for direct ATS
 employers and `lambda/github-sources.json` for scheduled GitHub discovery inputs.
+See [GITHUB_SOURCES.md](GITHUB_SOURCES.md) for the source audit and parsing details.
 
 ## Listing freshness
 

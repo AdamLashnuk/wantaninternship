@@ -33,3 +33,15 @@ test("a new role gets one stable discovery date", () => {
   assert.equal(result.firstSeenAt, now);
   assert.equal(result.postedAt, undefined);
 });
+
+test('importing an old source discovery does not make the listing freshly discovered', () => {
+  const now = '2026-10-20T12:00:00.000Z';
+  const original = '2026-09-01T00:00:00.000Z';
+  const result = preserveJobFreshness({ firstSeenAt: original }, undefined, now);
+  assert.equal(result.firstSeenAt, original);
+  assert.equal(result.postedAt, undefined);
+  assert.equal(preserveJobFreshness({ firstSeenAt: now }, result, now).firstSeenAt, original);
+  for (const firstSeenAt of ['invalid', '2027-01-01T00:00:00.000Z']) {
+    assert.equal(preserveJobFreshness({ firstSeenAt }, undefined, now).firstSeenAt, now);
+  }
+});
