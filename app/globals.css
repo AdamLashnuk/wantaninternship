@@ -2138,3 +2138,5 @@ button:focus-visible {
   .header-inner { flex-wrap: wrap; }
   .header-inner .track-selector { order: 4; width: 100%; }
 }
+
+.drops-result-actions{display:flex;align-items:center;gap:12px}.latest-drop-saved{position:relative}.latest-drop-saved .latest-drop{padding-right:64px}.latest-drop-saved>span{position:absolute;right:14px;top:16px}@media(max-width:760px){.drops-result-actions{grid-column:2;flex-wrap:wrap}.drops-result-actions .drops-apply-button{grid-column:auto}}

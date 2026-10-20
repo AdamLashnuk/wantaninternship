@@ -29,3 +29,5 @@
 }
 
 .brand:hover { color: var(--text); text-decoration: none; }
+
+.tableHead,.dropRow{grid-template-columns:150px minmax(0,2fr) minmax(0,1fr) minmax(0,1.4fr) 100px 44px}.roleLink{color:inherit;text-decoration:none;overflow-wrap:anywhere}.roleLink:hover{color:#60a5fa}.saveHeading{text-align:center}.dropRow>span:last-child{display:inline-flex}@media(max-width:1050px){.tableHead,.dropRow{grid-template-columns:125px minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr) 90px 44px}}@media(max-width:760px){.dropRow{grid-template-columns:100px minmax(0,1fr) 44px}.dropRow>span:last-child{display:inline-flex;grid-column:3;grid-row:1 / span 2}.dropRow .type{grid-column:2}.dropRow>span:nth-of-type(1),.dropRow>span:nth-of-type(2){display:none}}

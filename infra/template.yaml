@@ -72,6 +72,45 @@ Resources:
         RefreshToken: days
       ReadAttributes: [email, email_verified, name]
       WriteAttributes: [email, name]
+  ApplicationsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+
+  ApplicationsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: applications.handler
+      Timeout: 30
+      Environment:
+        Variables:
+          APPLICATIONS_TABLE: !Ref ApplicationsTable
+          ACCOUNTS_CLIENT_ID: !Ref AccountsUserPoolClient
+          ACCOUNTS_ISSUER: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${AccountsUserPool}"
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ApplicationsTable
+      Events:
+        Applications:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref InternshipApi
+            Path: /applications
+            Method: ANY
+
   InternshipsTable:
     Type: AWS::DynamoDB::Table
     Properties:

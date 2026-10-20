@@ -17,6 +17,7 @@ import { formatJobDate, formatJobUpdate } from "../lib/internship-dates";
 import { sortInternshipsNewestFirst } from "../lib/internship-sorting";
 import type { EngineeringDiscipline, InternshipJob, InternshipResponse, OpportunityTrack } from "../lib/internships";
 import CompanyLogo from "./CompanyLogo";
+import SaveJobButton from "./SaveJobButton";
 import styles from "./LatestDropsControls.module.css";
 
 const CACHE_TTL = 5 * 60 * 1000;
@@ -355,9 +356,9 @@ export default function LatestDropsDirectory({ track }: { track: OpportunityTrac
 
               </div>
 
-              <a className="drops-apply-button" href={job.applicationUrl || job.applyUrl} target="_blank" rel="noreferrer">
+              <div className="drops-result-actions"><SaveJobButton job={job} /><a className="drops-apply-button" href={job.applicationUrl || job.applyUrl} target="_blank" rel="noreferrer">
                 Apply <span aria-hidden="true">↗</span>
-              </a>
+              </a></div>
             </article>
           );
         })}

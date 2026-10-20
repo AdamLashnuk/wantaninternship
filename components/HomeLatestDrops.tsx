@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import SaveJobButton from "./SaveJobButton";
 import { sortInternshipsNewestFirst } from "../lib/internship-sorting";
 import { formatJobDate, originalPostingDate } from "../lib/internship-dates";
 import type { InternshipJob, InternshipResponse, OpportunityTrack } from "../lib/internships";
@@ -75,13 +76,14 @@ export default function HomeLatestDrops() {
       </div>
       {jobs.length > 0 ? (
         <div className={styles.table}>
-          <div className={styles.tableHead}><span>Posted / discovered</span><span>Role</span><span>Company</span><span>Location</span><span>Type</span></div>
+          <div className={styles.tableHead}><span>Posted / discovered</span><span>Role</span><span>Company</span><span>Location</span><span>Type</span><span className={styles.saveHeading}>Save</span></div>
           {jobs.map((job) => (
-            <a className={styles.dropRow} href={job.applicationUrl} key={job.id} target="_blank" rel="noreferrer">
+            <div className={styles.dropRow} key={job.id}>
               <time title={formatJobDate(job)}>{formatJobDate(job)}</time>
-              <strong>{job.title}</strong><span>{job.company}</span><span>{job.location}</span>
+              <a className={styles.roleLink} href={job.applicationUrl} target="_blank" rel="noreferrer"><strong>{job.title}</strong></a><span>{job.company}</span><span>{job.location}</span>
               <span className={styles.type}>{job.positionType === "co-op" ? "Co-op" : "Internship"}</span>
-            </a>
+              <SaveJobButton job={job} />
+            </div>
           ))}
         </div>
       ) : (

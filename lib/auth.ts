@@ -58,12 +58,12 @@ function accountUser(user: CognitoUser): AccountUser {
   return { id: values.sub ?? user.Username, email: values.email ?? "", name: values.name ?? "" };
 }
 
-export async function getSession(): Promise<{ user: AccountUser | null; tokens?: Tokens }> {
+export async function getSession(): Promise<{ user: AccountUser | null; tokens?: Tokens; accessToken?: string }> {
   if (!accountsConfigured()) return { user: null };
   const jar = await cookies();
   const access = jar.get(accessCookie)?.value;
   if (access) {
-    try { return { user: accountUser(await cognito<CognitoUser>("GetUser", { AccessToken: access })) }; }
+    try { return { user: accountUser(await cognito<CognitoUser>("GetUser", { AccessToken: access })), accessToken: access }; }
     catch (error) { if (!(error instanceof AccountError) || !["NotAuthorizedException", "UserNotFoundException"].includes(error.code)) throw error; }
   }
   const refresh = jar.get(refreshCookie)?.value;
@@ -73,7 +73,7 @@ export async function getSession(): Promise<{ user: AccountUser | null; tokens?:
       ClientId: process.env.COGNITO_CLIENT_ID, AuthFlow: "REFRESH_TOKEN_AUTH", AuthParameters: { REFRESH_TOKEN: refresh },
     });
     const user = accountUser(await cognito<CognitoUser>("GetUser", { AccessToken: result.AuthenticationResult.AccessToken }));
-    return { user, tokens: result.AuthenticationResult };
+    return { user, tokens: result.AuthenticationResult, accessToken: result.AuthenticationResult.AccessToken };
   } catch (error) {
     if (error instanceof AccountError && ["NotAuthorizedException", "UserNotFoundException"].includes(error.code)) return { user: null };
     throw error;

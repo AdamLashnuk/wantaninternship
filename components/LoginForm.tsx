@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useAccount } from "./AccountProvider";
 import styles from "./AccountPages.module.css";
 
+function destination() { return new URLSearchParams(window.location.search).get("next") === "/applications" ? "/applications" : "/"; }
+
 type Mode = "login" | "signup" | "confirm";
 
 export default function LoginForm() {
@@ -21,7 +23,7 @@ export default function LoginForm() {
   const { user, loading, refresh } = useAccount();
   const router = useRouter();
 
-  useEffect(() => { if (!loading && user) router.replace("/"); }, [user, loading, router]);
+  useEffect(() => { if (!loading && user) router.replace(destination()); }, [user, loading, router]);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault(); setError(""); setNotice(""); setBusy(true);
@@ -37,7 +39,7 @@ export default function LoginForm() {
       } else if (mode === "confirm" || mode === "signup") {
         setMode("login"); setPassword(""); setCode(""); setNotice("Your account is ready. Log in to continue.");
       } else {
-        setPassword(""); await refresh(); router.replace("/"); router.refresh();
+        setPassword(""); await refresh(); router.replace(destination()); router.refresh();
       }
     } catch (error) { setError(error instanceof Error ? error.message : "Something went wrong. Please try again."); }
     finally { setBusy(false); }
