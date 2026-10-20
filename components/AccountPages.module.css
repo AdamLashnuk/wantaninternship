@@ -46,3 +46,5 @@
 .nameOption summary { cursor:pointer; padding:3px 0; }
 .nameOption summary:focus-visible { outline:2px solid var(--track-accent); outline-offset:4px; }
 .nameOption[open] summary { margin-bottom:14px; }
+
+.header .trackerNavigation{display:flex;flex:1;gap:24px;margin-left:12px}.trackerNavigation>a:first-child{color:var(--text)}@media(max-width:760px){.header:has(.trackerNavigation){flex-wrap:wrap;padding-block:14px}.header .trackerNavigation{order:3;flex-basis:100%;margin-left:0;gap:24px;justify-content:flex-start}.header:has(.trackerNavigation) .actions{margin-left:auto}}
