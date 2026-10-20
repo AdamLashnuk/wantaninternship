@@ -1,8 +1,32 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: Software and engineering opportunity collector and public API for WantAnInternship
+Description: Internship discovery, accounts, application tracking and subscription billing for WantAnInternship
 
 Parameters:
+  BillingMode:
+    Type: String
+    Default: test
+    AllowedValues: [test, live]
+    Description: Separate test and live subscription records
+  StripeSecretKey:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: Stripe test secret key first; switch to a live key only after testing
+  StripePriceId:
+    Type: String
+    Default: ""
+    Description: Stripe recurring price ID for 9.99 USD per month
+  StripeWebhookSecret:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: Signing secret for the Stripe billing webhook endpoint
+  FreeAccessCodeHash:
+    Type: String
+    NoEcho: true
+    Default: "8334c741ad802c947d6d4112b7a901c0d71ce07c006c2159f862c60f901d9790"
+    Description: SHA-256 of the free Premium access code; blank disables redemption
   AllowedOrigin:
     Type: String
     Default: "https://wantaninternship.com"
@@ -72,6 +96,47 @@ Resources:
         RefreshToken: days
       ReadAttributes: [email, email_verified, name]
       WriteAttributes: [email, name]
+  BillingTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+
+  BillingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: billing.handler
+      Timeout: 60
+      Environment:
+        Variables:
+          BILLING_TABLE: !Ref BillingTable
+          BILLING_MODE: !Ref BillingMode
+          ACCOUNTS_CLIENT_ID: !Ref AccountsUserPoolClient
+          ACCOUNTS_ISSUER: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${AccountsUserPool}"
+          STRIPE_SECRET_KEY: !Ref StripeSecretKey
+          STRIPE_PRICE_ID: !Ref StripePriceId
+          STRIPE_WEBHOOK_SECRET: !Ref StripeWebhookSecret
+          FREE_ACCESS_CODE_HASH: !Ref FreeAccessCodeHash
+          SITE_ORIGIN: !Ref AllowedOrigin
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BillingTable
+      Events:
+        Billing:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref InternshipApi
+            Path: /billing/{action}
+            Method: ANY
+
   ApplicationsTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
@@ -98,11 +163,15 @@ Resources:
       Environment:
         Variables:
           APPLICATIONS_TABLE: !Ref ApplicationsTable
+          BILLING_TABLE: !Ref BillingTable
+          BILLING_MODE: !Ref BillingMode
           ACCOUNTS_CLIENT_ID: !Ref AccountsUserPoolClient
           ACCOUNTS_ISSUER: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${AccountsUserPool}"
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref ApplicationsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref BillingTable
       Events:
         Applications:
           Type: HttpApi
@@ -170,11 +239,19 @@ Resources:
     Properties:
       CodeUri: lambda/
       Handler: read.handler
+      Environment:
+        Variables:
+          BILLING_TABLE: !Ref BillingTable
+          BILLING_MODE: !Ref BillingMode
+          ACCOUNTS_CLIENT_ID: !Ref AccountsUserPoolClient
+          ACCOUNTS_ISSUER: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${AccountsUserPool}"
       Description: Returns active software or engineering opportunities newest first
       Timeout: 15
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref InternshipsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref BillingTable
       Events:
         GetInternships:
           Type: HttpApi
@@ -184,6 +261,9 @@ Resources:
             Method: GET
 
 Outputs:
+  StripeWebhookUrl:
+    Description: Register this URL as a Stripe webhook endpoint
+    Value: !Sub "https://${InternshipApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/billing/webhook"
   InternshipApiUrl:
     Description: Set INTERNSHIPS_API_URL in Vercel to this URL
     Value: !Sub "https://${InternshipApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/internships"

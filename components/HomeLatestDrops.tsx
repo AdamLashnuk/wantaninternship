@@ -13,7 +13,7 @@ async function loadTrack(track: OpportunityTrack, signal: AbortSignal) {
   let cursor: string | undefined;
 
   do {
-    const query = new URLSearchParams({ track, limit: "250" });
+    const query = new URLSearchParams({ track, limit: "10", preview: "home" });
     if (cursor) query.set("cursor", cursor);
     const response = await fetch(`/api/internships?${query}`, { signal });
     if (!response.ok) throw new Error("Unable to load internship feed");

@@ -78,3 +78,7 @@ The account menu links to `/applications`. Bookmarking an internship on Latest D
 After pulling these changes, run `sam build` and `sam deploy` from this `infra` directory to create the applications table and API handler. Vercel uses the existing `INTERNSHIPS_API_URL` with `/internships` replaced by `/applications`; no new environment variable is required. An optional `APPLICATIONS_API_URL` can override that endpoint. Until the stack is deployed, the interface shows a save error rather than claiming a save succeeded.
 
 Run `npm test` from the repository root to verify account isolation, duplicate saves, validation, and the existing feed behavior.
+
+## Subscriptions and paywall
+
+See [BILLING.md](BILLING.md) for Stripe test setup, the seven-day trial followed by $9.99/month, private access-code redemption, and live activation. The API now returns a fixed ten-listing preview without a current Premium entitlement; pagination and the complete feed require verified subscription access. The tracker enforces a ten-item free limit atomically while retaining existing records after a downgrade.

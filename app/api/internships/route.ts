@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { EngineeringDiscipline, InternshipJob, InternshipResponse, OpportunityTrack, OpportunityType, SoftwareCategory } from "../../../lib/internships";
+import { getSession, setSession } from "../../../lib/auth";
 import { getDirectSoftwareJobs } from "../../../lib/direct-software-feed";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 const engineeringDisciplines = new Set<EngineeringDiscipline>([
   "mechanical", "electrical", "civil", "chemical", "aerospace", "biomedical",
@@ -67,19 +68,22 @@ export async function GET(request: NextRequest) {
   const apiUrl = process.env.INTERNSHIPS_API_URL;
 
   if (!apiUrl) {
-    const jobs = requestedTrack === "software" ? await getDirectSoftwareJobs(limit) : [];
+    const jobs = requestedTrack === "software" ? await getDirectSoftwareJobs(10) : [];
     return NextResponse.json<InternshipResponse>({ jobs, track: requestedTrack, live: false });
   }
 
   try {
+    const preview = request.nextUrl.searchParams.get("preview") === "home";
+    const session = preview ? { user: null, accessToken: undefined, tokens: undefined } : await getSession();
     const upstreamUrl = new URL(apiUrl);
     upstreamUrl.searchParams.set("limit", String(limit));
     upstreamUrl.searchParams.set("track", requestedTrack);
     if (cursor) upstreamUrl.searchParams.set("cursor", cursor);
+    if (preview) upstreamUrl.searchParams.set("preview", "home");
 
     const response = await fetch(upstreamUrl, {
-      headers: { Accept: "application/json" },
-      next: { revalidate: 60 },
+      headers: { Accept: "application/json", ...(session.accessToken ? { Authorization: `Bearer ${session.accessToken}` } : {}) },
+      cache: "no-store", signal: AbortSignal.timeout(20000),
     });
     if (!response.ok) throw new Error(`Internship API returned ${response.status}`);
 
@@ -87,6 +91,7 @@ export async function GET(request: NextRequest) {
     if (requestedTrack === "engineering" && payload.track !== "engineering") {
       return NextResponse.json<InternshipResponse>({ jobs: [], track: requestedTrack, live: false });
     }
+    const premium = payload.premium === true && !preview;
     const jobs = Array.isArray(payload.jobs)
       ? payload.jobs.map((job) => normalizeJob(job, requestedTrack)).filter((job): job is InternshipJob => job !== null)
       : [];
@@ -98,22 +103,25 @@ export async function GET(request: NextRequest) {
       ? Object.values(sourceCounts).reduce((sum, count) => sum + Number(count ?? 0), 0)
       : undefined;
 
-    return NextResponse.json<InternshipResponse>({
-      jobs,
+    const result = NextResponse.json<InternshipResponse>({
+      jobs: premium ? jobs : jobs.slice(0, 10),
+      premium, preview: !premium,
       track: requestedTrack,
       live: true,
       updatedAt: typeof payload.updatedAt === "string" ? payload.updatedAt : undefined,
       nextRefreshAt: typeof payload.nextRefreshAt === "string" ? payload.nextRefreshAt : undefined,
-      nextCursor: typeof payload.nextCursor === "string" ? payload.nextCursor : undefined,
+      nextCursor: premium && typeof payload.nextCursor === "string" ? payload.nextCursor : undefined,
       sourceCounts,
       totalJobs: typeof payload.totalJobs === "number" ? payload.totalJobs : countedJobs,
       recentWeekJobs: typeof payload.recentWeekJobs === "number" ? payload.recentWeekJobs : undefined,
       retentionDays: typeof payload.retentionDays === "number" ? payload.retentionDays : undefined,
       partial: payload.partial === true,
-    });
+    }, { headers: { "Cache-Control": "private, no-store" } });
+    if (session.tokens) setSession(result, session.tokens);
+    return result;
   } catch (error) {
     console.error("Unable to load live internships", error);
-    const jobs = requestedTrack === "software" ? await getDirectSoftwareJobs(limit) : [];
+    const jobs = requestedTrack === "software" ? await getDirectSoftwareJobs(10) : [];
     return NextResponse.json<InternshipResponse>({ jobs, track: requestedTrack, live: false });
   }
 }

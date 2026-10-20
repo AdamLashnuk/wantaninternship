@@ -42,6 +42,8 @@ export type InternshipJob = {
 };
 
 export type InternshipResponse = {
+  premium?: boolean;
+  preview?: boolean;
   jobs: InternshipJob[];
   track?: OpportunityTrack;
   live: boolean;

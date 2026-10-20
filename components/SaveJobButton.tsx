@@ -1,5 +1,6 @@
 "use client";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAccount } from "./AccountProvider";
 import { pendingApplicationKey, type SavedApplication } from "../lib/applications";
@@ -61,12 +62,13 @@ export default function SaveJobButton({ job }: { job: InternshipJob }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [upgrade, setUpgrade] = useState(false);
   const [animated, setAnimated] = useState(false);
   const url = job.applicationUrl || job.applyUrl || "";
   const savedId = savedJobs?.bookmarks.get(key(url));
   async function save() {
     if (busy) return;
-    setBusy(true); setError(""); setAnimated(false);
+    setBusy(true); setError(""); setUpgrade(false); setAnimated(false);
     const record = { company: job.company, title: job.title, location: job.location, applicationUrl: url };
     function login() {
       if (!savedId) sessionStorage.setItem(pendingApplicationKey, JSON.stringify(record));
@@ -77,6 +79,7 @@ export default function SaveJobButton({ job }: { job: InternshipJob }) {
       const response = await fetch("/api/applications", { method: savedId ? "DELETE" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(savedId ? { id: savedId } : record) });
       const result = await response.json();
       if (response.status === 401) { login(); return; }
+      if (response.status === 402) setUpgrade(true);
       if (!response.ok) throw new Error(result.error || "Unable to update this bookmark.");
       savedJobs?.update({ id: savedId || result.id, applicationUrl: url }, Boolean(savedId));
       setAnimated(true);
@@ -87,6 +90,6 @@ export default function SaveJobButton({ job }: { job: InternshipJob }) {
     <button className={`${styles.button} ${savedId ? styles.saved : ""} ${animated ? styles.animate : ""}`} type="button" disabled={busy || loading || savedJobs?.loading} onClick={save} onAnimationEnd={() => setAnimated(false)} aria-pressed={Boolean(savedId)} aria-busy={busy} aria-label={`${savedId ? "Unsave" : "Save"} ${job.title} at ${job.company}`} title={savedId ? "Remove from saved internships" : "Save internship"}>
       <svg width="20" height="24" viewBox="0 0 24 28" aria-hidden="true"><path d="M5 3h14a1 1 0 0 1 1 1v21l-8-5-8 5V4a1 1 0 0 1 1-1Z" /></svg>
     </button>
-    {error && <span className={styles.error} role="alert">{error}</span>}
+    {error && <span className={styles.error} role="alert">{error}{upgrade && <> <Link href="/subscription">Upgrade to Premium</Link></>}</span>}
   </span>;
 }

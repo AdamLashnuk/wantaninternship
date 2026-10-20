@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
 import AccountShell from "../../components/AccountShell";
-import AccountDetails from "../../components/AccountDetails";
+import SubscriptionPanel from "../../components/SubscriptionPanel";
 export const metadata: Metadata = { title: "Your Subscription | WantAnInternship", robots: { index: false } };
-export default function SubscriptionPage() { return <AccountShell><AccountDetails subscription /></AccountShell>; }
+export default function SubscriptionPage() { return <AccountShell showNavigation><SubscriptionPanel /></AccountShell>; }

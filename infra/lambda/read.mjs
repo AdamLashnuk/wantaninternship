@@ -1,3 +1,5 @@
+import { feedAccess, feedWindow } from "./feed-access.mjs";
+import { billingKey } from "./account-access.mjs";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 
@@ -20,11 +22,13 @@ function encodeCursor(value) {
 
 export async function handler(event = {}) {
   const track = event.queryStringParameters?.track === "engineering" ? "engineering" : "software";
-  const rawLimit = Number(event.queryStringParameters?.limit ?? 50);
-  const limit = Number.isFinite(rawLimit)
-    ? Math.min(Math.max(Math.floor(rawLimit), 1), 250)
-    : 50;
-  const cursor = decodeCursor(event.queryStringParameters?.cursor);
+  let premium;
+  try {
+    premium = await feedAccess(event, { getRecord: async userId => (await documentClient.send(new GetCommand({ TableName: process.env.BILLING_TABLE, Key: { userId: billingKey(userId) }, ConsistentRead: true }))).Item });
+  } catch { return { statusCode: 503, headers: { "Cache-Control": "no-store" }, body: JSON.stringify({ error: "Unable to verify subscription access." }) }; }
+  const window = feedWindow(event.queryStringParameters, premium);
+  const limit = window.limit;
+  const cursor = decodeCursor(window.cursor);
 
   const [result, metadata] = await Promise.all([
     documentClient.send(new QueryCommand({
@@ -55,12 +59,14 @@ export async function handler(event = {}) {
     statusCode: 200,
     headers: {
       "Content-Type": "application/json",
-      "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+      "Cache-Control": "private, no-store",
     },
     body: JSON.stringify({
-      jobs: result.Items ?? [],
+      jobs: (result.Items ?? []).slice(0, premium ? limit : 10),
+      premium,
+      preview: !premium,
       track,
-      nextCursor: encodeCursor(result.LastEvaluatedKey),
+      nextCursor: premium ? encodeCursor(result.LastEvaluatedKey) : undefined,
       updatedAt: meta?.updatedAt,
       nextRefreshAt: meta?.nextRefreshAt,
       sourceCounts,
