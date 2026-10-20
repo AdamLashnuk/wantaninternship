@@ -7,7 +7,6 @@ import { isUsInternship } from "../lib/internship-location";
 import { sortInternshipsNewestFirst } from "../lib/internship-sorting";
 import type { InternshipJob, InternshipResponse, OpportunityTrack } from "../lib/internships";
 import CompanyLogo from "./CompanyLogo";
-import SaveJobButton from "./SaveJobButton";
 
 function fallbackJobs(track: OpportunityTrack): InternshipJob[] {
   return trackContent[track].drops.map((drop, index) => ({
@@ -81,7 +80,7 @@ export default function LatestDrops({ track }: { track: OpportunityTrack }) {
 
       <div className="latest-drop-list">
         {jobs.map((job) => (
-          <div className="latest-drop-saved" key={job.id}><a
+          <a
             className="latest-drop"
             href={job.applicationUrl || job.applyUrl}
             key={job.id}
@@ -101,7 +100,7 @@ export default function LatestDrops({ track }: { track: OpportunityTrack }) {
             <span className="latest-drop-link" aria-hidden="true">
               {isLive ? formatJobDate(job) : "View roles"} ↗
             </span>
-          </a><SaveJobButton job={job} /></div>
+          </a>
         ))}
       </div>
 

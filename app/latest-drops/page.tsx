@@ -1,3 +1,4 @@
+import { SavedJobsProvider } from "../../components/SaveJobButton";
 import AccountMenu from "../../components/AccountMenu";
 import type { Metadata } from "next";
 import LatestDropsDirectory from "../../components/LatestDropsDirectory";
@@ -42,7 +43,7 @@ export default async function LatestDropsPage({ searchParams }: { searchParams: 
           <a className={track === "software" ? "active" : ""} href="/latest-drops?track=software">Software</a>
           <a className={track === "engineering" ? "active" : ""} href="/latest-drops?track=engineering">Engineering</a>
         </nav>
-        <LatestDropsDirectory track={track} />
+        <SavedJobsProvider><LatestDropsDirectory track={track} /></SavedJobsProvider>
       </div>
     </main>
   );

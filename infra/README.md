@@ -73,7 +73,7 @@ sender and request appropriate production quotas before a public signup campaign
 
 ## Applications dashboard
 
-The account menu links to `/applications`. Bookmarking an internship saves it to the signed-in account and opens this dashboard. Signed-out visitors log in first; the pending save is retried after login. Records are stored in a separate, retained DynamoDB table partitioned by the verified Cognito user ID. Repeated saves preserve the original status, notes, and saved date.
+The account menu links to `/applications`. Bookmarking an internship on Latest Drops saves it to the signed-in account in place. The outline fills blue when saved; clicking again removes the saved application. Signed-out visitors log in first and return to Latest Drops, where the pending save is retried. The homepage and directory sidebar have no internship save buttons. Records are stored in a separate, retained DynamoDB table partitioned by the verified Cognito user ID. Repeated saves preserve the original status, notes, and saved date.
 
 After pulling these changes, run `sam build` and `sam deploy` from this `infra` directory to create the applications table and API handler. Vercel uses the existing `INTERNSHIPS_API_URL` with `/internships` replaced by `/applications`; no new environment variable is required. An optional `APPLICATIONS_API_URL` can override that endpoint. Until the stack is deployed, the interface shows a save error rather than claiming a save succeeded.
 

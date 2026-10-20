@@ -1,1 +1,15 @@
-.wrapper{position:relative;display:inline-flex;justify-content:center;align-items:center;flex-shrink:0}.button{width:42px;height:42px;border:1px solid var(--border,#334155);border-radius:13px;display:grid;place-items:center;color:var(--text,#e2e8f0);background:transparent;cursor:pointer;transition:background .18s,transform .18s,color .18s}.button:hover{color:#60a5fa;background:#3b82f61c;transform:translateY(-2px)}.button:focus-visible{outline:2px solid #60a5fa;outline-offset:3px}.button:disabled{opacity:.5;cursor:wait}.error{position:absolute;right:0;top:48px;width:230px;z-index:10;padding:12px;border-radius:12px;background:#7f1d1d;color:white;font-size:12px;box-shadow:0 8px 30px #0004}
+.wrapper{position:relative;display:inline-flex;justify-content:center;align-items:center;flex-shrink:0}
+.button{width:44px;height:44px;border:0;border-radius:0;display:grid;place-items:center;color:var(--muted,#94a3b8);background:transparent;cursor:pointer;transition:color .2s,opacity .2s;-webkit-tap-highlight-color:transparent}
+.button svg{overflow:visible;fill:transparent;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round;transition:fill .25s,color .25s,transform .2s}
+.button:hover{color:var(--track-accent,#60a5fa);background:transparent}
+.button:hover svg{transform:translateY(-2px)}
+.button:active svg{transform:scale(.88)}
+.button:focus-visible{outline:2px solid #60a5fa;outline-offset:2px;border-radius:5px}
+.button.saved{color:var(--track-accent,#60a5fa)}
+.saved svg{fill:currentColor}
+.button.animate svg{animation:bookmark-pop .48s cubic-bezier(.2,.8,.2,1)}
+.button:disabled{opacity:.5;cursor:wait}
+@keyframes bookmark-pop{0%{transform:scale(.8)}45%{transform:translateY(-3px) scale(1.22)}72%{transform:scale(.94)}100%{transform:scale(1)}}
+.error{position:absolute;right:0;top:46px;width:230px;z-index:10;padding:12px;border-radius:12px;background:#7f1d1d;color:white;font-size:12px;box-shadow:0 8px 30px #0004}
+.loadError{color:var(--account-danger,#e65a67);font-size:13px;line-height:1.6}.loadError button{border:0;background:transparent;color:inherit;text-decoration:underline;cursor:pointer;font:inherit}
+@media(prefers-reduced-motion:reduce){.button,.button svg{transition:none}.button.animate svg{animation:none}.button:hover svg,.button:active svg{transform:none}}
