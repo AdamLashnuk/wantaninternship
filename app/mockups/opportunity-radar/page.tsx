@@ -5,6 +5,7 @@ import HomeLatestDrops from "../../../components/HomeLatestDrops";
 import styles from "./page.module.css";
 import ThemeToggle from "../../../components/ThemeToggle";
 import { resources } from "../../../data/resources";
+import { compareCuratedWebsites } from "../../../data/curated-websites";
 import { careerTracks, trackContent } from "../../../data/tracks";
 
 const lanes = careerTracks.map((track) => ({
@@ -16,8 +17,7 @@ const lanes = careerTracks.map((track) => ({
       !new URL(resource.url).hostname.endsWith("github.com") &&
       (resource.majors.includes("All Majors") ||
         resource.majors.some((major) => trackContent[track].majors.includes(major))))
-    .sort((a, b) => Number(trackContent[track].recommendations.includes(b.name)) -
-      Number(trackContent[track].recommendations.includes(a.name)))
+    .sort(compareCuratedWebsites)
     .slice(0, 4),
 }));
 

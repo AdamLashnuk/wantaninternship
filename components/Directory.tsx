@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import styles from "./DirectoryEnhancements.module.css";
+import { compareCuratedWebsites } from "../data/curated-websites";
 import {
   majors,
   resourceSections,
@@ -372,6 +373,10 @@ export default function Directory({ track }: { track: CareerTrack }) {
       })
       .sort(
         (a, b) =>
+          a.section.localeCompare(b.section) ||
+          (a.section === "Website" && b.section === "Website"
+            ? compareCuratedWebsites(a, b)
+            : 0) ||
           Number(recommendedNames.has(b.name)) -
             Number(recommendedNames.has(a.name)) ||
           Number(Boolean(b.featured)) - Number(Boolean(a.featured)) ||
