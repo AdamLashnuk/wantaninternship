@@ -28,3 +28,5 @@
 .chevron { flex-shrink:0; transition:transform .2s ease; }
 .triggerOpen .chevron { transform:rotate(180deg); }
 @media(prefers-reduced-motion:reduce) { .chevron { flex-shrink:0; transition:none; } }
+
+.nameRow{display:flex;align-items:center;gap:8px;min-width:0}.nameRow strong{min-width:0}.proBadge{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:3px 7px;border:1px solid #ea580c40;border-radius:6px;background:#f9731614;color:#c2410c;font-size:11px;font-weight:750;line-height:1.2;letter-spacing:.01em}:global(:root[data-theme="dark"]) .proBadge{color:#fdba74;background:#f973161a;border-color:#fb923c45}

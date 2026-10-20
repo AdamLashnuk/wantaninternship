@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useId, useEffect, useRef, useState } from "react";
 import { useAccount } from "./AccountProvider";
+import { useBilling } from "./BillingProvider";
 import styles from "./AccountMenu.module.css";
 
 export default function AccountMenu() {
   const { user, loading, logout } = useAccount();
+  const { billing } = useBilling();
   const [open, setOpen] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [error, setError] = useState("");
@@ -42,7 +44,7 @@ export default function AccountMenu() {
       </button>
       <div className={`${styles.dropdown} ${open ? styles.dropdownOpen : ""}`} inert={!open} aria-hidden={!open} id={id}>
         {user && <div className={styles.heading}>
-          <strong>{user.name || user.email}</strong>
+          <div className={styles.nameRow}><strong>{user.name || user.email}</strong>{billing.premium && <span className={styles.proBadge}>Pro</span>}</div>
           {user.name && <span className={styles.email}>{user.email}</span>}
         </div>}
         <nav aria-label="Account navigation" className={styles.links}>
