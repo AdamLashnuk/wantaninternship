@@ -29,7 +29,7 @@ export default function OpportunityRadarMockup() {
         <div className={styles.headerInner}>
           <Link className={styles.brand} href="/">WantAn<span>Internship</span></Link>
           <nav aria-label="Main navigation">
-            <Link href="/directory">Directory</Link><Link className={styles.latestButton} href="/latest-drops">Latest Drops</Link><Link href="/tools">Career toolkit</Link><Link href="/directory#submit">Submit</Link>
+            <Link href="/directory">Directory</Link><Link className={styles.latestButton} href="/latest-drops">Latest Drops</Link><Link href="/tools">Career toolkit</Link>
           </nav>
           <ThemeToggle />
           <AccountMenu />

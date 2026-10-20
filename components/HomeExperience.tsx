@@ -89,7 +89,6 @@ export default function HomeExperience() {
               </a>
             )}
             {track === "software" && <a href="/tools">Career toolkit</a>}
-            <a href="#submit">Submit</a>
           </nav>
 
           <ThemeToggle />
