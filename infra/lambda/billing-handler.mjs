@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { verifiedAccount, premiumAccess, publicBilling, AccessError, billingKey, billingConfigured } from "./account-access.mjs";
+import { verifiedAccount, premiumAccess, publicBilling, AccessError, billingKey, billingConfigured, stripeKeyMatchesMode } from "./account-access.mjs";
 import { matchesAccessCode, verifiedStripeEvent, subscriptionFields, validatePrice, checkoutFields } from "./billing-core.mjs";
 export function createBillingHandler({ database: db, commands, request = fetch, account = verifiedAccount }) {
 const { GetCommand, UpdateCommand } = commands;
@@ -22,8 +22,7 @@ async function releaseLock(userId, lockId) {
 }
 async function stripe(path, fields, idempotencyKey) {
   if (!process.env.STRIPE_SECRET_KEY) throw new AccessError("Payments are being set up. Please try again soon.", 503);
-  const mode = process.env.BILLING_MODE || "test";
-  if (!(process.env.STRIPE_SECRET_KEY || "").startsWith(`sk_${mode}_`)) throw new AccessError("The Stripe key does not match the configured billing mode.", 503);
+  if (!stripeKeyMatchesMode()) throw new AccessError("The Stripe key does not match the configured billing mode.", 503);
   const response = await request(`https://api.stripe.com/v1/${path}`, { method: fields ? "POST" : "GET", headers: { Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`, "Stripe-Version": "2025-06-30.basil", ...(fields ? { "Content-Type": "application/x-www-form-urlencoded" } : {}), ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}) }, body: fields ? new URLSearchParams(fields).toString() : undefined, signal: AbortSignal.timeout(12000) });
   const payload = await response.json();
   if (!response.ok) { console.error("Stripe request failed", payload.error?.code || response.status); throw new AccessError("We couldn’t complete the billing request. Please try again.", 502); }

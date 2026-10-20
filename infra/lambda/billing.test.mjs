@@ -111,3 +111,18 @@ test("pending setup placeholders cannot enable or open checkout",async()=>{
   assert.equal(calls.length,0);
  } finally { for(const [name,value] of [["STRIPE_SECRET_KEY",previous.key],["STRIPE_PRICE_ID",previous.price],["STRIPE_WEBHOOK_SECRET",previous.secret]]){if(value===undefined)delete process.env[name];else process.env[name]=value;} }
 });
+test("restricted backend keys work only in their matching billing environment",async()=>{
+ const previous={key:process.env.STRIPE_SECRET_KEY,price:process.env.STRIPE_PRICE_ID,secret:process.env.STRIPE_WEBHOOK_SECRET,mode:process.env.BILLING_MODE};
+ try {
+  process.env.BILLING_MODE="test";process.env.STRIPE_SECRET_KEY="rk_test_fixture";process.env.STRIPE_PRICE_ID="price_monthly";process.env.STRIPE_WEBHOOK_SECRET="whsec_fixture";
+  const {call}=setup({initial:{alice:{customerId:"cus_alice"}},remote:async(path,options)=>{
+   assert.equal(options.headers.Authorization,"Bearer rk_test_fixture");
+   if(path.startsWith("prices/"))return{active:true,unit_amount:999,currency:"usd",recurring:{interval:"month",interval_count:1}};
+   if(path.startsWith("subscriptions?"))return{data:[],has_more:false};
+   if(path==="checkout/sessions")return{id:"cs_restricted",url:"https://checkout.stripe.com/restricted"};throw Error(path);
+  }});
+  const status=await call("status",{},"alice","GET");assert.equal(status.billingReady,true);assert.equal(status.testMode,true);
+  assert.equal((await call("checkout")).status,200);
+  process.env.BILLING_MODE="live";assert.equal((await call("checkout")).status,503);
+ }finally{for(const [name,value]of[["STRIPE_SECRET_KEY",previous.key],["STRIPE_PRICE_ID",previous.price],["STRIPE_WEBHOOK_SECRET",previous.secret],["BILLING_MODE",previous.mode]]){if(value===undefined)delete process.env[name];else process.env[name]=value;}}
+});

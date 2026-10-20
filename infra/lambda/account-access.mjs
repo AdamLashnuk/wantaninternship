@@ -13,12 +13,16 @@ export async function verifiedAccount(event, request = fetch) {
 export function premiumAccess(record, now = Date.now() / 1000) {
   return Boolean(record?.complimentary === true || (["trialing", "active"].includes(record?.status) && Number(record?.accessUntil) > now));
 }
-export function billingConfigured() {
+export function stripeKeyMatchesMode() {
   const mode = process.env.BILLING_MODE || "test";
-  return Boolean((process.env.STRIPE_SECRET_KEY || "").startsWith(`sk_${mode}_`) && (process.env.STRIPE_PRICE_ID || "").startsWith("price_") && (process.env.STRIPE_WEBHOOK_SECRET || "").startsWith("whsec_"));
+  const key = process.env.STRIPE_SECRET_KEY || "";
+  return ["sk", "rk"].some(prefix => key.startsWith(`${prefix}_${mode}_`));
+}
+export function billingConfigured() {
+  return Boolean(stripeKeyMatchesMode() && (process.env.STRIPE_PRICE_ID || "").startsWith("price_") && (process.env.STRIPE_WEBHOOK_SECRET || "").startsWith("whsec_"));
 }
 export function publicBilling(record = {}) {
-  return { premium: premiumAccess(record), complimentary: record.complimentary === true, status: record.status || "free", accessUntil: record.accessUntil || null, trialEnd: record.trialEnd || null, cancelAtPeriodEnd: record.cancelAtPeriodEnd === true, trialEligible: !record.trialUsed, hasCustomer: Boolean(record.customerId), billingReady: billingConfigured(), testMode: (process.env.STRIPE_SECRET_KEY || "").startsWith("sk_test_") };
+  return { premium: premiumAccess(record), complimentary: record.complimentary === true, status: record.status || "free", accessUntil: record.accessUntil || null, trialEnd: record.trialEnd || null, cancelAtPeriodEnd: record.cancelAtPeriodEnd === true, trialEligible: !record.trialUsed, hasCustomer: Boolean(record.customerId), billingReady: billingConfigured(), testMode: /^(sk|rk)_test_/.test(process.env.STRIPE_SECRET_KEY || "") };
 }
 
 export function billingKey(userId) { return `${process.env.BILLING_MODE || "test"}#${userId}`; }

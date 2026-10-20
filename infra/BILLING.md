@@ -83,3 +83,9 @@ Local `npm test` covers signature verification, stale/forged events, server-cont
 After testing, create the same $9.99/month product/price in Stripe live mode, register a live webhook destination, and configure the live customer portal and emails. Redeploy with `BillingMode=live`, the `sk_live_...` key, live `price_...` ID, and live webhook signing secret. Test and live billing records are namespaced so test customers/subscriptions cannot grant live access or break live Checkout. Redeem the free code again in live mode for your own complimentary account.
 
 The site cannot accept real payments until these live settings and the AWS deployment are completed.
+
+## Restricted Stripe keys
+
+The billing service accepts both restricted (`rk_test_...` / `rk_live_...`) and standard (`sk_test_...` / `sk_live_...`) backend keys in the `StripeSecretKey` parameter. The key's environment must match `BillingMode`.
+
+For a custom restricted key, grant Customers: Write; Checkout Sessions: Write; Customer/Billing Portal: Write; Prices: Read; Subscriptions: Read. Write includes Read. Leave unrelated resources and Connect-account permissions disabled. These permissions cover customer creation, Checkout creation/retrieval/expiry, portal session creation, price validation, and subscription retrieval/listing. Test all billing flows with the restricted key and use Stripe request logs to identify any additional resource permission Stripe requires.
