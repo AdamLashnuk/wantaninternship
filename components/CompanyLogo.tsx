@@ -42,6 +42,9 @@ export default function CompanyLogo({
           src={logo}
           alt=""
           loading="lazy"
+          width={44}
+          height={44}
+          decoding="async"
           referrerPolicy="no-referrer"
           onError={() => setFailed(true)}
         />

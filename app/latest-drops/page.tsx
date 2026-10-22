@@ -1,14 +1,11 @@
+import { pageMetadata } from "../../lib/seo";
 import { SavedJobsProvider } from "../../components/SaveJobButton";
 import AccountMenu from "../../components/AccountMenu";
 import type { Metadata } from "next";
 import LatestDropsDirectory from "../../components/LatestDropsDirectory";
 import ThemeToggle from "../../components/ThemeToggle";
 
-export const metadata: Metadata = {
-  title: "Latest Internship & Engineering Drops | WantAnInternship",
-  description:
-    "Browse recently discovered software and engineering internships and co-ops, updated automatically and linked directly to employers.",
-};
+export const metadata: Metadata = pageMetadata('Latest Software & Engineering Internships | WantAnInternship', 'Browse newly discovered software and engineering internships and co-ops. Filter by field, find application links, and save opportunities to your tracker.', '/latest-drops');
 
 export default async function LatestDropsPage({ searchParams }: { searchParams: Promise<{ track?: string }> }) {
   const params = await searchParams;

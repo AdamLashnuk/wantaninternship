@@ -1,3 +1,5 @@
+import { pageMetadata } from "../../lib/seo";
+export const metadata = pageMetadata("Internship Application & Interview Tools | WantAnInternship", "Explore tools for internship resumes, applications and interview preparation. Build your career toolkit and get ready for your next opportunity.", "/tools");
 import AccountMenu from "../../components/AccountMenu";
 import ThemeToggle from "../../components/ThemeToggle";
 import ToolDirectory from "../../components/ToolDirectory";
@@ -12,7 +14,7 @@ export default function ToolsPage() {
           </a>
 
           <nav className="main-nav tools-page-nav" aria-label="Tools navigation">
-            <a href="/">Internship directory</a>
+            <a href="/directory">Internship directory</a>
             <a href="#tools">Browse tools</a>
           </nav>
 

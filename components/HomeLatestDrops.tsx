@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { sortInternshipsNewestFirst } from "../lib/internship-sorting";
-import { formatJobDate, originalPostingDate } from "../lib/internship-dates";
+import { selectHomePreview } from "../lib/home-preview";
+import { formatJobDate } from "../lib/internship-dates";
 import type { InternshipJob, InternshipResponse, OpportunityTrack } from "../lib/internships";
 import styles from "../app/mockups/opportunity-radar/page.module.css";
 
@@ -27,9 +27,9 @@ async function loadTrack(track: OpportunityTrack, signal: AbortSignal) {
   return [...jobs.values()];
 }
 
-export default function HomeLatestDrops() {
-  const [jobs, setJobs] = useState<InternshipJob[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function HomeLatestDrops({ initialJobs = [] }: { initialJobs?: InternshipJob[] }) {
+  const [jobs, setJobs] = useState<InternshipJob[]>(initialJobs);
+  const [loading, setLoading] = useState(initialJobs.length === 0);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -49,13 +49,7 @@ export default function HomeLatestDrops() {
           setFailed(true);
           return;
         }
-        const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
-        const active = successful.flatMap((result) => result.value).filter((job) =>
-          job.active && job.opportunityType === "internship" &&
-          Date.parse(originalPostingDate(job) || job.firstSeenAt) >= cutoff,
-        );
-        const unique = new Map(active.map((job) => [job.applicationUrl, job]));
-        setJobs(sortInternshipsNewestFirst([...unique.values()]).slice(0, 10));
+        setJobs(selectHomePreview(successful.flatMap((result) => result.value)));
         setFailed(false);
       } finally {
         refreshing = false;

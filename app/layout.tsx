@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+import GoogleAnalytics from "../components/GoogleAnalytics";
+import { pageMetadata, siteUrl } from "../lib/seo";
 import { BillingProvider } from "../components/BillingProvider";
 import { AccountProvider } from "../components/AccountProvider";
 
@@ -22,9 +24,9 @@ const themeInitializationScript = `
 `;
 
 export const metadata: Metadata = {
-  title: "WantAnInternship | Internship & New Grad Resources",
-  description:
-    "A curated directory and career toolkit for students and new grads finding internships, software engineering roles, research programs and early-career opportunities.",
+  metadataBase: new URL(siteUrl),
+  ...pageMetadata("Software & Engineering Internships | WantAnInternship", "Find fresh software and engineering internships, explore curated internship websites, and organize your applications with WantAnInternship.", "/"),
+  ...(process.env.GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } } : {}),
 };
 
 export default function RootLayout({
@@ -40,6 +42,8 @@ export default function RootLayout({
       <body>
         <AccountProvider><BillingProvider>{children}</BillingProvider></AccountProvider>
         <Analytics />
+        <GoogleAnalytics />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@graph": [{ "@type": "Organization", name: "WantAnInternship", url: siteUrl }, { "@type": "WebSite", name: "WantAnInternship", url: siteUrl }] }) }} />
       </body>
     </html>
   );
