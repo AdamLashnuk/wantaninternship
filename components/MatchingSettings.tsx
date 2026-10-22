@@ -75,6 +75,11 @@ export default function MatchingSettings() {
   }
   const field = (key: ListKey, title: string, placeholder: string, hint?: string) => <label>{title}<input value={lists[key]} onChange={event => { setLists(p => ({ ...p, [key]: event.target.value })); setNotice(''); }} placeholder={placeholder} maxLength={5000} />{hint && <small>{hint}</small>}</label>;
   if (!user) return <p role="status">Loading your settings…</p>;
+  const tabItems = [
+    { id: 'match', label: 'Resume matching', status: preferences?.matchEnabled ? 'On' : 'Off' },
+    { id: 'watch', label: 'Company alerts', status: preferences?.watchEnabled ? 'On' : 'Off' },
+    { id: 'email', label: 'Email preferences', status: !data?.emailReady ? 'Unavailable' : preferences?.emailEnabled ? 'On' : 'Off' },
+  ];
   return <section className={styles.root}>
     <div className={styles.heading}><div><span className={styles.kicker}>Your preferences</span><h1>Settings.</h1><p>Find the openings that fit. Hear about them on your terms.</p></div><Link href="/applications" className={styles.textLink}>View applications</Link></div>
     {error && <p className={styles.error} role="alert">{error}</p>}
@@ -85,16 +90,17 @@ export default function MatchingSettings() {
       <details><summary>Setup details</summary><p>Use this account ID for the PersonalAlertsUserId deployment parameter:</p><code className={styles.code}>{user.id}</code><p>Email delivery also needs an SES-verified sender configured as AlertEmailFrom.</p></details>
     </div>}
     {data?.allowed && preferences && <>
-      <div className={styles.tabs} role="tablist" aria-label="Settings sections">{[['match', 'Resume matching'], ['watch', 'Company alerts'], ['email', 'Email preferences']].map(([id, label]) => <button key={id} id={`tab-${id}`} role="tab" aria-selected={tab === id} aria-controls={`panel-${id}`} tabIndex={tab === id ? 0 : -1} onKeyDown={event => { if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') { const ids = ['match', 'watch', 'email']; const next = ids[(ids.indexOf(tab) + (event.key === 'ArrowRight' ? 1 : 2)) % 3]; setTab(next); document.getElementById(`tab-${next}`)?.focus(); } }} onClick={() => setTab(id)}>{label}</button>)}</div>
+      <div className={styles.tabs} role="tablist" aria-label="Settings sections">{tabItems.map(({ id, label, status }, index) => <button key={id} id={`tab-${id}`} role="tab" aria-selected={tab === id} aria-controls={`panel-${id}`} tabIndex={tab === id ? 0 : -1} onKeyDown={event => { if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') { const ids = ['match', 'watch', 'email']; const next = ids[(ids.indexOf(tab) + (event.key === 'ArrowRight' ? 1 : 2)) % 3]; setTab(next); document.getElementById(`tab-${next}`)?.focus(); } }} onClick={() => setTab(id)}><span className={styles.tabNumber}>0{index + 1}</span><span className={styles.tabCopy}><b>{label}</b><small>{status}</small></span></button>)}</div>
       <form onSubmit={async event => { event.preventDefault(); setBusy(true); setError(''); try { await save(); } catch (err) { setError((err as Error).message); } finally { setBusy(false); } }}>
         <fieldset disabled={busy || checking} className={styles.fields}>
-          <section id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`} className={styles.panel}>
+          <section id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`} className={`${styles.panel} ${styles.workspace}`}>
             {tab === 'match' && <>
               <div className={styles.sectionHeading}><div><h2>Resume matching</h2><p>Compare your experience with the skills mentioned in available job descriptions.</p></div><label className={styles.toggle}><input type="checkbox" checked={preferences.matchEnabled} onChange={event => change('matchEnabled', event.target.checked)} /><span>Enabled</span></label></div>
               <label className={styles.upload}>Upload your resume<input type="file" accept=".pdf,.docx,.txt" onChange={event => { void upload(event.target.files?.[0]); event.target.value = ''; }} /><small>PDF, DOCX, or TXT, up to 2 MB. Only extracted text is saved to your account.</small></label>
               <label>Resume text{preferences.resumeName && <small>{preferences.resumeName}</small>}<textarea value={preferences.resumeText} onChange={event => change('resumeText', event.target.value)} rows={9} maxLength={30000} placeholder="Upload your resume or paste its text here." /><small>Review the extracted text. Contact details are optional and can be removed.</small></label>
               {field('skills', 'Skills to emphasize', 'Python, React, SQL', 'Optional. Add relevant skills that the resume parser may have missed.')}
               <label>Minimum keyword fit: {preferences.minimumScore}/100<input type="range" min="10" max="100" step="5" value={preferences.minimumScore} onChange={event => change('minimumScore', Number(event.target.value))} /><small>A keyword comparison, not a hiring probability. Full descriptions are required for resume-match alerts.</small></label>
+              <aside className={styles.tabSummary}><span>Readiness</span><strong>{preferences.resumeText.length >= 50 ? 'Resume ready' : 'Resume needed'}</strong><p>{preferences.resumeText.length >= 50 ? 'Your resume has enough text to run matching.' : 'Add resume text before turning on matching.'}</p><dl><div><dt>Keyword fit</dt><dd>{preferences.minimumScore}/100</dd></div><div><dt>Status</dt><dd>{preferences.matchEnabled ? 'Active' : 'Paused'}</dd></div></dl></aside>
             </>}
             {tab === 'watch' && <>
               <div className={styles.sectionHeading}><div><h2>Company alerts</h2><p>Get new internships from companies you want to follow, even without a resume match.</p></div><label className={styles.toggle}><input type="checkbox" checked={preferences.watchEnabled} onChange={event => change('watchEnabled', event.target.checked)} /><span>Enabled</span></label></div>
@@ -102,6 +108,7 @@ export default function MatchingSettings() {
               {preferences.watchlistMode !== 'custom' && <div className={styles.chips} aria-label="Recommended companies">{data.recommendedCompanies?.map(company => <span key={company}>{company}</span>)}</div>}
               {preferences.watchlistMode !== 'recommended' && field('companies', 'My company list', 'Duolingo, PNC, NVIDIA', 'Separate company names with commas. Use the employer name as it appears in listings.')}
               <p className={styles.note}>Company alerts use the existing internship feed. Adding a name does not start a new careers-site scraper. Your filters below apply to both alert modes.</p>
+              <aside className={styles.tabSummary}><span>Watchlist</span><strong>{preferences.watchlistMode === 'recommended' ? 'Recommended companies' : preferences.watchlistMode === 'custom' ? 'Your company list' : 'Combined list'}</strong><p>Alerts use employers already available in the internship feed.</p><dl><div><dt>Mode</dt><dd>{preferences.watchlistMode}</dd></div><div><dt>Status</dt><dd>{preferences.watchEnabled ? 'Active' : 'Paused'}</dd></div></dl></aside>
             </>}
             {tab === 'email' && <>
               <div className={styles.sectionHeading}><div><h2>Email preferences</h2><p>A digest of new matches, without repeating listings already emailed.</p></div><label className={styles.toggle}><input type="checkbox" checked={preferences.emailEnabled} disabled={!data.emailReady} onChange={event => change('emailEnabled', event.target.checked)} /><span>Send emails</span></label></div>
@@ -110,6 +117,7 @@ export default function MatchingSettings() {
               <label>How often<select value={preferences.frequency} onChange={event => change('frequency', event.target.value as MatchingPreferences['frequency'])}><option value="daily">Daily digest</option><option value="hourly">Hourly digest</option></select><small>The feed is checked hourly. Emails contain up to 20 new listings and are sent only when there is something to share.</small></label>
               <p className={styles.note}>New-listing alerts begin when you first save settings. Use Check matches to browse existing opportunities. Pause Send emails at any time to keep matching without delivery.</p>
               <button type="button" className={styles.secondary} disabled={!data.emailReady} onClick={() => void run('test')}>Send test email</button>
+              <aside className={styles.tabSummary}><span>Delivery</span><strong>{!data.emailReady ? 'Setup required' : preferences.emailEnabled ? 'Digest active' : 'Delivery paused'}</strong><p>Previously emailed listings are not repeated.</p><dl><div><dt>Schedule</dt><dd>{preferences.frequency}</dd></div><div><dt>Last sent</dt><dd>{stamp(data.delivery?.lastSentAt)}</dd></div></dl></aside>
             </>}
           </section>
           <section className={styles.panel}><h2>Filters</h2><p>Apply these preferences to resume matches and company alerts.</p><div className={styles.grid}>
