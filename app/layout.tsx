@@ -26,7 +26,7 @@ const themeInitializationScript = `
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   ...pageMetadata("Software & Engineering Internships | WantAnInternship", "Find fresh software and engineering internships, explore curated internship websites, and organize your applications with WantAnInternship.", "/"),
-  ...(process.env.GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } } : {}),
+  verification: { google: process.env.GOOGLE_SITE_VERIFICATION || "Ykp_Gmpmg9ojq3tFDX5Mh-tLF8rmD-I-GiR0O5W7VBA" },
 };
 
 export default function RootLayout({
