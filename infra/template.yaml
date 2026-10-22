@@ -11,6 +11,11 @@ Parameters:
     Type: String
     Default: ""
     Description: SES-verified sender email in this AWS region; blank disables email sending
+  AlertSmsEnabled:
+    Type: String
+    Default: "false"
+    AllowedValues: ["false", "true"]
+    Description: Enable SMS only after configuring AWS SNS SMS, sender identity and destination verification
   BillingMode:
     Type: String
     Default: test
@@ -222,6 +227,7 @@ Resources:
           MATCHING_TABLE: !Ref MatchingTable
           PERSONAL_ALERTS_USER_ID: !Ref PersonalAlertsUserId
           ALERT_EMAIL_FROM: !Ref AlertEmailFrom
+          ALERT_SMS_ENABLED: !Ref AlertSmsEnabled
           SITE_ORIGIN: !Ref AllowedOrigin
       Policies:
         - DynamoDBCrudPolicy:
@@ -235,6 +241,10 @@ Resources:
               Condition:
                 StringEquals:
                   ses:FromAddress: !Ref AlertEmailFrom
+        - Statement:
+            - Effect: Allow
+              Action: sns:Publish
+              Resource: "*"
       Events:
         CheckPersonalAlerts:
           Type: Schedule
@@ -254,6 +264,7 @@ Resources:
           MATCHING_WORKER_NAME: !Ref MatchingWorkerFunction
           PERSONAL_ALERTS_USER_ID: !Ref PersonalAlertsUserId
           ALERT_EMAIL_FROM: !Ref AlertEmailFrom
+          ALERT_SMS_ENABLED: !Ref AlertSmsEnabled
           ACCOUNTS_CLIENT_ID: !Ref AccountsUserPoolClient
           ACCOUNTS_ISSUER: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${AccountsUserPool}"
       Policies:
@@ -261,6 +272,16 @@ Resources:
             TableName: !Ref MatchingTable
         - LambdaInvokePolicy:
             FunctionName: !Ref MatchingWorkerFunction
+        - Statement:
+            - Effect: Allow
+              Action: ses:SendEmail
+              Resource: !Sub "arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/*"
+              Condition:
+                StringEquals:
+                  ses:FromAddress: !Ref AlertEmailFrom
+            - Effect: Allow
+              Action: sns:Publish
+              Resource: "*"
       Events:
         Settings:
           Type: HttpApi

@@ -12,3 +12,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 tsconfig.tsbuildinfo
+
+# Generated matching-version PDF worker
+public/resume-pdf-worker.mjs

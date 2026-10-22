@@ -21,6 +21,8 @@ function memoryStore(profile) {
     async jobs() { return [job()]; },
     async lock() { if (locked) return false; locked = true; return true; },
     async unlock() { locked = false; },
+    async claimVerification() { return true; },
+    async verificationAttempt(user, channel, hash, clock) { const row = rows.get(`${user}:verification#${channel}`); if (!row || row.hash !== hash || row.consumed || row.attempts >= 5 || row.expiresAt <= clock / 1000) return false; row.attempts++; return true; },
     async claimRequest() { if (claimed) return false; claimed = true; return true; },
   };
 }
@@ -142,4 +144,69 @@ test('common role aliases include SWE, AI/ML and data scientist titles', () => {
   assert.equal(matchesFilters(job(), prefs({ roles: ['SWE'] })), true);
   assert.equal(matchesFilters(job({ title: 'AI Engineer Intern' }), prefs({ roles: ['AI/ML'] })), true);
   assert.equal(matchesFilters(job({ title: 'Data Scientist Intern' }), prefs({ roles: ['Data Science'] })), true);
+});
+
+test('delivery accepts only one channel, a valid cadence, and verified targets', async () => {
+  assert.throws(() => validatePreferences(prefs({ deliveryChannel: 'both' })), /email or text/);
+  assert.throws(() => validatePreferences(prefs({ timesPerDay: 1000 })), /per day/);
+  assert.throws(() => validatePreferences(prefs({ deliveryPhone: '4125551234' })), /country code/);
+  const store = memoryStore(profile());
+  const handler = createSettingsHandler({ store, account: owner, ownerId:'owner', sender:'alerts@example.com', smsEnabled:true });
+  assert.equal((await handler(event('PUT',prefs({ deliveryChannel:'sms', deliveryPhone:'+14125551234' })))).statusCode,400);
+  assert.equal((await handler(event('PUT',prefs({ deliveryEmail:'other@example.com' })))).statusCode,400);
+});
+test('verification sends no code back, limits guesses, binds the destination, and cannot be replayed', async () => {
+  const store = memoryStore(profile()); const sent = [];
+  const handler = createSettingsHandler({ store, account:owner, ownerId:'owner', sender:'alerts@example.com', smsEnabled:true, now:()=>now, makeCode:()=> '123456', sendVerification: async v => sent.push(v) });
+  const start = await handler(event('POST',{action:'request-verification',channel:'sms',address:'+14125551234',smsConsent:true}));
+  assert.equal(start.statusCode,200); assert.equal(JSON.parse(start.body).code,undefined); assert.equal(sent[0].code,'123456');
+  assert.equal((await handler(event('POST',{action:'verify-delivery',channel:'sms',address:'+14125559999',code:'123456'}))).statusCode,400);
+  assert.equal((await handler(event('POST',{action:'verify-delivery',channel:'sms',address:'+14125551234',code:'999999'}))).statusCode,400);
+  assert.equal((await handler(event('POST',{action:'verify-delivery',channel:'sms',address:'+14125551234',code:'123456'}))).statusCode,200);
+  assert.equal((await handler(event('POST',{action:'verify-delivery',channel:'sms',address:'+14125551234',code:'123456'}))).statusCode,400);
+  const saved = await handler(event('PUT',prefs({deliveryChannel:'sms',deliveryPhone:'+14125551234'})));
+  assert.equal(saved.statusCode,200);assert.equal((await store.get('owner','profile')).destination.channel,'sms');
+});
+test('too many code attempts invalidate a verification challenge', async () => {
+  const store = memoryStore(profile());
+  const handler = createSettingsHandler({store,account:owner,ownerId:'owner',sender:'alerts@example.com',now:()=>now,makeCode:()=> '123456',sendVerification:async()=>{}});
+  await handler(event('POST',{action:'request-verification',channel:'email',address:'other@example.com'}));
+  for(let i=0;i<5;i++) assert.equal((await handler(event('POST',{action:'verify-delivery',channel:'email',address:'other@example.com',code:'000000'}))).statusCode,400);
+  const result=await handler(event('POST',{action:'verify-delivery',channel:'email',address:'other@example.com',code:'123456'}));assert.equal(result.statusCode,400);assert.match(result.body,/expired/);
+});
+test('SMS delivery sends a single short summary and never also emails', async () => {
+  const row = profile(prefs({deliveryChannel:'sms',deliveryPhone:'+14125551234',timesPerDay:3}));row.destination={channel:'sms',address:'+14125551234',verified:true};
+  const store=memoryStore(row);const texts=[];let emails=0;
+  const worker=createMatchingWorker({store,ownerId:'owner',smsEnabled:true,now:()=>now,sendSms:async v=>texts.push(v),sendEmail:async()=>emails++});
+  assert.equal((await worker()).sent,1);assert.equal(emails,0);assert.equal(texts[0].to,'+14125551234');assert.ok(texts[0].text.length<=160);
+  await store.patch('owner','state',{lastSentAt:'2026-10-22T05:00:00Z'});assert.equal((await worker()).skipped,'not-due');
+});
+test('email mode never texts, including test delivery while matching is paused',async()=>{
+  const row=profile(prefs({matchEnabled:false,watchEnabled:false}));const store=memoryStore(row);let emails=0;let texts=0;
+  const worker=createMatchingWorker({store,ownerId:'owner',sender:'alerts@example.com',now:()=>now,sendEmail:async()=>emails++,sendSms:async()=>texts++});
+  await worker({mode:'test'});assert.equal(emails,1);assert.equal(texts,0);
+});
+test('manual preview works while alerts are paused and reports its own completion',async()=>{
+  const store=memoryStore(profile(prefs({matchEnabled:false,watchEnabled:false})));
+  let queued;const handler=createSettingsHandler({store,ownerId:'owner',account:owner,now:()=>now,enqueue:async e=>queued=e});
+  const response=await handler(event('POST',{action:'preview'}));assert.equal(response.statusCode,202);assert.ok(queued.requestId);
+  const worker=createMatchingWorker({store,ownerId:'owner',now:()=>now});await worker(queued);
+  assert.equal((await store.get('owner','request')).status,'complete');assert.equal((await store.get('owner','results')).value.requestId,queued.requestId);
+});
+test('unsupported descriptions become review candidates rather than endless pending checks',async()=>{
+  const store=memoryStore(profile(prefs()));store.jobs=async()=>[job({description:'',applicationUrl:'https://example.com/jobs/1'})];
+  const worker=createMatchingWorker({store,ownerId:'owner',now:()=>now});await worker({mode:'preview'});
+  const result=(await store.get('owner','results')).value;assert.equal(result.remainingChecks,0);assert.equal(result.unavailableRequirements,1);assert.equal(result.matches.length,0);assert.equal(result.potentialMatches.length,1);assert.equal(result.potentialMatches[0].provisional,true);
+});
+test('Workday descriptions use only the employer public ATS host',async()=>{
+  const result=await enrichRequirements(job({description:'',applicationUrl:'https://carrier.wd5.myworkdayjobs.com/en-US/jobs/job/USA/Engineering-Intern_123'}),async(url,config)=>{assert.equal(url,'https://carrier.wd5.myworkdayjobs.com/wday/cxs/carrier/jobs/job/USA/Engineering-Intern_123');assert.equal(config.redirect,'error');return new Response(JSON.stringify({jobPostingInfo:{jobDescription:description}}));});assert.equal(result.description,description);
+  let calls=0;await enrichRequirements(job({description:'',applicationUrl:'https://carrier.wd5.myworkdayjobs.com.evil.test/en-US/jobs/job/a/b'}),async()=>{calls++});assert.equal(calls,0);
+});
+
+test('common dropdown role and country labels match their listing aliases',()=>{
+  assert.equal(matchesFilters(job({title:'Software Development Engineer Intern'}),prefs({roles:['Software Engineer']})),true);
+  assert.equal(matchesFilters(job({title:'SDE Intern'}),prefs({roles:['Software Engineer']})),true);
+  assert.equal(matchesFilters(job({locations:['New York, United States']}),prefs({locations:['USA']})),true);
+  assert.equal(matchesFilters(job({locations:['London, UK']}),prefs({locations:['United Kingdom']})),true);
+  assert.equal(matchesFilters(job({locations:['London, UK']}),prefs({locations:['USA']})),false);
 });

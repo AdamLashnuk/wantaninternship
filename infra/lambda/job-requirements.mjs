@@ -1,5 +1,8 @@
 import { textOnly } from './matching-core.mjs';
 // Only documented public ATS APIs are requested. Never fetch user-provided URLs.
+export function canEnrichRequirements(job) {
+  try { const u = new URL(job.applicationUrl || job.applyUrl); return u.protocol === 'https:' && !u.port && !u.username && !u.password && (['boards.greenhouse.io', 'job-boards.greenhouse.io', 'jobs.lever.co', 'jobs.eu.lever.co', 'jobs.ashbyhq.com'].includes(u.hostname) || /^[a-z0-9-]+\.wd[1-5]\.myworkdayjobs\.com$/.test(u.hostname)); } catch { return false; }
+}
 export async function enrichRequirements(job, request = fetch, cache = new Map()) {
   if (textOnly(job.description).length >= 100) return job;
   let url;
@@ -20,6 +23,12 @@ export async function enrichRequirements(job, request = fetch, cache = new Map()
       const row = (data.jobs || []).find(row => [row.jobUrl, row.applyUrl].some(value => { try { return new URL(value).pathname.split('/')[2] === parts[1]; } catch { return false; } }));
       return row ? { description: textOnly(row.descriptionPlain || row.descriptionHtml), isRemote: row.isRemote === true, workplaceType: row.workplaceType } : {};
     };
+  } else if (/^[a-z0-9-]+\.wd[1-5]\.myworkdayjobs\.com$/.test(url.hostname)) {
+    const at = parts.indexOf('job');
+    const site = parts[at - 1];
+    if (at < 1 || !safe(site) || !parts.slice(at + 1).length || parts.some(part => part === '..' || part.includes('%'))) return job;
+    endpoint = `https://${url.hostname}/wday/cxs/${url.hostname.split('.')[0]}/${site}/${parts.slice(at).map(encodeURIComponent).join('/')}`;
+    select = data => ({ description: textOnly(data.jobPostingInfo?.jobDescription) });
   } else return job;
   try {
     if (!cache.has(endpoint)) cache.set(endpoint, (async () => {

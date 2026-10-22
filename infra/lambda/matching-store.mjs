@@ -22,9 +22,25 @@ export const store = {
     await db.send(new DeleteCommand({ TableName: table(), Key: { userId, id: 'profile' } }));
     for (const row of await store.items(userId)) await db.send(new DeleteCommand({ TableName: table(), Key: { userId, id: row.id } }));
   },
+  async requestStatus(userId, requestId, status, message, updatedAt) {
+    try {
+      await db.send(new UpdateCommand({ TableName: table(), Key: { userId, id: 'request' }, UpdateExpression: 'SET #status = :status, message = :message, updatedAt = :stamp', ConditionExpression: 'requestId = :request', ExpressionAttributeNames: { '#status': 'status' }, ExpressionAttributeValues: { ':status': status, ':message': message, ':stamp': updatedAt, ':request': requestId } }));
+    } catch (error) { if (error.name !== 'ConditionalCheckFailedException') throw error; }
+  },
   async claimRequest(userId, now) {
     try {
       await db.send(new UpdateCommand({ TableName: table(), Key: { userId, id: 'state' }, UpdateExpression: 'SET requestAfter = :next', ConditionExpression: 'attribute_not_exists(requestAfter) OR requestAfter < :now', ExpressionAttributeValues: { ':next': now + 60000, ':now': now } })); return true;
+    } catch (error) { if (error.name === 'ConditionalCheckFailedException') return false; throw error; }
+  },
+  async claimVerification(userId, now) {
+    const day = new Date(now).toISOString().slice(0, 10);
+    try {
+      await db.send(new UpdateCommand({ TableName: table(), Key: { userId, id: `verification-limit#${day}` }, UpdateExpression: 'SET requestAfter = :next, expiresAt = :expiry ADD requests :one', ConditionExpression: '(attribute_not_exists(requestAfter) OR requestAfter < :now) AND (attribute_not_exists(requests) OR requests < :max)', ExpressionAttributeValues: { ':next': now + 60000, ':now': now, ':expiry': Math.floor(now / 1000) + 86400, ':one': 1, ':max': 5 } })); return true;
+    } catch (error) { if (error.name === 'ConditionalCheckFailedException') return false; throw error; }
+  },
+  async verificationAttempt(userId, channel, hash, now) {
+    try {
+      await db.send(new UpdateCommand({ TableName: table(), Key: { userId, id: `verification#${channel}` }, UpdateExpression: 'ADD attempts :one', ConditionExpression: '#hash = :hash AND consumed = :false AND expiresAt > :now AND attempts < :max', ExpressionAttributeNames: { '#hash': 'hash' }, ExpressionAttributeValues: { ':hash': hash, ':false': false, ':now': Math.floor(now / 1000), ':max': 5, ':one': 1 } })); return true;
     } catch (error) { if (error.name === 'ConditionalCheckFailedException') return false; throw error; }
   },
   async lock(userId, token, now) {

@@ -1,3 +1,7 @@
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { cleanResumeText } from './resume-profile.ts';
 import { unzipSync, strFromU8 } from 'fflate';
 export async function extractResume(name: string, data: Uint8Array): Promise<string> {
   if (data.byteLength > 2 * 1024 * 1024) throw new Error('Use a resume smaller than 2 MB.');
@@ -17,15 +21,14 @@ export async function extractResume(name: string, data: Uint8Array): Promise<str
   } else if (extension === 'pdf') {
     if (new TextDecoder().decode(data.slice(0, 5)) !== '%PDF-') throw new Error('This file is not a valid PDF.');
     const { PDFParse } = await import('pdf-parse');
+    const entry = createRequire(import.meta.url).resolve('pdf-parse');
+    PDFParse.setWorker(pathToFileURL(join(dirname(entry), 'pdf.worker.mjs')).href);
     const parser = new PDFParse({ data, isEvalSupported: false });
     try {
       const info = await parser.getInfo();
       if (info.total > 10) throw new Error('Use a resume with 10 pages or fewer.');
-      text = (await parser.getText()).text;
+      text = (await parser.getText({ pageJoiner: '' })).text;
     } finally { await parser.destroy(); }
   } else throw new Error('Upload a PDF, DOCX, or TXT resume.');
-  text = text.replace(/\u0000/g, '').trim();
-  if (text.length < 50) throw new Error('There is not enough readable text. Paste your resume text instead; scanned PDFs need OCR.');
-  if (text.length > 30000) throw new Error('Keep resume text under 30,000 characters.');
-  return text;
+  return cleanResumeText(text);
 }

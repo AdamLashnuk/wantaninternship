@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node --experimental-strip-types --test lib/*.test.ts && node --test infra/lambda/*.test.mjs"
+    "test": "node --experimental-strip-types --test lib/*.test.ts && node --test infra/lambda/*.test.mjs",
+    "predev": "node scripts/prepare-resume-worker.mjs",
+    "prebuild": "node scripts/prepare-resume-worker.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

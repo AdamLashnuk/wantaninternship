@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 export const recommendedCompanies = ['Google', 'Microsoft', 'Amazon', 'Apple', 'Meta', 'NVIDIA', 'Adobe', 'Salesforce', 'Stripe', 'Duolingo', 'PNC', 'BNY', 'Capital One', 'Cloudflare', 'Datadog', 'AMD', 'Intel', 'Qualcomm', 'Texas Instruments', 'Siemens', 'Bosch', 'GE Vernova', 'Caterpillar', 'RTX'];
-export const defaultPreferences = { resumeText: '', resumeName: '', skills: [], roles: ['Software Engineer', 'Machine Learning', 'Data Science'], locations: [], keywords: [], excludeKeywords: [], remoteOnly: false, track: 'software', minimumScore: 60, matchEnabled: false, watchEnabled: false, watchlistMode: 'recommended', companies: [], emailEnabled: false, frequency: 'daily' };
+export const defaultPreferences = { resumeText: '', resumeName: '', skills: [], roles: ['Software Engineer', 'Machine Learning', 'Data Science'], locations: [], keywords: [], excludeKeywords: [], remoteOnly: false, track: 'software', minimumScore: 60, matchEnabled: false, watchEnabled: false, watchlistMode: 'recommended', companies: [], emailEnabled: false, frequency: 'daily', deliveryChannel: 'email', deliveryEmail: '', deliveryPhone: '', timesPerDay: 1 };
 export class SettingsError extends Error { constructor(message, status = 400) { super(message); this.status = status; } }
 const list = (value, field) => {
   if (!Array.isArray(value) || value.length > 50 || value.some(v => typeof v !== 'string' || v.length > 100)) throw new SettingsError(`Use up to 50 short entries for ${field}.`);
@@ -24,6 +24,15 @@ export function validatePreferences(value) {
   }
   if (!Number.isInteger(value.minimumScore) || value.minimumScore < 10 || value.minimumScore > 100) throw new SettingsError('Choose a match threshold between 10 and 100.');
   result.minimumScore = value.minimumScore;
+  result.deliveryChannel = value.deliveryChannel ?? 'email';
+  if (!['email', 'sms'].includes(result.deliveryChannel)) throw new SettingsError('Choose email or text messages.');
+  result.deliveryEmail = String(value.deliveryEmail || '').trim().toLowerCase();
+  result.deliveryPhone = String(value.deliveryPhone || '').replace(/[\s().-]/g, '');
+  if (result.deliveryEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result.deliveryEmail)) throw new SettingsError('Enter a valid email address.');
+  if (result.deliveryEmail.length > 254) throw new SettingsError('Email address is too long.');
+  if (result.deliveryPhone && !/^\+[1-9]\d{9,14}$/.test(result.deliveryPhone)) throw new SettingsError('Use a phone number with country code, such as +14125551234.');
+  result.timesPerDay = value.timesPerDay ?? (value.frequency === 'hourly' ? 24 : 1);
+  if (![1, 2, 3, 4, 6, 12, 24].includes(result.timesPerDay)) throw new SettingsError('Choose a valid number of alerts per day.');
   if (result.matchEnabled && result.resumeText.length < 50) throw new SettingsError('Add your resume before enabling resume matching.');
   if (result.watchEnabled && result.watchlistMode === 'custom' && !result.companies.length) throw new SettingsError('Add at least one company to your watchlist.');
   return result;
@@ -47,13 +56,19 @@ export function matchesFilters(job, p) {
   if (job.active === false || job.opportunityType === 'new-grad' || !/intern|co[ -]?op/i.test(title)) return false;
   if (p.track !== 'both' && (job.track || 'software') !== p.track) return false;
   if (p.roles.length && !p.roles.some(role => {
-    if (/^(swe|software engineer(?:ing)?)$/i.test(role)) return /\b(swe|software (?:engineer|engineering|developer))\b/i.test(title);
+    if (/^(swe|software engineer(?:ing)?)$/i.test(role)) return /\b(swe|sde|software (?:development )?(?:engineer|engineering|developer)|software development)\b/i.test(title);
     if (/^(ai(?:\/ml)?|ml|machine learning)$/i.test(role)) return /\b(ai|ml|machine learning|artificial intelligence)\b/i.test(title);
+    if (/^frontend$/i.test(role)) return /front[ -]?end/i.test(title);
+    if (/^backend$/i.test(role)) return /back[ -]?end/i.test(title);
     if (/^data scien(?:ce|tist)$/i.test(role)) return /\bdata scien(?:ce|tist)\b/i.test(title);
     const tokens = words(role === 'SWE' ? 'software engineer' : role);
     return tokens.length && tokens.every(word => normalize(title).includes(word));
   })) return false;
-  if (p.locations.length && !p.locations.some(value => normalize(locations).includes(normalize(value)))) return false;
+  if (p.locations.length && !p.locations.some(value => {
+    if (/^(usa|us|united states)$/i.test(value)) return /\b(usa|us|united states)\b/i.test(normalize(locations));
+    if (/^(uk|united kingdom)$/i.test(value)) return /\b(uk|united kingdom)\b/i.test(normalize(locations));
+    return normalize(locations).includes(normalize(value));
+  })) return false;
   if (p.remoteOnly && !/\bremote\b/i.test(locations) && job.workplaceType !== 'Remote' && job.isRemote !== true) return false;
   if (p.keywords.length && !p.keywords.every(word => contains(text, word))) return false;
   if (p.excludeKeywords.some(word => contains(text, word))) return false;
@@ -94,4 +109,13 @@ export function deliveryKey(items) { return createHash('sha256').update(items.ma
 export function digest(items, origin) {
   const safeOrigin = new URL(origin).origin;
   return { subject: `${items.length} new internship${items.length === 1 ? '' : 's'} for you`, text: `Your WantAnInternship alerts\n\n${items.map(j => `${j.company} - ${j.title}\n${j.location}\n${j.reasons.join(' · ')}${j.hasRequirements ? `\nKeyword fit: ${j.score}/100. Skills found: ${j.matchedSkills.join(', ') || 'None'}.` : '\nFull requirements unavailable; company alert only.'}\n${j.applicationUrl}`).join('\n\n')}\n\nFit scores are based on resume keywords, not hiring odds. Review education, work authorization, and other requirements on the employer posting.\n\nManage or pause emails: ${safeOrigin}/settings\n` };
+}
+
+// Candidates are displayed for review, never presented as verified resume matches or sent as resume alerts.
+export function potentialMatches(jobs, p) {
+  if (!p.matchEnabled || p.resumeText.length < 50) return [];
+  return jobs.filter(job => textOnly(job.description).length < 100 && matchesFilters(job, p)).map(job => {
+    const candidate = evaluateJob(job, { ...p, matchEnabled: false, watchEnabled: true, watchlistMode: 'custom', companies: [job.company] });
+    return candidate ? { ...candidate, reasons: ['Matches your filters; full requirements not available'], provisional: true } : null;
+  }).filter(Boolean).sort((a, b) => b.score - a.score).filter((job, i, all) => all.findIndex(other => other.applicationUrl === job.applicationUrl) === i).slice(0, 20);
 }

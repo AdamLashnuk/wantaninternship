@@ -21,5 +21,5 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({ text, name: file.name.slice(0, 120) }, { headers: { 'Cache-Control': 'no-store' } });
     if (session.tokens) setSession(response, session.tokens);
     return response;
-  } catch (error) { return NextResponse.json({ error: error instanceof Error && /resume|DOCX|PDF|text|document|pages|Upload/.test(error.message) ? error.message : 'Unable to read this resume. Try pasting the text instead.' }, { status: 400 }); }
+  } catch (error) { console.error('Resume extraction failed', { kind: error instanceof Error ? error.name : 'UnknownError' }); return NextResponse.json({ error: error instanceof Error && /resume|DOCX|PDF|text|document|pages|Upload/.test(error.message) ? error.message : 'Unable to read this resume. Try pasting the text instead.' }, { status: 400 }); }
 }
