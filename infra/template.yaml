@@ -3,6 +3,14 @@ Transform: AWS::Serverless-2016-10-31
 Description: Internship discovery, accounts, application tracking and subscription billing for WantAnInternship
 
 Parameters:
+  PersonalAlertsUserId:
+    Type: String
+    Default: ""
+    Description: Cognito account ID allowed to use personal resume matching (shown in Settings); blank disables access
+  AlertEmailFrom:
+    Type: String
+    Default: ""
+    Description: SES-verified sender email in this AWS region; blank disables email sending
   BillingMode:
     Type: String
     Default: test
@@ -180,6 +188,87 @@ Resources:
             Path: /applications
             Method: ANY
 
+  MatchingTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+
+  MatchingWorkerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: matching-worker.handler
+      MemorySize: 512
+      Timeout: 180
+      EventInvokeConfig:
+        MaximumRetryAttempts: 0
+      Environment:
+        Variables:
+          MATCHING_TABLE: !Ref MatchingTable
+          PERSONAL_ALERTS_USER_ID: !Ref PersonalAlertsUserId
+          ALERT_EMAIL_FROM: !Ref AlertEmailFrom
+          SITE_ORIGIN: !Ref AllowedOrigin
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MatchingTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref InternshipsTable
+        - Statement:
+            - Effect: Allow
+              Action: ses:SendEmail
+              Resource: !Sub "arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/*"
+              Condition:
+                StringEquals:
+                  ses:FromAddress: !Ref AlertEmailFrom
+      Events:
+        CheckPersonalAlerts:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 hour)
+            Enabled: true
+
+  SettingsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: settings.handler
+      Timeout: 30
+      Environment:
+        Variables:
+          MATCHING_TABLE: !Ref MatchingTable
+          MATCHING_WORKER_NAME: !Ref MatchingWorkerFunction
+          PERSONAL_ALERTS_USER_ID: !Ref PersonalAlertsUserId
+          ALERT_EMAIL_FROM: !Ref AlertEmailFrom
+          ACCOUNTS_CLIENT_ID: !Ref AccountsUserPoolClient
+          ACCOUNTS_ISSUER: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${AccountsUserPool}"
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MatchingTable
+        - LambdaInvokePolicy:
+            FunctionName: !Ref MatchingWorkerFunction
+      Events:
+        Settings:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref InternshipApi
+            Path: /settings
+            Method: ANY
+
   InternshipsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -261,6 +350,9 @@ Resources:
             Method: GET
 
 Outputs:
+  MatchingWorkerFunctionName:
+    Description: Personal matching and email digest worker
+    Value: !Ref MatchingWorkerFunction
   StripeWebhookUrl:
     Description: Register this URL as a Stripe webhook endpoint
     Value: !Sub "https://${InternshipApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/billing/webhook"

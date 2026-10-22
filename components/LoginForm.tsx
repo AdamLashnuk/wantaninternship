@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAccount } from "./AccountProvider";
 import styles from "./AccountPages.module.css";
 
-function destination() { const next = new URLSearchParams(window.location.search).get("next") || "/"; return (next === "/applications" || next === "/subscription") || /^\/latest-drops(?:\?track=(?:software|engineering))?$/.test(next) ? next : "/"; }
+function destination() { const next = new URLSearchParams(window.location.search).get("next") || "/"; return ["/applications", "/subscription", "/settings"].includes(next) || /^\/latest-drops(?:\?track=(?:software|engineering))?$/.test(next) ? next : "/"; }
 
 type Mode = "login" | "signup" | "confirm";
 

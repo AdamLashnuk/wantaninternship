@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
+    "fflate": "^0.8.3",
     "next": "15.4.10",
+    "pdf-parse": "^2.4.5",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },

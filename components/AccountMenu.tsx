@@ -28,7 +28,7 @@ export default function AccountMenu() {
     return () => { document.removeEventListener("pointerdown", pointer); document.removeEventListener("keydown", key); };
   }, [open]);
 
-  const links = user ? [{ label: "Profile", href: "/profile" }, { label: "Subscription", href: "/subscription" }, { label: "Applications", href: "/applications" }, { label: "Help", href: "/help" }] : [{ label: "Log in", href: "/login" }, { label: "Help", href: "/help" }];
+  const links = user ? [{ label: "Profile", href: "/profile" }, { label: "Subscription", href: "/subscription" }, { label: "Applications", href: "/applications" }, { label: "Settings", href: "/settings" }, { label: "Help", href: "/help" }] : [{ label: "Log in", href: "/login" }, { label: "Help", href: "/help" }];
   const initial = (user?.name || user?.email || "").charAt(0).toUpperCase();
 
   return (

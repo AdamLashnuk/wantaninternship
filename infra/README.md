@@ -83,3 +83,7 @@ Run `npm test` from the repository root to verify account isolation, duplicate s
 ## Subscriptions and paywall
 
 See [BILLING.md](BILLING.md) for Stripe test setup, the seven-day trial followed by $9.99/month, private access-code redemption, and live activation. The API now returns a fixed ten-listing preview without a current Premium entitlement; pagination and the complete feed require verified subscription access. The tracker enforces a ten-item free limit atomically while retaining existing records after a downgrade.
+
+## Personal matching and alerts
+
+Settings now contains private resume matching, shared filters, company watchlists, and daily/hourly email preferences. See [PERSONAL_ALERTS.md](PERSONAL_ALERTS.md) for deployment, SES sender verification, the account ID restriction, matching coverage, and delivery behavior. Configure `PersonalAlertsUserId` to your own Cognito account ID; a blank value disables access. This personal feature is not enabled for all subscribers.

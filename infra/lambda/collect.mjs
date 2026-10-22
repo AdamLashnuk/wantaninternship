@@ -62,6 +62,7 @@ function directJob(source, raw) {
     sourceKey: sourceKey(source),
     sourceUrl: raw.sourceUrl,
     sourceJobId: String(raw.sourceJobId ?? applicationUrl),
+    description: stripHtml(raw.description ?? "").slice(0, 16000),
     active: true,
     sourcePriority: 100,
   };
@@ -86,6 +87,7 @@ async function fetchGreenhouse(source) {
     sourceUpdatedAt: job.updated_at,
     sourceUrl: `https://boards.greenhouse.io/${source.board}`,
     searchable: [job.title, ...(job.departments ?? []).map((item) => item.name), stripHtml(job.content)].join(" "),
+    description: job.content,
   })).filter(isRelevantSoftware);
 }
 
@@ -98,6 +100,7 @@ async function fetchLever(source) {
     applicationUrl: job.applyUrl ?? job.hostedUrl,
     postedAt: job.createdAt ? new Date(job.createdAt).toISOString() : undefined,
     sourceUrl: `https://jobs.lever.co/${source.board}`,
+    description: [job.descriptionPlain ?? job.description, ...(job.lists ?? []).map(item => `${item.text} ${item.content}`), job.additionalPlain ?? job.additional].join(" "),
   })).filter(isRelevantSoftware);
 }
 
@@ -110,6 +113,7 @@ async function fetchAshby(source) {
     applicationUrl: job.applyUrl ?? job.jobUrl,
     postedAt: job.publishedAt,
     sourceUrl: `https://jobs.ashbyhq.com/${source.board}`,
+    description: job.descriptionPlain ?? job.descriptionHtml,
   })).filter(isRelevantSoftware);
 }
 
@@ -293,6 +297,7 @@ export async function handler() {
       id: job.id,
       company: job.company,
       companyWebsite: job.companyWebsite,
+      description: job.description || prior?.description || "",
       title: job.title,
       opportunityType: job.opportunityType,
       positionType: job.positionType,

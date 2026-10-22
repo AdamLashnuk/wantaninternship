@@ -8,7 +8,7 @@ export async function verifiedAccount(event, request = fetch) {
   const claims = JSON.parse(Buffer.from(token.split(".")[1] || "", "base64url").toString());
   const attributes = Object.fromEntries((payload.UserAttributes || []).map(a => [a.Name, a.Value]));
   if (!attributes.sub || claims.client_id !== process.env.ACCOUNTS_CLIENT_ID || claims.iss !== process.env.ACCOUNTS_ISSUER) throw new AccessError("Please log in again.");
-  return { id: attributes.sub, email: attributes.email || "", name: attributes.name || "" };
+  return { id: attributes.sub, email: attributes.email || "", name: attributes.name || "", emailVerified: attributes.email_verified === "true" };
 }
 export function premiumAccess(record, now = Date.now() / 1000) {
   return Boolean(record?.complimentary === true || (["trialing", "active"].includes(record?.status) && Number(record?.accessUntil) > now));
