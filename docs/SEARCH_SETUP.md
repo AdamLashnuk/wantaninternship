@@ -1,5 +1,7 @@
 # Search and analytics setup
 
+Configured October 22, 2026: URL-prefix Search Console ownership verified, sitemap processed successfully with six discovered pages. GA4 web stream `WantAnInternship website` uses Measurement ID `G-F3RDZCL8PM`. This public ID and the public verification tag are built in; environment variables can override them. Enhanced measurement is disabled to preserve the manually sanitized page-view behavior.
+
 Frontend changes deploy through Vercel; these changes do not need SAM deployment.
 
 ## Search Console
@@ -13,7 +15,7 @@ Frontend changes deploy through Vercel; these changes do not need SAM deployment
 1. In https://analytics.google.com, create an account/property and a Web data stream for `https://wantaninternship.com`. Choose your actual reporting timezone and currency.
 2. Copy the Measurement ID (`G-...`) into Vercel's **Production** environment as `NEXT_PUBLIC_GA_MEASUREMENT_ID`. Redeploy; public Next.js variables are embedded at build time. No API secret is needed.
 3. In the stream's Enhanced Measurement settings, disable automatic Page views (including browser-history events), outbound clicks, site search, form interactions, file downloads and video interactions. The integration sends sanitized page views manually; this prevents duplicate views and collection of unfiltered URLs/form information.
-4. Open the deployed public homepage, choose Allow, and check GA Realtime. A property without its ID configured will collect nothing. Private routes do not send page views.
+4. Open the deployed public homepage, choose Allow, and check GA Realtime. The built-in Measurement ID is used unless overridden. Private routes do not send page views.
 5. On your own browsers choose No thanks, or use Privacy & analytics to reset your choice and decline. This excludes future Google Analytics visits from those browsers, not past data or Vercel reports.
 
 ## Business Profile

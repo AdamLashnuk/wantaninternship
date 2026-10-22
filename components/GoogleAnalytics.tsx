@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Script from "next/script";
 
-const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
+const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-F3RDZCL8PM";
 const enabled = /^G-[A-Z0-9]+$/.test(measurementId);
 const publicPaths = new Set(["/", "/directory", "/latest-drops", "/tools", "/software-internships", "/engineering-internships"]);
 const consentKey = "wai-google-analytics-consent";
