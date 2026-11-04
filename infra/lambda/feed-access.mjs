@@ -1,10 +1,7 @@
-import { verifiedAccount, premiumAccess } from "./account-access.mjs";
-export async function feedAccess(event, { getRecord, account = verifiedAccount }) {
-  if (event.queryStringParameters?.preview === "home" || !event.headers?.authorization) return false;
-  try { const user = await account(event); return premiumAccess(await getRecord(user.id)); }
-  catch (error) { if (error.status === 401) return false; throw error; }
-}
-export function feedWindow(query = {}, premium = false) {
+// The complete feed is public. No identity or billing lookups are required.
+export async function feedAccess() { return true; }
+export function feedWindow(query = {}) {
   const raw = Number(query.limit ?? 50);
-  return { limit: premium ? (Number.isFinite(raw) ? Math.min(Math.max(Math.floor(raw), 1), 250) : 50) : 10, cursor: premium ? query.cursor : undefined };
+  const home = query.preview === "home";
+  return { limit: home ? 10 : (Number.isFinite(raw) ? Math.min(Math.max(Math.floor(raw), 1), 250) : 50), cursor: home ? undefined : query.cursor };
 }

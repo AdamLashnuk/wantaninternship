@@ -56,6 +56,8 @@ return async function handler(event) {
   const method = event.requestContext?.http?.method;
   const raw = event.isBase64Encoded ? Buffer.from(event.body || "", "base64").toString() : event.body || "";
   try {
+    if (["checkout", "redeem"].includes(action)) return reply(410, { error: "Payments are disabled. WantAnInternship is free." });
+    if (action === "status" && method === "GET") return reply(200, { premium: true, complimentary: true, status: "free", billingReady: false, trialEligible: false });
     if (action === "webhook") {
       if (method !== "POST") return reply(405, { error: "Unsupported request." });
       const notification = verifiedStripeEvent(raw, event.headers?.["stripe-signature"], process.env.STRIPE_WEBHOOK_SECRET);

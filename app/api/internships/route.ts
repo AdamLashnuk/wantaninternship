@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { EngineeringDiscipline, InternshipJob, InternshipResponse, OpportunityTrack, OpportunityType, SoftwareCategory } from "../../../lib/internships";
-import { getSession, setSession } from "../../../lib/auth";
 import { getDirectSoftwareJobs } from "../../../lib/direct-software-feed";
 
 export const dynamic = "force-dynamic";
@@ -74,7 +73,6 @@ export async function GET(request: NextRequest) {
 
   try {
     const preview = request.nextUrl.searchParams.get("preview") === "home";
-    const session = preview ? { user: null, accessToken: undefined, tokens: undefined } : await getSession();
     const upstreamUrl = new URL(apiUrl);
     upstreamUrl.searchParams.set("limit", String(limit));
     upstreamUrl.searchParams.set("track", requestedTrack);
@@ -82,7 +80,7 @@ export async function GET(request: NextRequest) {
     if (preview) upstreamUrl.searchParams.set("preview", "home");
 
     const response = await fetch(upstreamUrl, {
-      headers: { Accept: "application/json", ...(session.accessToken ? { Authorization: `Bearer ${session.accessToken}` } : {}) },
+      headers: { Accept: "application/json" },
       cache: "no-store", signal: AbortSignal.timeout(20000),
     });
     if (!response.ok) throw new Error(`Internship API returned ${response.status}`);
@@ -91,7 +89,7 @@ export async function GET(request: NextRequest) {
     if (requestedTrack === "engineering" && payload.track !== "engineering") {
       return NextResponse.json<InternshipResponse>({ jobs: [], track: requestedTrack, live: false });
     }
-    const premium = payload.premium === true && !preview;
+    const premium = true; // Full feed and filters are free for all visitors.
     const jobs = Array.isArray(payload.jobs)
       ? payload.jobs.map((job) => normalizeJob(job, requestedTrack)).filter((job): job is InternshipJob => job !== null)
       : [];
@@ -104,20 +102,19 @@ export async function GET(request: NextRequest) {
       : undefined;
 
     const result = NextResponse.json<InternshipResponse>({
-      jobs: premium ? jobs : jobs.slice(0, 10),
-      premium, preview: !premium,
+      jobs: preview ? jobs.slice(0, 10) : jobs,
+      premium, preview,
       track: requestedTrack,
       live: true,
       updatedAt: typeof payload.updatedAt === "string" ? payload.updatedAt : undefined,
       nextRefreshAt: typeof payload.nextRefreshAt === "string" ? payload.nextRefreshAt : undefined,
-      nextCursor: premium && typeof payload.nextCursor === "string" ? payload.nextCursor : undefined,
+      nextCursor: !preview && typeof payload.nextCursor === "string" ? payload.nextCursor : undefined,
       sourceCounts,
       totalJobs: typeof payload.totalJobs === "number" ? payload.totalJobs : countedJobs,
       recentWeekJobs: typeof payload.recentWeekJobs === "number" ? payload.recentWeekJobs : undefined,
       retentionDays: typeof payload.retentionDays === "number" ? payload.retentionDays : undefined,
       partial: payload.partial === true,
     }, { headers: { "Cache-Control": "private, no-store" } });
-    if (session.tokens) setSession(result, session.tokens);
     return result;
   } catch (error) {
     console.error("Unable to load live internships", error);

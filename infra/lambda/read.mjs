@@ -1,5 +1,4 @@
-import { feedAccess, feedWindow } from "./feed-access.mjs";
-import { billingKey } from "./account-access.mjs";
+import { feedWindow } from "./feed-access.mjs";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 
@@ -22,11 +21,8 @@ function encodeCursor(value) {
 
 export async function handler(event = {}) {
   const track = event.queryStringParameters?.track === "engineering" ? "engineering" : "software";
-  let premium;
-  try {
-    premium = await feedAccess(event, { getRecord: async userId => (await documentClient.send(new GetCommand({ TableName: process.env.BILLING_TABLE, Key: { userId: billingKey(userId) }, ConsistentRead: true }))).Item });
-  } catch { return { statusCode: 503, headers: { "Cache-Control": "no-store" }, body: JSON.stringify({ error: "Unable to verify subscription access." }) }; }
-  const window = feedWindow(event.queryStringParameters, premium);
+  const premium = true; // Legacy response flag means full feed access, available to everyone.
+  const window = feedWindow(event.queryStringParameters);
   const limit = window.limit;
   const cursor = decodeCursor(window.cursor);
 

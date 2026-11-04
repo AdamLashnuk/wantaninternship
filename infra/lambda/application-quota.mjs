@@ -1,5 +1,4 @@
-import { premiumAccess, AccessError, billingKey } from "./account-access.mjs";
-export function applicationStorage({ database, commands, applicationsTable, billingTable }) {
+export function applicationStorage({ database, commands, applicationsTable }) {
   const { GetCommand, PutCommand, QueryCommand, TransactWriteCommand } = commands;
   async function initialize(userId) {
     const Key = { userId, id: "meta#usage" };
@@ -12,17 +11,14 @@ export function applicationStorage({ database, commands, applicationsTable, bill
     const Key = { userId: item.userId, id: item.id };
     if ((await database.send(new GetCommand({ TableName: applicationsTable, Key, ConsistentRead: true }))).Item) return;
     await initialize(item.userId);
-    const record = (await database.send(new GetCommand({ TableName: billingTable, Key: { userId: billingKey(item.userId) }, ConsistentRead: true }))).Item;
-    const premium = premiumAccess(record);
     try {
       await database.send(new TransactWriteCommand({ TransactItems: [
         { Put: { TableName: applicationsTable, Item: item, ConditionExpression: "attribute_not_exists(id)" } },
-        { Update: { TableName: applicationsTable, Key: { userId: item.userId, id: "meta#usage" }, UpdateExpression: "SET #count = #count + :one", ...(premium ? {} : { ConditionExpression: "#count < :limit" }), ExpressionAttributeNames: { "#count": "count" }, ExpressionAttributeValues: { ":one": 1, ...(premium ? {} : { ":limit": 10 }) } } },
+        { Update: { TableName: applicationsTable, Key: { userId: item.userId, id: "meta#usage" }, UpdateExpression: "SET #count = #count + :one", ExpressionAttributeNames: { "#count": "count" }, ExpressionAttributeValues: { ":one": 1 } } },
       ] }));
     } catch (error) {
       if (error.name === "TransactionCanceledException") {
         if ((await database.send(new GetCommand({ TableName: applicationsTable, Key, ConsistentRead: true }))).Item) return;
-        if (error.CancellationReasons?.[1]?.Code === "ConditionalCheckFailed") throw new AccessError("Your free tracker holds 10 internships. Upgrade to Premium for unlimited tracking.", 402);
       }
       throw error;
     }

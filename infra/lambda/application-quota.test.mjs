@@ -7,6 +7,7 @@ function setup(existing=0,premium=false){
  const id=i=>i.toString(16).padStart(64,"0"); const key=p=>`${p.userId}:${p.id}`;
  for(let i=1;i<=existing;i++)rows.set(`alice:${id(i)}`,{userId:"alice",id:id(i)});
  const database={async send(command){const p=command.input;
+  if(p.TableName==="billing")throw Error("Free tracking must not read billing records");
   if(command.constructor.name==="GetCommand")return{Item:p.TableName==="billing"?billing:rows.get(key(p.Key))};
   if(command.constructor.name==="QueryCommand")return{Items:[...rows.values()].filter(r=>r.userId===p.ExpressionAttributeValues[":user"])};
   if(command.constructor.name==="PutCommand"){if(rows.has(key(p.Item)))throw Object.assign(Error(),{name:"ConditionalCheckFailedException"});rows.set(key(p.Item),p.Item);return{};}
@@ -18,14 +19,14 @@ function setup(existing=0,premium=false){
  }};
  return{...applicationStorage({database,commands,applicationsTable:"apps",billingTable:"billing"}),rows,id,billing};
 }
-test("simultaneous saves cannot exceed ten on the free plan",async()=>{
+test("simultaneous free saves can exceed ten",async()=>{
  const store=setup(9);const outcomes=await Promise.allSettled([store.save({userId:"alice",id:store.id(10)}),store.save({userId:"alice",id:store.id(11)})]);
- assert.equal(outcomes.filter(r=>r.status==="fulfilled").length,1);assert.equal(outcomes.find(r=>r.status==="rejected").reason.status,402);assert.equal(store.rows.get("alice:meta#usage").count,10);
+ assert.equal(outcomes.filter(r=>r.status==="fulfilled").length,2);assert.equal(store.rows.get("alice:meta#usage").count,11);
 });
 test("duplicate saves do not consume a slot and deletion releases exactly one",async()=>{
  const store=setup(10);await store.save({userId:"alice",id:store.id(1)});await store.remove({userId:"alice",id:store.id(1)});await store.remove({userId:"alice",id:store.id(1)});await store.save({userId:"alice",id:store.id(11)});assert.equal(store.rows.get("alice:meta#usage").count,10);
 });
-test("premium permits more than ten and expiration preserves records",async()=>{
+test("billing expiration does not restrict free tracking or delete records",async()=>{
  const store=setup(12,true);await store.save({userId:"alice",id:store.id(13)});store.billing.complimentary=false;store.billing.status="active";store.billing.accessUntil=1;
- await assert.rejects(store.save({userId:"alice",id:store.id(14)}),error=>error.status===402);assert.ok(store.rows.has(`alice:${store.id(13)}`));assert.equal(store.rows.get("alice:meta#usage").count,13);
+ await store.save({userId:"alice",id:store.id(14)});assert.ok(store.rows.has(`alice:${store.id(13)}`));assert.equal(store.rows.get("alice:meta#usage").count,14);
 });

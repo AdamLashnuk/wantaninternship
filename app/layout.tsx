@@ -3,7 +3,6 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import GoogleAnalytics from "../components/GoogleAnalytics";
 import { pageMetadata, siteUrl } from "../lib/seo";
-import { BillingProvider } from "../components/BillingProvider";
 import { AccountProvider } from "../components/AccountProvider";
 
 const themeInitializationScript = `
@@ -40,7 +39,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitializationScript }} />
       </head>
       <body>
-        <AccountProvider><BillingProvider>{children}</BillingProvider></AccountProvider>
+        <AccountProvider>{children}</AccountProvider>
         <Analytics />
         <GoogleAnalytics />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@graph": [{ "@type": "Organization", name: "WantAnInternship", url: siteUrl }, { "@type": "WebSite", name: "WantAnInternship", url: siteUrl }] }) }} />

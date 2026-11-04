@@ -45,7 +45,6 @@ return async function handler(event) {
     }
     return reply(405, { error: "Unsupported request." });
   } catch (error) {
-    if (error.status === 402) return reply(402, { error: error.message, upgradeRequired: true });
     if (error.name === "ConditionalCheckFailedException") return reply(404, { error: "Application not found." });
     console.error("Applications storage error", error.name);
     return reply(503, { error: "Unable to update your tracker. Please try again." });

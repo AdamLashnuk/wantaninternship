@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useAccount } from "./AccountProvider";
-import { useBilling } from "./BillingProvider";
-import PremiumPrompt from "./PremiumPrompt";
 import { trackContent } from "../data/tracks";
 import {
   filterEngineeringOpportunities,
@@ -72,9 +70,7 @@ type CachedPage = InternshipResponse & { cachedAt: number };
 
 export default function LatestDropsDirectory({ track }: { track: OpportunityTrack }) {
   const { user } = useAccount();
-  const { billing, loading: billingLoading } = useBilling();
-  const premium = billing.premium;
-  const cacheKey = `wantaninternship:latest-drops:${track}:v13:${user?.id || "guest"}:${premium ? "premium" : "free"}`;
+  const cacheKey = `wantaninternship:latest-drops:${track}:v14:${user?.id || "guest"}:public`;
   const fallback = useMemo(() => getFallbackJobs(track), [track]);
   const [jobs, setJobs] = useState<InternshipJob[]>(fallback);
   const [keyword, setKeyword] = useState("");
@@ -100,7 +96,6 @@ export default function LatestDropsDirectory({ track }: { track: OpportunityTrac
   }, []);
 
   useEffect(() => {
-    if (billingLoading) return;
     const controller = new AbortController();
     setJobs(fallback);
     setIsLive(false);
@@ -108,7 +103,7 @@ export default function LatestDropsDirectory({ track }: { track: OpportunityTrac
 
     try {
       const cached = JSON.parse(sessionStorage.getItem(cacheKey) ?? "null") as CachedPage | null;
-      if (cached && cached.premium === premium && Date.now() - cached.cachedAt < CACHE_TTL && Array.isArray(cached.jobs)) {
+      if (cached && Date.now() - cached.cachedAt < CACHE_TTL && Array.isArray(cached.jobs)) {
         setJobs(cached.jobs);
         setIsLive(cached.live);
         setUpdatedAt(cached.updatedAt);
@@ -134,7 +129,7 @@ export default function LatestDropsDirectory({ track }: { track: OpportunityTrac
 
         // Once the collector reports a bounded retention window, hydrate every
         // remaining page so search and dropdowns cover the complete recent feed.
-        if (premium && payload.premium && payload.retentionDays === 14 && payload.nextCursor) {
+        if (payload.retentionDays === 14 && payload.nextCursor) {
           const byId = new Map(payload.jobs.map((job) => [job.id, job]));
           const seenCursors = new Set<string>();
           let cursor: string | undefined = payload.nextCursor;
@@ -184,10 +179,10 @@ export default function LatestDropsDirectory({ track }: { track: OpportunityTrac
 
     void loadFirstPage();
     return () => controller.abort();
-  }, [cacheKey, fallback, track, billingLoading, premium]);
+  }, [cacheKey, fallback, track]);
 
   async function loadMore() {
-    if (!premium || !nextCursor || loadingMore) return;
+    if (!nextCursor || loadingMore) return;
     setLoadingMore(true);
     try {
       const response = await fetch(`/api/internships?track=${track}&limit=${PAGE_SIZE}&cursor=${encodeURIComponent(nextCursor)}`);
@@ -221,10 +216,10 @@ export default function LatestDropsDirectory({ track }: { track: OpportunityTrac
   }
 
   const filteredJobs = useMemo(() => sortInternshipsNewestFirst(
-    !premium ? jobs.slice(0, 10) : track === "engineering"
+    track === "engineering"
       ? filterEngineeringOpportunities(jobs, { keyword, positionType, area, discipline })
       : filterInternships(jobs, { keyword, opportunity, area, category }),
-  ), [jobs, keyword, opportunity, area, category, positionType, discipline, track, premium]);
+  ), [jobs, keyword, opportunity, area, category, positionType, discipline, track]);
   const remainingJobs = typeof totalJobs === "number" ? Math.max(totalJobs - jobs.length, 0) : undefined;
   const nextBatchSize = remainingJobs === undefined ? PAGE_SIZE : Math.min(PAGE_SIZE, remainingJobs);
   const refresh = loading
@@ -252,7 +247,7 @@ export default function LatestDropsDirectory({ track }: { track: OpportunityTrac
         </div>
       </div>
 
-      <fieldset className={styles.filterPanel} aria-label="Internship filters" disabled={!premium} style={{ minWidth: 0, margin: 0, opacity: premium ? 1 : .6 }}>
+      <fieldset className={styles.filterPanel} aria-label="Internship filters" style={{ minWidth: 0, margin: 0 }}>
         <label className={styles.search}>
           <span aria-hidden="true">⌕</span>
           <input
@@ -299,7 +294,7 @@ export default function LatestDropsDirectory({ track }: { track: OpportunityTrac
         )}
       </fieldset>
 
-      {track === "engineering" && premium && (
+      {track === "engineering" && (
         <div className={styles.disciplinePanel} aria-label="Quick engineering discipline filters">
           <span className={styles.disciplineLabel}>Engineering discipline</span>
           <div className={styles.disciplineChips}>
@@ -370,7 +365,6 @@ export default function LatestDropsDirectory({ track }: { track: OpportunityTrac
           );
         })}
 
-        {!premium && !billingLoading && <PremiumPrompt />}
 
         {filteredJobs.length === 0 && (
           <div className="empty-state drops-empty-state">
