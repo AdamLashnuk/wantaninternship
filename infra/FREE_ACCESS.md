@@ -1,6 +1,6 @@
 # Free access
 
-The website has no subscription UI, trials, checkout, access-code requirement or Pro badge. The complete feed, filters, application graph and unlimited saved applications are free. Personal data still requires account authentication. Personal resume/company alerts retain their owner restriction and provider setup.
+The Subscription page and account menu show a single Free tier with all available features included. There are no paid plans, trials, checkout, access-code requirements or Pro badges. The complete feed, filters, application graph and unlimited saved applications are free. Personal data still requires account authentication. Personal resume/company alerts retain their owner restriction and provider setup.
 
 Deploy the frontend through the existing GitHub/Vercel workflow. Deploy the AWS changes from `infra` with `sam build` and `sam deploy` to unlock public feed pagination and remove the tracker quota at its source. Until that deployment, the previous backend restrictions remain.
 
